@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "askpolis"
+version = "0.1.0"
+description = ""
+authors = ["Felix Müller <felix@fmueller.io>"]
+license = "AGPL-3.0"
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+uvicorn = {extras = ["standard"], version = "^0.34.0"}
+fastapi = "^0.115.6"
+langchain = "^0.3.13"
+pypdf = "^5.1.0"
+langchain-community = "^0.3.13"
+langchain-ollama = "^0.2.2"
+langchain-huggingface = "^0.1.2"
+sentence-transformers = "^3.3.1"
+torch = {version = "^2.5.1", source = "pytorch"}
+einops = "^0.8.0"
+
+[[tool.poetry.source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
