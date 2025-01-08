@@ -30,13 +30,11 @@ def rag_test():
     passage_embeddings = HuggingFaceEmbeddings(model_name="jinaai/jina-embeddings-v3",
                                                model_kwargs={"trust_remote_code": True},
                                                encode_kwargs={"normalize_embeddings": True,
-                                                              "task": "retrieval.passage",
-                                                              "force_download": True})
+                                                              "task": "retrieval.passage"})
     query_embeddings = HuggingFaceEmbeddings(model_name="jinaai/jina-embeddings-v3",
                                              model_kwargs={"trust_remote_code": True},
                                              encode_kwargs={"normalize_embeddings": True,
-                                                            "task": "retrieval.query",
-                                                            "force_download": True})
+                                                            "task": "retrieval.query"})
 
     question = "Wie sind die Werte der CDU?"
 
