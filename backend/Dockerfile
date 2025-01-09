@@ -29,9 +29,9 @@ RUN poetry install --only main --no-root && \
 
 FROM base AS model
 
-COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+RUN pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url "https://download.pytorch.org/whl/cpu"
+RUN pip install --no-cache-dir "huggingface_hub[cli]==0.27.1" "sentence-transformers==3.3.1" einops==0.8.0
 
-RUN pip install --no-cache-dir "huggingface_hub[cli]"
 RUN huggingface-cli download "jinaai/jina-embeddings-v3" --exclude "onnx/*" --exclude "*.onnx"
 RUN huggingface-cli download "jinaai/xlm-roberta-flash-implementation" --exclude "onnx/*" --exclude "*.onnx"
 
