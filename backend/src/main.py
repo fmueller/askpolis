@@ -1,11 +1,14 @@
+import io
+
+import fitz
+import pymupdf4llm
+import requests
 from fastapi import FastAPI
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_text_splitters import MarkdownTextSplitter
 
 app = FastAPI()
 
@@ -38,15 +41,16 @@ def rag_test():
 
     question = "Wie sind die Werte der CDU?"
 
-    loader = PyPDFLoader("C:/Users/felix/Downloads/240507_CDU_GSP_2024_Beschluss_Parteitag_FINAL.pdf")
-    pages = loader.load()
-    pages = "\n".join([page.page_content for page in pages])
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200)
-    splits = text_splitter.split_documents([Document(page_content=pages)])
-    vector_store = InMemoryVectorStore.from_documents(splits, passage_embeddings)
+    response = requests.get(
+        "https://www.grundsatzprogramm-cdu.de/sites/www.grundsatzprogramm-cdu.de/files/downloads/240507_cdu_gsp_2024_beschluss_parteitag_final_1.pdf")
+    md_text = pymupdf4llm.to_markdown(fitz.open(stream=io.BytesIO(response.content), filetype="pdf"))
+
+    text_splitter = MarkdownTextSplitter(chunk_size=2000, chunk_overlap=200)
+    splits = text_splitter.split_text(md_text)
+    vector_store = InMemoryVectorStore.from_texts(splits, passage_embeddings)
+
     results = vector_store.similarity_search_with_score(query=question, k=10, embeddings=query_embeddings)
     context = "\n\n".join(["<chunk>\n" + r[0].page_content + "\n</chunk>" for r in results])
-    print(context)
 
     chain = prompt | chat_model
     answer = chain.invoke({

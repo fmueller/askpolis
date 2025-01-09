@@ -8,11 +8,10 @@ readme = "README.md"
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.12,<3.13"
 uvicorn = {extras = ["standard"], version = "^0.34.0"}
 fastapi = "^0.115.6"
 langchain = "^0.3.13"
-pypdf = "^5.1.0"
 langchain-community = "^0.3.13"
 langchain-ollama = "^0.2.2"
 langchain-huggingface = "^0.1.2"
@@ -21,6 +20,8 @@ torch = {version = "^2.5.1", source = "pytorch"}
 einops = "^0.8.0"
 celery = "^5.4.0"
 redis = "^5.2.1"
+pymupdf = "^1.25.1"
+pymupdf4llm = "^0.0.17"
 
 [[tool.poetry.source]]
 name = "pytorch"
