@@ -45,4 +45,4 @@ services:
     container_name: ollama
 
   redis:
-    image: redis:7.4.2-alpine
+    image: redis:7.4.2-bookworm
