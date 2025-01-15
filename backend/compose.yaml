@@ -7,7 +7,7 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - OLLAMA_HOST=http://ollama:11434
-      - DATABASE_URL=postgresql://postgres:secret@postgres:5432/askpolis
+      - DATABASE_URL=postgresql+psycopg://postgres:secret@postgres:5432/askpolis
     depends_on:
       - postgres
       - redis
@@ -19,7 +19,7 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - OLLAMA_HOST=http://ollama:11434
-      - DATABASE_URL=postgresql://postgres:secret@postgres:5432/askpolis
+      - DATABASE_URL=postgresql+psycopg://postgres:secret@postgres:5432/askpolis
     depends_on:
       - postgres
       - redis

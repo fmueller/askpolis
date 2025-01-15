@@ -24,8 +24,8 @@ pymupdf = "^1.25.1"
 pymupdf4llm = "^0.0.17"
 sqlalchemy = "^2.0.37"
 alembic = "^1.14.0"
-psycopg2-binary = "^2.9.10"
-pgvector = "^0.3.6"
+langchain-postgres = "^0.0.12"
+psycopg-binary = "^3.2.3"
 
 [[tool.poetry.source]]
 name = "pytorch"

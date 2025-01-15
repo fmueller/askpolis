@@ -1,11 +1,13 @@
+import os
+
 import pymupdf4llm
 import requests
 from fastapi import FastAPI
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
+from langchain_postgres import PGVector
 from langchain_text_splitters import MarkdownHeaderTextSplitter, MarkdownTextSplitter
 
 app = FastAPI()
@@ -34,7 +36,9 @@ query_embeddings = HuggingFaceEmbeddings(model_name="jinaai/jina-embeddings-v3",
                                          encode_kwargs={"normalize_embeddings": True,
                                                         "task": "retrieval.query"})
 
-vector_store = None
+connection = os.getenv("DATABASE_URL")
+vector_store = PGVector(embeddings=passage_embeddings, collection_name="embeddings", connection=connection,
+                        embedding_length=1024, create_extension=False)
 
 
 @app.get("/")
@@ -42,11 +46,22 @@ def read_root():
     return {"healthy": True}
 
 
-# just some test code to test the idea locally
-@app.get("/rag-test")
+@app.get("/v0/search")
+def search(query: str, limit: int = 5):
+    if limit < 1:
+        limit = 5
+    results = vector_store.similarity_search_with_score_by_vector(embedding=query_embeddings.embed_query(query),
+                                                                  k=limit)
+    return {"query": query, "search_results": results}
+
+
+@app.get("/v0/answers")
 def rag_test(question: str):
-    global vector_store
-    if vector_store is None:
+    print("Question:", question)
+    print("Querying...")
+    results = vector_store.similarity_search_with_score_by_vector(embedding=query_embeddings.embed_query(question), k=5)
+
+    if len(results) == 0:
         print("Downloading PDF")
         response = requests.get(
             "https://www.grundsatzprogramm-cdu.de/sites/www.grundsatzprogramm-cdu.de/files/downloads/240507_cdu_gsp_2024_beschluss_parteitag_final_1.pdf")
@@ -70,17 +85,18 @@ def rag_test(question: str):
         ]
 
         header_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on, strip_headers=False)
+        # TODO concatenate by respecting - word dividers and merging words that are split by the chunking
         md_chunks = header_splitter.split_text("\n\n".join([doc.page_content for doc in docs]))
 
         markdown_splitter = MarkdownTextSplitter(chunk_size=2000, chunk_overlap=400)
         final_chunks = markdown_splitter.split_documents(md_chunks)
         print(f"Final chunks: {len(final_chunks)}")
-        vector_store = InMemoryVectorStore.from_documents(final_chunks, passage_embeddings)
+        vector_store.add_documents(final_chunks)
+        print("Querying again...")
+        results = vector_store.similarity_search_with_score_by_vector(embedding=query_embeddings.embed_query(question),
+                                                                      k=5)
 
-    print("Querying...")
-    results = vector_store.similarity_search_with_score(query=question, k=5, embeddings=query_embeddings)
     context = "\n\n".join(["<chunk>\n" + r[0].page_content + "\n</chunk>" for r in results])
-
     chain = prompt | chat_model
     print("Invoking LLM chain...")
     answer = chain.invoke({
