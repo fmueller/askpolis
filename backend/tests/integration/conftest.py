@@ -13,8 +13,8 @@ def postgres_container():
 
 @pytest.fixture(scope="session")
 def alembic_config():
-    config = Config("../../src/alembic.ini")
-    config.set_main_option("script_location", "../../src/alembic")
+    config = Config("src/alembic.ini")
+    config.set_main_option("script_location", "src/alembic")
     return config
 
 
