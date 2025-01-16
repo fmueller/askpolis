@@ -56,7 +56,7 @@ def search(query: str, limit: int = 5):
 
 
 @app.get("/v0/answers")
-def rag_test(question: str):
+def get_answers(question: str):
     print("Question:", question)
     print("Querying...")
     results = vector_store.similarity_search_with_score_by_vector(embedding=query_embeddings.embed_query(question), k=5)
