@@ -54,6 +54,8 @@ services:
 
   postgres:
     image: pgvector/pgvector:pg17
+    ports:
+      - "5432:5432"
     environment:
       - POSTGRES_DB=askpolis
       - POSTGRES_PASSWORD=secret
