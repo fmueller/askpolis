@@ -25,7 +25,7 @@ pymupdf4llm = "^0.0.17"
 sqlalchemy = "^2.0.37"
 alembic = "^1.14.0"
 langchain-postgres = "^0.0.12"
-psycopg-binary = "^3.2.3"
+psycopg-binary = "^3.2.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
