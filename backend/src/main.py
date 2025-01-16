@@ -62,7 +62,7 @@ def get_answers(question: str):
     results = vector_store.similarity_search_with_score_by_vector(embedding=query_embeddings.embed_query(question), k=5)
 
     if len(results) == 0:
-        print("Downloading PDF")
+        print("Downloading PDF...")
         response = requests.get(
             "https://www.grundsatzprogramm-cdu.de/sites/www.grundsatzprogramm-cdu.de/files/downloads/240507_cdu_gsp_2024_beschluss_parteitag_final_1.pdf")
 
