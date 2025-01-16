@@ -1,4 +1,4 @@
-name: Build, Test and Publish
+name: AskPolis Backend
 
 on:
   push:
@@ -39,7 +39,7 @@ jobs:
       - name: Cache Poetry dependencies
         uses: actions/cache@v4
         with:
-          path: ./.venv
+          path: .venv
           key: venv-${{ hashFiles('poetry.lock') }}
 
       - name: Install dependencies
