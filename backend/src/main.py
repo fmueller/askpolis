@@ -69,7 +69,7 @@ def get_answers(question: str):
         with open("temp.pdf", "wb") as f:
             f.write(response.content)
 
-        print("Read PDF to Markdown")
+        print("Read PDF to Markdown...")
         chunks = pymupdf4llm.to_markdown("temp.pdf", show_progress=False, page_chunks=True)
         docs = [
             Document(
