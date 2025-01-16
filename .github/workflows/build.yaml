@@ -15,10 +15,14 @@ env:
   POETRY_VERSION: "1.8.5"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  WORKING_DIRECTORY: backend
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -49,6 +53,9 @@ jobs:
   build-and-push:
     needs: test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
     permissions:
       contents: read
       packages: write
