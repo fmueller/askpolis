@@ -9,14 +9,14 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
-uvicorn = {extras = ["standard"], version = "^0.34.0"}
+uvicorn = { extras = ["standard"], version = "^0.34.0" }
 fastapi = "^0.115.6"
 langchain = "^0.3.13"
 langchain-community = "^0.3.13"
 langchain-ollama = "^0.2.2"
 langchain-huggingface = "^0.1.2"
 sentence-transformers = "^3.3.1"
-torch = {version = "^2.5.1", source = "pytorch"}
+torch = { version = "^2.5.1", source = "pytorch" }
 einops = "^0.8.0"
 celery = "^5.4.0"
 redis = "^5.2.1"
@@ -26,6 +26,10 @@ sqlalchemy = "^2.0.37"
 alembic = "^1.14.0"
 langchain-postgres = "^0.0.12"
 psycopg-binary = "^3.2.3"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+testcontainers = { extras = ["postgres"], version = "^4.9.0" }
 
 [[tool.poetry.source]]
 name = "pytorch"
