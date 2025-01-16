@@ -47,8 +47,14 @@ jobs:
           poetry config virtualenvs.in-project true
           poetry install
 
-      - name: Run tests
-        run: poetry run pytest -v
+      - name: Run unit tests
+        run: poetry run pytest -v -m unit
+
+      - name: Run integration tests
+        run: poetry run pytest -v -m integration
+
+      - name: Run end-to-end tests
+        run: poetry run pytest -v -m e2e
 
   build-and-push:
     needs: test
