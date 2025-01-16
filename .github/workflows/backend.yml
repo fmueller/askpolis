@@ -1,4 +1,4 @@
-name: AskPolis Backend
+name: Backend
 
 on:
   push:
@@ -18,37 +18,72 @@ env:
   WORKING_DIRECTORY: backend
 
 jobs:
-  test:
+  unit-tests:
+    name: Unit Tests
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ${{ env.WORKING_DIRECTORY }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Install poetry
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Poetry
         run: pipx install poetry==${{ env.POETRY_VERSION }}
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'poetry'
-
       - name: Install dependencies
         run: poetry install --no-interaction
-
       - name: Run unit tests
         run: poetry run pytest -v -m unit
 
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Poetry
+        run: pipx install poetry==${{ env.POETRY_VERSION }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'poetry'
+      - name: Install dependencies
+        run: poetry install --no-interaction
       - name: Run integration tests
         run: poetry run pytest -v -m integration
 
+  e2e-tests:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Poetry
+        run: pipx install poetry==${{ env.POETRY_VERSION }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'poetry'
+      - name: Install dependencies
+        run: poetry install --no-interaction
       - name: Run end-to-end tests
         run: poetry run pytest -v -m e2e
 
-  build-and-push:
-    needs: test
+  build-and-push-image:
+    name: Build and Push Docker Image
+    needs: [ unit-tests, integration-tests, e2e-tests ]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     defaults:
@@ -59,7 +94,8 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Log in to registry
         uses: docker/login-action@v3
