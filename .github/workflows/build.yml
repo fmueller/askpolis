@@ -37,7 +37,7 @@ jobs:
           poetry-version: ${{ env.POETRY_VERSION }}
 
       - name: Cache Poetry dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./.venv
           key: venv-${{ hashFiles('poetry.lock') }}
