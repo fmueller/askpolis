@@ -26,15 +26,51 @@ sqlalchemy = "^2.0.37"
 alembic = "^1.14.0"
 langchain-postgres = "^0.0.12"
 psycopg-binary = "^3.2.4"
+celery-typed-tasks = "^0.1.25"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
 testcontainers = { extras = ["postgres"], version = "^4.9.0" }
+ruff = "^0.9.2"
+mypy = "^1.14.1"
+celery-types = "^0.22.0"
+types-requests = "^2.32.0.20241016"
 
 [[tool.poetry.source]]
 name = "pytorch"
 url = "https://download.pytorch.org/whl/cpu"
 priority = "explicit"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "UP",
+    "B",
+    "SIM",
+    "I",
+]
+
+[tool.mypy]
+python_version = "3.12"
+files = "src/**/*.py,tests/**/*.py"
+strict = true
+check_untyped_defs = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["celery_typed_tasks.*", "testcontainers.*", "pymupdf4llm.*"]
+ignore_missing_imports = true
 
 [build-system]
 requires = ["poetry-core"]

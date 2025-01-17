@@ -9,14 +9,15 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
 from langchain_postgres import PGVector
 from langchain_text_splitters import MarkdownHeaderTextSplitter, MarkdownTextSplitter
+from pydantic import BaseModel
 
 app = FastAPI()
 
 chat_model = ChatOllama(model="llama3.1")
 prompt = ChatPromptTemplate.from_messages([
     ("system", """
-    You are AskPolis, an helpful AI agent answering user questions about the political landscape backed by official documents.
-    You only use the provided chunks to answer the question.
+    You are AskPolis, an helpful AI agent answering user questions about politics backed by documents.
+    You only use the provided document chunks to answer the question.
     You respond in Markdown and use paragraphs to structure your answer.
     You only provide the answer to the question without any additional fluff.
     
@@ -41,22 +42,37 @@ vector_store = PGVector(embeddings=passage_embeddings, collection_name="embeddin
                         embedding_length=1024, create_extension=False)
 
 
+class HealthResponse(BaseModel):
+    healthy: bool
+
+
+class SearchResponse(BaseModel):
+    query: str
+    search_results: list[tuple[Document, float]]
+
+
+class AnswerResponse(BaseModel):
+    question: str
+    answer: str
+    search_results: list[tuple[Document, float]]
+
+
 @app.get("/")
-def read_root():
-    return {"healthy": True}
+def read_root() -> HealthResponse:
+    return HealthResponse(healthy=True)
 
 
 @app.get("/v0/search")
-def search(query: str, limit: int = 5):
+def search(query: str, limit: int = 5) -> SearchResponse:
     if limit < 1:
         limit = 5
     results = vector_store.similarity_search_with_score_by_vector(embedding=query_embeddings.embed_query(query),
                                                                   k=limit)
-    return {"query": query, "search_results": results}
+    return SearchResponse(query=query, search_results=results)
 
 
 @app.get("/v0/answers")
-def get_answers(question: str):
+def get_answers(question: str) -> AnswerResponse:
     print("Question:", question)
     print("Querying...")
     results = vector_store.similarity_search_with_score_by_vector(embedding=query_embeddings.embed_query(question), k=5)
@@ -104,4 +120,4 @@ def get_answers(question: str):
         "question": question
     })
 
-    return {"question": question, "answer": answer.content, "search_results": results}
+    return AnswerResponse(question=question, answer=answer.pretty_repr(), search_results=results)
