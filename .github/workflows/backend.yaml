@@ -18,8 +18,32 @@ env:
   WORKING_DIRECTORY: backend
 
 jobs:
+  lint-and-typecheck:
+    name: Linting and Type Checking
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Poetry
+        run: pipx install poetry==${{ env.POETRY_VERSION }}
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'poetry'
+      - name: Install dependencies
+        run: poetry install --no-interaction
+      - name: Run Ruff checks
+        run: poetry run ruff check .
+      - name: Run mypy for type checking
+        run: poetry run mypy .
+
   unit-tests:
     name: Unit Tests
+    needs: lint-and-typecheck
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -41,6 +65,7 @@ jobs:
 
   integration-tests:
     name: Integration Tests
+    needs: lint-and-typecheck
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -62,6 +87,7 @@ jobs:
 
   e2e-tests:
     name: End-to-End Tests
+    needs: lint-and-typecheck
     runs-on: ubuntu-latest
     defaults:
       run:
