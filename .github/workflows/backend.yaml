@@ -137,11 +137,3 @@ jobs:
           file: ./backend/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-
-      - name: Build and push custom Ollama image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./backend
-          file: ./backend/ollama.Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-ollama:latest

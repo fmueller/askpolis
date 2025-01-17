@@ -25,8 +25,14 @@ target_metadata = None
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
+
 def get_database_url() -> str:
-    return os.environ.get("DATABASE_URL") or config.get_main_option("sqlalchemy.url") or "postgresql+psycopg://postgres@postgres:5432/askpolis"
+    return (
+        os.environ.get("DATABASE_URL")
+        or config.get_main_option("sqlalchemy.url")
+        or "postgresql+psycopg://postgres@postgres:5432/askpolis"
+    )
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -62,9 +68,7 @@ def run_migrations_online() -> None:
     connectable = create_engine(get_database_url())
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
