@@ -19,7 +19,7 @@ env:
 
 jobs:
   lint-and-typecheck:
-    name: Run Linters and Type Checkers
+    name: Linting and Type Checking
     runs-on: ubuntu-latest
     defaults:
       run:
