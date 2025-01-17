@@ -1,13 +1,9 @@
 import celery_typed_tasks
 from celery import Celery
 
-app = Celery('tasks', task_cls=celery_typed_tasks.TypedTask)
+app = Celery("tasks", task_cls=celery_typed_tasks.TypedTask)
 app.conf.beat_schedule = {
-    'print-add-every-2-seconds': {
-        'task': 'tasks.print_add',
-        'schedule': 2.0,
-        'args': (4, 6)
-    },
+    "print-add-every-2-seconds": {"task": "tasks.print_add", "schedule": 2.0, "args": (4, 6)},
 }
 
 
