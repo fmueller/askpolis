@@ -2,4 +2,4 @@
 set -o errexit
 set -o nounset
 
-celery -A tasks.app beat --loglevel=info
+celery -A askpolis.tasks:app beat --loglevel=info
