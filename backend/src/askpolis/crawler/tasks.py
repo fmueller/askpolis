@@ -12,8 +12,8 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
 
-@shared_task(name="crawl_bundestag_election_programs_from_abgeordnetenwatch")
-def crawl_bundestag_election_programs_from_abgeordnetenwatch() -> None:
+@shared_task(name="crawl_bundestag_from_abgeordnetenwatch")
+def crawl_bundestag_from_abgeordnetenwatch() -> None:
     bundestag_id = 5
     session = SessionLocal()
     try:
