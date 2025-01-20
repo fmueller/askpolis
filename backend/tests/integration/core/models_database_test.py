@@ -1,7 +1,8 @@
 import datetime
 
-from backend.src.askpolis.core import ElectionProgram, Parliament, ParliamentPeriod, Party
 from sqlalchemy.orm import Session, sessionmaker
+
+from askpolis.core import ElectionProgram, Parliament, ParliamentPeriod, Party
 
 
 def test_core_data_model(session_maker: sessionmaker[Session]) -> None:

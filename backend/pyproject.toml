@@ -63,6 +63,7 @@ select = [
 
 [tool.mypy]
 python_version = "3.12"
+mypy_path = "src"
 files = "src/**/*.py,tests/**/*.py"
 strict = true
 check_untyped_defs = true
