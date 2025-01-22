@@ -27,6 +27,11 @@ alembic = "^1.14.1"
 langchain-postgres = "^0.0.12"
 psycopg-binary = "^3.2.4"
 celery-typed-tasks = "^0.1.25"
+opentelemetry-distro = "^0.50b0"
+opentelemetry-instrumentation-fastapi = "^0.50b0"
+opentelemetry-instrumentation-logging = "^0.50b0"
+opentelemetry-instrumentation-celery = "^0.50b0"
+opentelemetry-exporter-otlp = "^1.29.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"

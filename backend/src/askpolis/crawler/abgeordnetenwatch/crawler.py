@@ -1,7 +1,11 @@
+import logging
 from typing import Optional
 
 from .. import CrawlerRepository
 from .client import AbgeordnetenwatchClient
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class AbgeordnetenwatchCrawler:
@@ -11,23 +15,23 @@ class AbgeordnetenwatchCrawler:
         self.id = "abgeordnetenwatch-v0-election_programs"
 
     def crawl_election_programs(self, parliament_id: int) -> None:
-        print("Start crawling of election programs...")
+        logger.info("Start crawling of election programs...")
 
-        print("Crawling all parliament periods...")
+        logger.info("Crawling all parliament periods...")
         parliament_periods = self._repository.get_by_crawler_and_entity(self.id, f"parliament-periods-{parliament_id}")
         if parliament_periods is None:
             parliament_periods = self._client.get_all_parliament_periods(parliament_id)
             parliament_periods.crawler = self.id
             self._repository.add(parliament_periods)
-            print(parliament_periods.json_data)
+            logger.info(parliament_periods.json_data)
         else:
-            print("Already crawled")
+            logger.info("Already crawled")
 
         assert parliament_periods.json_data is not None
         for parliament_period in parliament_periods.json_data:
             if parliament_period["type"] == "election":
                 parliament_period_id = parliament_period["id"]
-                print(f"Crawling election programs for parliament period {parliament_period_id}...")
+                logger.info(f"Crawling election programs for parliament period {parliament_period_id}...")
                 election_programs = self._repository.get_by_crawler_and_entity(
                     self.id, f"election-programs-{parliament_period_id}"
                 )
@@ -35,9 +39,9 @@ class AbgeordnetenwatchCrawler:
                     election_programs = self._client.get_all_election_programs(parliament_period_id)
                     election_programs.crawler = self.id
                     self._repository.add(election_programs)
-                    print(election_programs.json_data)
+                    logger.info(election_programs.json_data)
                 else:
-                    print("Already crawled")
+                    logger.info("Already crawled")
 
                 assert election_programs.json_data is not None
                 for election_program in election_programs.json_data:
@@ -48,11 +52,11 @@ class AbgeordnetenwatchCrawler:
                     )
                     election_program_file = self._repository.get_by_crawler_and_entity(self.id, entity)
                     if election_program_file is None:
-                        print(f"Downloading election program file... {election_program['file']}")
+                        logger.info(f"Downloading election program file... {election_program['file']}")
                         election_program_file = self._client.get_election_program(entity, election_program["file"])
                         election_program_file.crawler = self.id
                         self._repository.add(election_program_file)
                     else:
-                        print(f"Already crawled {election_program_file.source}")
+                        logger.info(f"Already crawled {election_program_file.source}")
 
-        print("Finished crawling of election programs.")
+        logger.info("Finished crawling of election programs.")
