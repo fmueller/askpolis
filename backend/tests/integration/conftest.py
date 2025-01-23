@@ -3,6 +3,7 @@ from typing import cast
 
 import pytest
 from sqlalchemy import Engine, create_engine
+from sqlalchemy.orm import Session, sessionmaker
 from testcontainers.core.generic import DbContainer
 from testcontainers.postgres import PostgresContainer
 
@@ -34,3 +35,8 @@ def database(postgres_container: DbContainer, alembic_config: Config, test_db_ur
     command.upgrade(alembic_config, "head")
     yield create_engine(test_db_url)
     command.downgrade(alembic_config, "base")
+
+
+@pytest.fixture(scope="function")
+def session_maker(database: Engine) -> sessionmaker[Session]:
+    return sessionmaker(bind=database)

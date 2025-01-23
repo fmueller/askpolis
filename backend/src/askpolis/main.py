@@ -1,3 +1,4 @@
+import logging
 import os
 
 import pymupdf4llm
@@ -10,6 +11,10 @@ from langchain_ollama import ChatOllama
 from langchain_postgres import PGVector
 from langchain_text_splitters import MarkdownHeaderTextSplitter, MarkdownTextSplitter
 from pydantic import BaseModel
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.info("Starting AskPolis API...")
 
 app = FastAPI()
 
@@ -78,6 +83,7 @@ def read_root() -> HealthResponse:
 def search(query: str, limit: int = 5) -> SearchResponse:
     if limit < 1:
         limit = 5
+    logger.info("Searching for %s", query)
     results = vector_store.similarity_search_with_score_by_vector(
         embedding=query_embeddings.embed_query(query), k=limit
     )
@@ -86,12 +92,12 @@ def search(query: str, limit: int = 5) -> SearchResponse:
 
 @app.get("/v0/answers")
 def get_answers(question: str) -> AnswerResponse:
-    print("Question:", question)
-    print("Querying...")
+    logger.info(f"Question: {question}")
+    logger.info("Querying...")
     results = vector_store.similarity_search_with_score_by_vector(embedding=query_embeddings.embed_query(question), k=5)
 
     if len(results) == 0:
-        print("Downloading PDF...")
+        logger.info("Downloading PDF...")
         response = requests.get(
             "https://www.grundsatzprogramm-cdu.de/sites/www.grundsatzprogramm-cdu.de/files/downloads/240507_cdu_gsp_2024_beschluss_parteitag_final_1.pdf"
         )
@@ -99,7 +105,7 @@ def get_answers(question: str) -> AnswerResponse:
         with open("temp.pdf", "wb") as f:
             f.write(response.content)
 
-        print("Read PDF to Markdown...")
+        logger.info("Read PDF to Markdown...")
         chunks = pymupdf4llm.to_markdown("temp.pdf", show_progress=False, page_chunks=True)
         docs = [Document(page_content=chunk["text"], metadata=chunk["metadata"]) for chunk in chunks]
 
@@ -115,16 +121,16 @@ def get_answers(question: str) -> AnswerResponse:
 
         markdown_splitter = MarkdownTextSplitter(chunk_size=2000, chunk_overlap=400)
         final_chunks = markdown_splitter.split_documents(md_chunks)
-        print(f"Final chunks: {len(final_chunks)}")
+        logger.info(f"Final chunks: {len(final_chunks)}")
         vector_store.add_documents(final_chunks)
-        print("Querying again...")
+        logger.info("Querying again...")
         results = vector_store.similarity_search_with_score_by_vector(
             embedding=query_embeddings.embed_query(question), k=5
         )
 
     context = "\n\n".join(["<chunk>\n" + r[0].page_content + "\n</chunk>" for r in results])
     chain = prompt | chat_model
-    print("Invoking LLM chain...")
+    logger.info("Invoking LLM chain...")
     answer = chain.invoke({"documents": context, "question": question})
 
     return AnswerResponse(question=question, answer=answer.pretty_repr(), search_results=results)
