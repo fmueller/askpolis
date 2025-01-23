@@ -70,6 +70,16 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  fluent-bit:
+    image: fluent/fluent-bit:3.2.4
+    user: root # Run as root to access log files
+    volumes:
+      - ../infrastructure/configs/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log:/var/log:ro
+    depends_on:
+      - otel-collector
+
   otel-collector:
     image: otel/opentelemetry-collector:0.118.0
     volumes:
