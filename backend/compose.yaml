@@ -1,6 +1,7 @@
 services:
   api:
     build: .
+    container_name: askpolis-api
     command: ./scripts/start-api.sh
     ports:
       - "8000:8000"
@@ -19,6 +20,7 @@ services:
 
   worker:
     build: .
+    container_name: askpolis-worker
     command: ./scripts/start-worker.sh
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
@@ -36,6 +38,7 @@ services:
 
   scheduler:
     build: .
+    container_name: celery-scheduler
     command: ./scripts/start-scheduler.sh
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
@@ -59,9 +62,11 @@ services:
 
   redis:
     image: redis:7.4.2-bookworm
+    container_name: redis
 
   postgres:
     image: pgvector/pgvector:pg17
+    container_name: postgres
     ports:
       - "5432:5432"
     environment:
@@ -72,18 +77,23 @@ services:
 
   fluent-bit:
     image: fluent/fluent-bit:3.2.4
+    container_name: fluent-bit
     user: root # Run as root to access log files
     volumes:
-      - ../infrastructure/configs/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ../infrastructure/configs/fluent-bit/fluent-bit-compose.conf:/fluent-bit/etc/fluent-bit.conf
+      - ../infrastructure/configs/fluent-bit/parser.conf:/fluent-bit/etc/parser.conf
+      - ../infrastructure/configs/fluent-bit/docker-metadata.lua:/fluent-bit/etc/docker-metadata.lua
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/log:/var/log:ro
     depends_on:
       - otel-collector
+      - loki
 
   otel-collector:
     image: otel/opentelemetry-collector:0.118.0
+    container_name: otel-collector
     volumes:
-      - ../infrastructure/configs/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+      - ../infrastructure/configs/otel-collector.yaml:/etc/otel-collector-config.yaml
     command: [ "--config=/etc/otel-collector-config.yaml" ]
     depends_on:
       - tempo
@@ -91,12 +101,16 @@ services:
 
   grafana:
     image: grafana/grafana:11.4.0
+    container_name: grafana
     volumes:
       - grafana_data:/var/lib/grafana
     environment:
       - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_AUTH_BASIC_ENABLED=false
+      - GF_AUTH_DISABLE_SIGNOUT_MENU=true
     ports:
       - "3000:3000"
     depends_on:
@@ -106,6 +120,7 @@ services:
 
   prometheus:
     image: prom/prometheus:v3.1.0
+    container_name: prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yaml'
       - '--storage.tsdb.path=/prometheus'
@@ -116,6 +131,8 @@ services:
       - prometheus_data:/prometheus
     ports:
       - "9090:9090"
+    depends_on:
+      - otel-collector
 
   # Tempo runs as user 10001, and docker compose creates the volume as root.
   # As such, we need to chown the volume in order for Tempo to start correctly.
@@ -131,6 +148,7 @@ services:
 
   tempo:
     image: *tempoImage
+    container_name: tempo
     command: [ "-config.file=/etc/tempo.yaml" ]
     volumes:
       - ../infrastructure/configs/tempo.yaml:/etc/tempo.yaml
@@ -140,6 +158,7 @@ services:
 
   loki:
     image: grafana/loki:3.3.2
+    container_name: loki
     volumes:
       - loki_data:/loki
 
