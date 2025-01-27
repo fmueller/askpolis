@@ -103,6 +103,7 @@ services:
     image: grafana/grafana:11.4.0
     container_name: grafana
     volumes:
+      - ../infrastructure/configs/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       - grafana_data:/var/lib/grafana
     environment:
       - GF_ANALYTICS_REPORTING_ENABLED=false
