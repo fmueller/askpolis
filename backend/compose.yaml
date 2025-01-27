@@ -73,7 +73,7 @@ services:
       - POSTGRES_DB=askpolis
       - POSTGRES_PASSWORD=secret
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
 
   fluent-bit:
     image: fluent/fluent-bit:3.2.4
@@ -163,7 +163,7 @@ services:
       - loki_data:/loki
 
 volumes:
-  pgdata:
+  postgres_data:
   prometheus_data:
   grafana_data:
   loki_data:
