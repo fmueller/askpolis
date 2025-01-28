@@ -3,7 +3,6 @@ set -o errexit
 set -o nounset
 
 export OTEL_PYTHON_LOG_CORRELATION=true
-export OTEL_PYTHON_LOG_LEVEL=info
 export OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true
 
 container_id=$(cat /proc/self/cgroup | grep docker | cut -d'/' -f3 | head -n 1)
