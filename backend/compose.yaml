@@ -8,7 +8,7 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - OLLAMA_HOST=http://ollama:11434
-      - DATABASE_URL=postgresql+psycopg://postgres:secret@postgres:5432/askpolis
+      - DATABASE_URL=postgresql+psycopg://postgres:secret@postgres:5432/askpolis-db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=askpolis-api
       - OTEL_RESOURCE_ATTRIBUTES=environment=local
@@ -25,7 +25,7 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - OLLAMA_HOST=http://ollama:11434
-      - DATABASE_URL=postgresql+psycopg://postgres:secret@postgres:5432/askpolis
+      - DATABASE_URL=postgresql+psycopg://postgres:secret@postgres:5432/askpolis-db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=askpolis-worker
       - OTEL_RESOURCE_ATTRIBUTES=environment=local
@@ -70,7 +70,7 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_DB=askpolis
+      - POSTGRES_DB=askpolis-db
       - POSTGRES_PASSWORD=secret
     volumes:
       - postgres_data:/var/lib/postgresql/data
