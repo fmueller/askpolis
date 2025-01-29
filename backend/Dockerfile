@@ -29,7 +29,7 @@ RUN poetry install --only main --no-root && \
 
 FROM base AS model
 
-RUN pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 --index-url "https://download.pytorch.org/whl/cpu"
+RUN pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url "https://download.pytorch.org/whl/cpu"
 RUN pip install --no-cache-dir huggingface_hub[cli]==0.27.1 sentence-transformers==3.4.0 einops==0.8.0
 
 RUN huggingface-cli download "jinaai/jina-embeddings-v3" --exclude "onnx/*" --exclude "*.onnx"
