@@ -11,6 +11,6 @@ logger.info("Starting Celery worker...")
 app = Celery("askpolis", task_cls=celery_typed_tasks.TypedTask)
 app.conf.update(worker_hijack_root_logger=False)
 app.conf.beat_schedule = {
-    "crawl-bundestag-from-abgeordnetenwatch": {"task": "crawl_bundestag_from_abgeordnetenwatch", "schedule": 3600},
+    "fetch-data/bundestag-from-abgeordnetenwatch": {"task": "fetch_bundestag_from_abgeordnetenwatch", "schedule": 3600},
 }
-app.autodiscover_tasks(packages=["askpolis.crawler"])
+app.autodiscover_tasks(packages=["askpolis.data_fetcher"])
