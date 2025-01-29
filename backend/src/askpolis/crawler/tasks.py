@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from . import CrawlerRepository
 from .abgeordnetenwatch import AbgeordnetenwatchCrawler
 
-DATABASE_URL = os.getenv("DATABASE_URL") or "postgresql+psycopg://postgres@postgres:5432/askpolis"
+DATABASE_URL = os.getenv("DATABASE_URL") or "postgresql+psycopg://postgres@postgres:5432/askpolis-db"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
