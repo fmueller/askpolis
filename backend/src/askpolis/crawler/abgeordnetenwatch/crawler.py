@@ -1,9 +1,8 @@
 from typing import Optional
 
+from askpolis.crawler import CrawlerRepository
+from askpolis.crawler.abgeordnetenwatch.client import AbgeordnetenwatchClient
 from askpolis.logging import get_logger
-
-from .. import CrawlerRepository
-from .client import AbgeordnetenwatchClient
 
 logger = get_logger(__name__)
 
