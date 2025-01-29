@@ -1,4 +1,3 @@
-import logging
 import os
 
 import pymupdf4llm
@@ -12,8 +11,11 @@ from langchain_postgres import PGVector
 from langchain_text_splitters import MarkdownHeaderTextSplitter, MarkdownTextSplitter
 from pydantic import BaseModel
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+from askpolis.logging import configure_logging, get_logger
+
+configure_logging()
+
+logger = get_logger(__name__)
 logger.info("Starting AskPolis API...")
 
 app = FastAPI()
@@ -83,17 +85,18 @@ def read_root() -> HealthResponse:
 def search(query: str, limit: int = 5) -> SearchResponse:
     if limit < 1:
         limit = 5
-    logger.info("Searching for %s", query)
+    logger.info_with_attrs("Searching...", {"query": query, "limit": limit})
     results = vector_store.similarity_search_with_score_by_vector(
         embedding=query_embeddings.embed_query(query), k=limit
     )
+    if len(results) == 0:
+        logger.warning_with_attrs("No results found", {"query": query})
     return SearchResponse(query=query, search_results=results)
 
 
 @app.get("/v0/answers")
 def get_answers(question: str) -> AnswerResponse:
-    logger.info(f"Question: {question}")
-    logger.info("Querying...")
+    logger.info_with_attrs("Querying...", {"question": question})
     results = vector_store.similarity_search_with_score_by_vector(embedding=query_embeddings.embed_query(question), k=5)
 
     if len(results) == 0:
