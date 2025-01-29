@@ -1,11 +1,11 @@
-import logging
 from typing import Optional
+
+from askpolis.logging import get_logger
 
 from .. import CrawlerRepository
 from .client import AbgeordnetenwatchClient
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger = get_logger(__name__)
 
 
 class AbgeordnetenwatchCrawler:
@@ -31,7 +31,9 @@ class AbgeordnetenwatchCrawler:
         for parliament_period in parliament_periods.json_data:
             if parliament_period["type"] == "election":
                 parliament_period_id = parliament_period["id"]
-                logger.info(f"Crawling election programs for parliament period {parliament_period_id}...")
+                logger.info_with_attrs(
+                    "Crawling election programs for parliament period...", {"id": parliament_period_id}
+                )
                 election_programs = self._repository.get_by_crawler_and_entity(
                     self.id, f"election-programs-{parliament_period_id}"
                 )
@@ -39,7 +41,6 @@ class AbgeordnetenwatchCrawler:
                     election_programs = self._client.get_all_election_programs(parliament_period_id)
                     election_programs.crawler = self.id
                     self._repository.add(election_programs)
-                    logger.info(election_programs.json_data)
                 else:
                     logger.info("Already crawled")
 
@@ -52,11 +53,13 @@ class AbgeordnetenwatchCrawler:
                     )
                     election_program_file = self._repository.get_by_crawler_and_entity(self.id, entity)
                     if election_program_file is None:
-                        logger.info(f"Downloading election program file... {election_program['file']}")
+                        logger.info_with_attrs(
+                            "Downloading election program file...", {"file": election_program["file"]}
+                        )
                         election_program_file = self._client.get_election_program(entity, election_program["file"])
                         election_program_file.crawler = self.id
                         self._repository.add(election_program_file)
                     else:
-                        logger.info(f"Already crawled {election_program_file.source}")
+                        logger.info_with_attrs("Already crawled", {"file": election_program_file.source})
 
         logger.info("Finished crawling of election programs.")
