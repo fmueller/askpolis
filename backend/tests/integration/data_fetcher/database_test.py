@@ -16,6 +16,7 @@ def test_data_fetcher_data_model(session_maker: sessionmaker[Session]) -> None:
 
     with session_maker() as session:
         from_database = FetchedDataRepository(session).get_by_data_fetcher_and_entity("Abgeordnetenwatch", "Bundestag")
+        assert from_database is not None
         assert from_database.text_data == "Some text data"
         assert from_database.source == "https://www.abgeordnetenwatch.de/bundestag/abstimmungen/5"
         assert from_database.data_fetcher == "Abgeordnetenwatch"
