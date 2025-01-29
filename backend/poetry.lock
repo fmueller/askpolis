@@ -3282,13 +3282,13 @@ test = ["Cython", "array-api-strict (>=2.0,<2.1.1)", "asv", "gmpy2", "hypothesis
 
 [[package]]
 name = "sentence-transformers"
-version = "3.3.1"
+version = "3.4.0"
 description = "State-of-the-Art Text Embeddings"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "sentence_transformers-3.3.1-py3-none-any.whl", hash = "sha256:abffcc79dab37b7d18d21a26d5914223dd42239cfe18cb5e111c66c54b658ae7"},
-    {file = "sentence_transformers-3.3.1.tar.gz", hash = "sha256:9635dbfb11c6b01d036b9cfcee29f7716ab64cf2407ad9f403a2e607da2ac48b"},
+    {file = "sentence_transformers-3.4.0-py3-none-any.whl", hash = "sha256:f7d4ad81260149172a98108a3481d8e82c11d31f40d41885f43d481149237743"},
+    {file = "sentence_transformers-3.4.0.tar.gz", hash = "sha256:334288062d4b888cdd7b75913fead46b1e42bfe836f8343d23478d17f799e650"},
 ]
 
 [package.dependencies]
@@ -4269,4 +4269,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "1c5ea04101954340ba730f22f2d35f463782d5276f6d8ad5c073cda49a90bacd"
+content-hash = "7bf26f0e535c8c680b08db4939bf27de9da33bd1701324eaa4db19ec79853980"
