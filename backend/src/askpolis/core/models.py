@@ -14,7 +14,7 @@ class Parliament(Base):
 
     def __init__(self, name: str, short_name: str, **kw: Any) -> None:
         super().__init__(**kw)
-        self.id = uuid.uuid5(uuid.NAMESPACE_OID, f"parliament-{name}")
+        self.id = uuid.uuid5(uuid.NAMESPACE_OID, f"parliament-{name}{short_name}")
         self.name = name
         self.short_name = short_name
 
@@ -28,7 +28,7 @@ class Party(Base):
 
     def __init__(self, name: str, short_name: str, **kw: Any) -> None:
         super().__init__(**kw)
-        self.id = uuid.uuid5(uuid.NAMESPACE_OID, f"party-{name}")
+        self.id = uuid.uuid5(uuid.NAMESPACE_OID, f"party-{name}{short_name}")
         self.name = name
         self.short_name = short_name
 
@@ -51,7 +51,10 @@ class ParliamentPeriod(Base):
         **kw: Any,
     ) -> None:
         super().__init__(**kw)
-        self.id = uuid.uuid5(uuid.NAMESPACE_OID, f"parliament-period-{parliament.id}{label}{period_type}")
+        self.id = uuid.uuid5(
+            uuid.NAMESPACE_OID,
+            f"parliament-period-{parliament.id}{label}{period_type}{start_date}{end_date}{election_date}",
+        )
         self.parliament_id = parliament.id
         self.label = label
         self.period_type = period_type
