@@ -1,13 +1,11 @@
-import os
-
 import pymupdf4llm
 import requests
 from fastapi import FastAPI
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
-from langchain_postgres import PGVector
 from langchain_text_splitters import MarkdownHeaderTextSplitter, MarkdownTextSplitter
 from pydantic import BaseModel
 
@@ -51,14 +49,7 @@ query_embeddings = HuggingFaceEmbeddings(
     encode_kwargs={"normalize_embeddings": True, "task": "retrieval.query"},
 )
 
-connection = os.getenv("DATABASE_URL")
-vector_store = PGVector(
-    embeddings=passage_embeddings,
-    collection_name="embeddings",
-    connection=connection,
-    embedding_length=1024,
-    create_extension=False,
-)
+vector_store = InMemoryVectorStore(passage_embeddings)
 
 
 class HealthResponse(BaseModel):
