@@ -77,11 +77,12 @@ class ElectionProgram(Base):
     __tablename__ = "election_programs"
 
     def __init__(
-        self, parliament_period: ParliamentPeriod, party: Party, file_name: str, file_data: bytes, **kw: Any
+        self, parliament_period: ParliamentPeriod, party: Party, label: str, file_name: str, file_data: bytes, **kw: Any
     ) -> None:
         super().__init__(**kw)
         self.parliament_period_id = parliament_period.id
         self.party_id = party.id
+        self.label = label
         self.file_name = file_name
         self.file_data = file_data
 
@@ -89,8 +90,9 @@ class ElectionProgram(Base):
         DB_UUID(as_uuid=True), ForeignKey("parliament_periods.id"), nullable=False
     )
     party_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("parties.id"), nullable=False)
+    label = Column(String, nullable=False)
     file_name = Column(String, nullable=False)
     file_data = Column(LargeBinary, nullable=False)
     last_updated_at = Column(DateTime, default=datetime.datetime.now(datetime.UTC))
 
-    __table_args__ = (PrimaryKeyConstraint("parliament_period_id", "party_id"),)
+    __table_args__ = (PrimaryKeyConstraint("parliament_period_id", "party_id", "label"),)

@@ -23,7 +23,11 @@ def test_core_data_model(session_maker: sessionmaker[Session]) -> None:
         session.commit()
 
         election_program = ElectionProgram(
-            parliament_period=parliament_period, party=party, file_name="election_program.pdf", file_data=b"PDF data"
+            parliament_period=parliament_period,
+            party=party,
+            label="default-version",
+            file_name="election_program.pdf",
+            file_data=b"PDF data",
         )
         session.add(election_program)
         session.commit()
