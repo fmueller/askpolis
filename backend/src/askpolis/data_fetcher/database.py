@@ -1,7 +1,7 @@
 import datetime
-import uuid
 from typing import Any, Optional
 
+import uuid_utils.compat as uuid
 from sqlalchemy import UUID, Column, DateTime, LargeBinary, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
@@ -13,7 +13,7 @@ Base = declarative_base()
 class FetchedData(Base):
     __tablename__ = "fetched_data"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid7)
     data_fetcher = Column(String, nullable=False)
     entity = Column(String, nullable=True)
     source = Column(String, nullable=False)
@@ -36,6 +36,9 @@ class FetchedDataRepository:
     def add(self, fetched_data: FetchedData) -> None:
         self.session.add(fetched_data)
         self.session.commit()
+
+    def get_all(self) -> list[FetchedData]:
+        return self.session.query(FetchedData).all()
 
     def get_by_data_fetcher_and_entity(self, data_fetcher: str, entity: str) -> Optional[FetchedData]:
         return (

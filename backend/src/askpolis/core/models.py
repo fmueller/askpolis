@@ -1,7 +1,7 @@
 import datetime
-import uuid
 from typing import Any, Optional
 
+import uuid_utils.compat as uuid
 from sqlalchemy import UUID as DB_UUID
 from sqlalchemy import Column, Date, DateTime, ForeignKey, LargeBinary, PrimaryKeyConstraint, String
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column
