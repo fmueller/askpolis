@@ -14,9 +14,9 @@ class AbgeordnetenwatchDataFetcher:
         self.id = "data-fetcher/abgeordnetenwatch/election_programs/v0"
 
     def fetch_election_programs(self, parliament_id: int) -> None:
-        logger.info("Start crawling of election programs...")
+        logger.info("Start fetching of election programs...")
 
-        logger.info("Crawling all parliament periods...")
+        logger.info("Fetching all parliament periods...")
         parliament_periods = self._repository.get_by_data_fetcher_and_entity(
             self.id, f"parliament-periods-{parliament_id}"
         )
@@ -25,14 +25,14 @@ class AbgeordnetenwatchDataFetcher:
             parliament_periods.data_fetcher = self.id
             self._repository.add(parliament_periods)
         else:
-            logger.info("Already crawled")
+            logger.info("Already fetched")
 
         assert parliament_periods.json_data is not None
         for parliament_period in parliament_periods.json_data:
             if parliament_period["type"] == "election":
                 parliament_period_id = parliament_period["id"]
                 logger.info_with_attrs(
-                    "Crawling election programs for parliament period...", {"id": parliament_period_id}
+                    "Fetching election programs for parliament period...", {"id": parliament_period_id}
                 )
                 election_programs = self._repository.get_by_data_fetcher_and_entity(
                     self.id, f"election-programs-{parliament_period_id}"
@@ -42,7 +42,7 @@ class AbgeordnetenwatchDataFetcher:
                     election_programs.data_fetcher = self.id
                     self._repository.add(election_programs)
                 else:
-                    logger.info("Already crawled")
+                    logger.info("Already fetched")
 
                 assert election_programs.json_data is not None
                 for election_program in election_programs.json_data:
@@ -65,6 +65,6 @@ class AbgeordnetenwatchDataFetcher:
                         election_program_file.data_fetcher = self.id
                         self._repository.add(election_program_file)
                     else:
-                        logger.info_with_attrs("Already crawled", {"file": election_program_file.source})
+                        logger.info_with_attrs("Already downloaded", {"file": election_program_file.source})
 
-        logger.info("Finished crawling of election programs.")
+        logger.info("Finished fetching of election programs.")
