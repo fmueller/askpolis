@@ -21,3 +21,23 @@ def test_data_fetcher_data_model(session_maker: sessionmaker[Session]) -> None:
         assert from_database.source == "https://www.abgeordnetenwatch.de/bundestag/abstimmungen/5"
         assert from_database.data_fetcher == "Abgeordnetenwatch"
         assert from_database.entity == "Bundestag"
+
+
+def test_uuid_generation(session_maker: sessionmaker[Session]) -> None:
+    with session_maker() as session:
+        session.add(_generate_random())
+        session.add(_generate_random())
+        session.add(_generate_random())
+        session.commit()
+
+    with session_maker() as session:
+        assert len(FetchedDataRepository(session).get_all()) == 3
+
+
+def _generate_random() -> FetchedData:
+    return FetchedData(
+        data_fetcher="Abgeordnetenwatch",
+        entity="Bundestag",
+        source="https://www.abgeordnetenwatch.de/bundestag/abstimmungen/5",
+        text_data="Some text data",
+    )

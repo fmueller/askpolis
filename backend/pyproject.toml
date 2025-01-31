@@ -36,6 +36,7 @@ opentelemetry-instrumentation-requests = "^0.50b0"
 opentelemetry-instrumentation-redis = "^0.50b0"
 opentelemetry-instrumentation-system-metrics = "^0.50b0"
 opentelemetry-instrumentation-sqlalchemy = "^0.50b0"
+uuid-utils = "^0.10.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
