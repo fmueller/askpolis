@@ -40,7 +40,7 @@ opentelemetry-instrumentation-sqlalchemy = "^0.50b0"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
 testcontainers = { extras = ["postgres"], version = "^4.9.1" }
-ruff = "^0.9.3"
+ruff = "^0.9.4"
 mypy = "^1.14.1"
 celery-types = "^0.22.0"
 types-requests = "^2.32.0.20241016"
