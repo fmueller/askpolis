@@ -2,32 +2,50 @@ from typing import Any
 
 import requests
 
-from askpolis.data_fetcher.database import FetchedData
+from askpolis.data_fetcher.database import DataFetcherType, FetchedData
 
 
 class AbgeordnetenwatchClient:
     def __init__(self) -> None:
         self.base_url = "https://www.abgeordnetenwatch.de/api/v2"
 
-    def get_all_parliament_periods(self, parliament: int) -> FetchedData:
+    def get_all_parliament_periods(self, parliament_id: int) -> FetchedData:
         url = f"{self.base_url}/parliament-periods"
         response = _get_request(
-            url, {"parliament": parliament, "sort_by": "id", "sort_direction": "desc", "range_end": 100}
+            url, {"parliament": parliament_id, "sort_by": "id", "sort_direction": "desc", "range_end": 100}
         )
-        return FetchedData(entity=f"parliament-periods-{parliament}", source=url, json_data=response["data"])
+        return FetchedData.create_parliament_periods(
+            data_fetcher_type=DataFetcherType.ABGEORDNETENWATCH,
+            parliament_id=parliament_id,
+            source=url,
+            json_data=response["data"],
+        )
 
-    def get_all_election_programs(self, parliament_period: int) -> FetchedData:
+    def get_all_election_programs(self, parliament_period_id: int) -> FetchedData:
         url = f"{self.base_url}/election-program"
         response = _get_request(
-            url, {"parliament_period": parliament_period, "sort_by": "id", "sort_direction": "desc", "range_end": 100}
+            url,
+            {"parliament_period": parliament_period_id, "sort_by": "id", "sort_direction": "desc", "range_end": 100},
         )
-        return FetchedData(entity=f"election-programs-{parliament_period}", source=url, json_data=response["data"])
+        return FetchedData.create_election_programs(
+            data_fetcher_type=DataFetcherType.ABGEORDNETENWATCH,
+            parliament_period_id=parliament_period_id,
+            source=url,
+            json_data=response["data"],
+        )
 
-    def get_election_program(self, entity: str, url: str) -> FetchedData:
+    def get_election_program(self, party_id: int, parliament_period_id: int, url: str) -> FetchedData:
         response = requests.get(url)
         if response.status_code != 200:
             raise Exception(f"Failed to get election program from {url}")
-        return FetchedData(entity=entity, source=url, file_data=response.content)
+        return FetchedData.create_election_program(
+            data_fetcher_type=DataFetcherType.ABGEORDNETENWATCH,
+            party_id=party_id,
+            parliament_period_id=parliament_period_id,
+            label="default",
+            source=url,
+            file_data=response.content,
+        )
 
 
 def _get_request(url: str, params: Any | None = None) -> Any:

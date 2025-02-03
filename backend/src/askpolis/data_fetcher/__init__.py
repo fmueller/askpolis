@@ -1,3 +1,3 @@
-from .database import FetchedData, FetchedDataRepository
+from .database import DataFetcherType, EntityType, FetchedData, FetchedDataRepository
 
-__all__ = ["FetchedDataRepository", "FetchedData"]
+__all__ = ["DataFetcherType", "EntityType", "FetchedDataRepository", "FetchedData"]
