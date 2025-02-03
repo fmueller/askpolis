@@ -47,7 +47,7 @@ mypy = "^1.14.1"
 celery-types = "^0.22.0"
 types-requests = "^2.32.0.20241016"
 pre-commit = "^4.1.0"
-sqlalchemy = {extras = ["mypy"], version = "^2.0.37"}
+sqlalchemy = { extras = ["mypy"], version = "^2.0.37" }
 
 [[tool.poetry.source]]
 name = "pytorch"
@@ -82,7 +82,7 @@ disallow_untyped_calls = true
 disallow_untyped_defs = true
 warn_unused_ignores = true
 plugins = ["sqlalchemy.ext.mypy.plugin"]
-untyped_calls_exclude = ["sqlalchemy.orm.mapped_column"]
+untyped_calls_exclude = ["sqlalchemy.dialects", "sqlalchemy.orm.mapped_column"]
 
 [[tool.mypy.overrides]]
 module = ["celery_typed_tasks.*", "testcontainers.*", "pymupdf4llm.*"]
