@@ -51,7 +51,7 @@ class FetchedData(Base):
     def __repr__(self) -> str:
         return (
             f"<FetchedData(id={self.id}, data_fetcher_type={self.data_fetcher_type}, data_fetcher={self.data_fetcher}, "
-            f"entity_type={self.entity_type}, entity={self.entity}, "
+            f"entity_type={self.entity_type}, is_list={self.is_list}, entity={self.entity}, "
             f"source={self.source}, created_at={self.created_at})>"
         )
 
