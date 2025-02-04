@@ -20,3 +20,12 @@ def fetch_bundestag_from_abgeordnetenwatch() -> None:
         data_fetcher.fetch_election_programs(bundestag_id)
     finally:
         session.close()
+
+
+@shared_task(name="cleanup_outdated_data")
+def cleanup_outdated_data() -> None:
+    session = SessionLocal()
+    try:
+        FetchedDataRepository(session).delete_outdated_data()
+    finally:
+        session.close()
