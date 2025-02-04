@@ -85,6 +85,7 @@ class ElectionProgram(Base):
         self.label = label
         self.file_name = file_name
         self.file_data = file_data
+        self.last_updated_at = datetime.datetime.now(datetime.UTC)
 
     parliament_period_id: Mapped[uuid.UUID] = mapped_column(
         DB_UUID(as_uuid=True), ForeignKey("parliament_periods.id"), nullable=False
@@ -93,6 +94,6 @@ class ElectionProgram(Base):
     label = Column(String, nullable=False)
     file_name = Column(String, nullable=False)
     file_data = Column(LargeBinary, nullable=False)
-    last_updated_at = Column(DateTime, default=datetime.datetime.now(datetime.UTC))
+    last_updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
 
     __table_args__ = (PrimaryKeyConstraint("parliament_period_id", "party_id", "label"),)
