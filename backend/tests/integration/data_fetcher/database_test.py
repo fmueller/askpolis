@@ -40,6 +40,29 @@ def test_uuid_generation(session_maker: sessionmaker[Session]) -> None:
         assert len(FetchedDataRepository(session).get_all()) == 3
 
 
+def test_delete_outdated_data(session_maker: sessionmaker[Session]) -> None:
+    with session_maker() as session:
+        session.add(_generate_random_parliament_period(1))
+        session.add(_generate_random_parliament_period(2))
+        session.add(_generate_random_parliament_period(3))
+        session.commit()
+
+    with session_maker() as session:
+        all_data = FetchedDataRepository(session).get_all()
+        assert len(all_data) == 3
+        for data in all_data:
+            data.data_fetcher = "test"
+        session.add(_generate_random_parliament_period(4))
+        session.commit()
+
+    with session_maker() as session:
+        deleted_data = FetchedDataRepository(session).delete_outdated_data()
+        assert len(deleted_data) == 1
+        assert deleted_data[0][0] == DataFetcherType.ABGEORDNETENWATCH
+        assert deleted_data[0][1] == 3
+        assert len(FetchedDataRepository(session).get_all()) == 1
+
+
 def _generate_random_parliament_period(parliament_id: int) -> FetchedData:
     random_data = FetchedData.create_parliament_periods(
         DataFetcherType.ABGEORDNETENWATCH,
