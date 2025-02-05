@@ -16,7 +16,21 @@ class AbgeordnetenwatchDataFetcher:
     def fetch_election_programs(self, parliament_id: int) -> None:
         logger.info("Start fetching of election programs...")
 
-        logger.info("Fetching all parliament periods...")
+        logger.info("Fetching all parliaments...")
+        parliaments = self._repository.get_by_data_fetcher_and_entity(
+            self.id, FetchedData.get_entity_for_list_of_parliaments()
+        )
+        if parliaments is None:
+            parliaments = self._client.get_all_parliaments()
+            parliaments.data_fetcher = self.id
+            self._repository.add(parliaments)
+
+        assert parliaments.json_data is not None
+        if next((p for p in parliaments.json_data if p["id"] == parliament_id), None) is None:
+            logger.warning_with_attrs("Parliament not found, stop data fetching", {"parliament_id": parliament_id})
+            return
+
+        logger.info_with_attrs("Fetching all parliament periods...", {"parliament_id": parliament_id})
         parliament_periods = self._repository.get_by_data_fetcher_and_entity(
             self.id, FetchedData.get_entity_for_list_of_parliament_periods(parliament_id)
         )
