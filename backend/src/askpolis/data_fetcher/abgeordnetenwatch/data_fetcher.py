@@ -26,7 +26,7 @@ class AbgeordnetenwatchDataFetcher:
             self._repository.add(parliaments)
 
         assert parliaments.json_data is not None
-        if next((p for p in parliaments.json_data if p["id"] == parliament_id), None) is None:
+        if not any(parliament["id"] == parliament_id for parliament in parliaments.json_data):
             logger.warning_with_attrs("Parliament not found, stop data fetching", {"parliament_id": parliament_id})
             return
 
