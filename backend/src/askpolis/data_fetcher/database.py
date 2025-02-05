@@ -58,6 +58,26 @@ class FetchedData(Base):
         )
 
     @classmethod
+    def create_parliaments(
+        cls,
+        data_fetcher_type: DataFetcherType,
+        source: str,
+        text_data: Optional[str] = None,
+        json_data: Optional[list[dict[str, Any]]] = None,
+        file_data: Optional[bytes] = None,
+    ) -> "FetchedData":
+        return FetchedData(
+            data_fetcher_type=data_fetcher_type,
+            entity_type=EntityType.PARLIAMENT,
+            entity=cls.get_entity_for_list_of_parliaments(),
+            is_list=True,
+            source=source,
+            text_data=text_data,
+            json_data=json_data,
+            file_data=file_data,
+        )
+
+    @classmethod
     def create_parliament_periods(
         cls,
         data_fetcher_type: DataFetcherType,
@@ -120,6 +140,10 @@ class FetchedData(Base):
             json_data=json_data,
             file_data=file_data,
         )
+
+    @classmethod
+    def get_entity_for_list_of_parliaments(cls) -> str:
+        return "parliaments"
 
     @classmethod
     def get_entity_for_list_of_parliament_periods(cls, parliament_id: int) -> str:

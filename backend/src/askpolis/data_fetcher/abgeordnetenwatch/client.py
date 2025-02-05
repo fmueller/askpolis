@@ -9,6 +9,15 @@ class AbgeordnetenwatchClient:
     def __init__(self) -> None:
         self.base_url = "https://www.abgeordnetenwatch.de/api/v2"
 
+    def get_all_parliaments(self) -> FetchedData:
+        url = f"{self.base_url}/parliaments"
+        response = _get_request(url, {"sort_by": "id", "sort_direction": "desc", "range_end": 100})
+        return FetchedData.create_parliaments(
+            data_fetcher_type=DataFetcherType.ABGEORDNETENWATCH,
+            source=url,
+            json_data=response["data"],
+        )
+
     def get_all_parliament_periods(self, parliament_id: int) -> FetchedData:
         url = f"{self.base_url}/parliament-periods"
         response = _get_request(
