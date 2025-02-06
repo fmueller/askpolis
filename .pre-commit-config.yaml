@@ -16,4 +16,5 @@ repos:
         args: [ "--fix=lf" ]
       - id: name-tests-test
       - id: pretty-format-json
+        args: [ "--autofix", "--indent=2" ]
       - id: trailing-whitespace
