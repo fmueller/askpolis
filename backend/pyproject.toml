@@ -20,7 +20,7 @@ torch = { version = "^2.6.0", source = "pytorch" }
 einops = "^0.8.0"
 celery = "^5.4.0"
 redis = "^5.2.1"
-pymupdf = "^1.25.2"
+pymupdf = "^1.25.3"
 pymupdf4llm = "^0.0.17"
 sqlalchemy = "^2.0.38"
 alembic = "^1.14.1"
