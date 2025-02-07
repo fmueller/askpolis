@@ -22,7 +22,7 @@ celery = "^5.4.0"
 redis = "^5.2.1"
 pymupdf = "^1.25.2"
 pymupdf4llm = "^0.0.17"
-sqlalchemy = "^2.0.37"
+sqlalchemy = "^2.0.38"
 alembic = "^1.14.1"
 psycopg-binary = "^3.2.4"
 celery-typed-tasks = "^0.1.25"
@@ -47,7 +47,7 @@ mypy = "^1.15.0"
 celery-types = "^0.22.0"
 types-requests = "^2.32.0.20241016"
 pre-commit = "^4.1.0"
-sqlalchemy = { extras = ["mypy"], version = "^2.0.37" }
+sqlalchemy = { extras = ["mypy"], version = "^2.0.38" }
 
 [[tool.poetry.source]]
 name = "pytorch"
