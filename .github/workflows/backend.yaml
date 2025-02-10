@@ -12,7 +12,7 @@ on:
 
 env:
   PYTHON_VERSION: "3.13.1"
-  POETRY_VERSION: "1.8.5"
+  POETRY_VERSION: "2.0.1"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   WORKING_DIRECTORY: backend
