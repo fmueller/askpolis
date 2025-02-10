@@ -38,18 +38,13 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-passage_embeddings = HuggingFaceEmbeddings(
-    model_name="jinaai/jina-embeddings-v3",
+embeddings = HuggingFaceEmbeddings(
+    model_name="BAAI/bge-m3",
     model_kwargs={"trust_remote_code": True},
-    encode_kwargs={"normalize_embeddings": True, "task": "retrieval.passage"},
-)
-query_embeddings = HuggingFaceEmbeddings(
-    model_name="jinaai/jina-embeddings-v3",
-    model_kwargs={"trust_remote_code": True},
-    encode_kwargs={"normalize_embeddings": True, "task": "retrieval.query"},
+    encode_kwargs={"normalize_embeddings": True},
 )
 
-vector_store = InMemoryVectorStore(passage_embeddings)
+vector_store = InMemoryVectorStore(embeddings)
 
 
 class HealthResponse(BaseModel):
@@ -77,9 +72,7 @@ def search(query: str, limit: int = 5) -> SearchResponse:
     if limit < 1:
         limit = 5
     logger.info_with_attrs("Searching...", {"query": query, "limit": limit})
-    results = vector_store.similarity_search_with_score_by_vector(
-        embedding=query_embeddings.embed_query(query), k=limit
-    )
+    results = vector_store.similarity_search_with_score_by_vector(embedding=embeddings.embed_query(query), k=limit)
     if len(results) == 0:
         logger.warning_with_attrs("No results found", {"query": query})
     return SearchResponse(query=query, search_results=results)
@@ -88,7 +81,7 @@ def search(query: str, limit: int = 5) -> SearchResponse:
 @app.get("/v0/answers")
 def get_answers(question: str) -> AnswerResponse:
     logger.info_with_attrs("Querying...", {"question": question})
-    results = vector_store.similarity_search_with_score_by_vector(embedding=query_embeddings.embed_query(question), k=5)
+    results = vector_store.similarity_search_with_score_by_vector(embedding=embeddings.embed_query(question), k=5)
 
     if len(results) == 0:
         logger.info("Downloading PDF...")
@@ -118,9 +111,7 @@ def get_answers(question: str) -> AnswerResponse:
         logger.info(f"Final chunks: {len(final_chunks)}")
         vector_store.add_documents(final_chunks)
         logger.info("Querying again...")
-        results = vector_store.similarity_search_with_score_by_vector(
-            embedding=query_embeddings.embed_query(question), k=5
-        )
+        results = vector_store.similarity_search_with_score_by_vector(embedding=embeddings.embed_query(question), k=5)
 
     context = "\n\n".join(["<chunk>\n" + r[0].page_content + "\n</chunk>" for r in results])
     chain = prompt | chat_model

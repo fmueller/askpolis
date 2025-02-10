@@ -29,15 +29,8 @@ RUN poetry install --only main --no-root && \
 
 FROM base AS model
 
-RUN pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url "https://download.pytorch.org/whl/cpu"
-RUN pip install --no-cache-dir huggingface_hub[cli]==0.27.1 sentence-transformers==3.4.0 einops==0.8.0
-
-RUN huggingface-cli download "jinaai/jina-embeddings-v3" --exclude "onnx/*" --exclude "*.onnx"
-RUN huggingface-cli download "jinaai/xlm-roberta-flash-implementation" --exclude "onnx/*" --exclude "*.onnx"
-
-# This is a hack because jina-embeddings-v3 is referencing a custom xlm-roberta model and downloads it once
-# This workaround triggers the fetching and the model is stored in the cache
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('jinaai/jina-embeddings-v3', local_files_only=True, trust_remote_code=True)"
+RUN pip install --no-cache-dir huggingface_hub[cli]==0.28.1
+RUN huggingface-cli download "BAAI/bge-m3" --exclude "onnx/*" --exclude "*.onnx"
 
 FROM base AS runtime
 
