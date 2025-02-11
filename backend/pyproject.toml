@@ -42,7 +42,7 @@ psycopg-pool = "^3.2.4"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
 testcontainers = { extras = ["postgres"], version = "^4.9.1" }
-ruff = "^0.9.5"
+ruff = "^0.9.6"
 mypy = "^1.15.0"
 celery-types = "^0.22.0"
 types-requests = "^2.32.0.20241016"
