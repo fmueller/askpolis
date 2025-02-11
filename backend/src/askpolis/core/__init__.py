@@ -1,3 +1,3 @@
-from .models import ElectionProgram, Parliament, ParliamentPeriod, Party
+from .models import Base, ElectionProgram, Parliament, ParliamentPeriod, Party
 
-__all__ = ["Party", "Parliament", "ParliamentPeriod", "ElectionProgram"]
+__all__ = ["Base", "Party", "Parliament", "ParliamentPeriod", "ElectionProgram"]
