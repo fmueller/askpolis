@@ -17,10 +17,12 @@ class Parliament(Base):
         self.id = uuid.uuid5(uuid.NAMESPACE_OID, f"parliament-{name}{short_name}")
         self.name = name
         self.short_name = short_name
+        self.updated_at = datetime.datetime.now(datetime.UTC)
 
     id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
     name = Column(String, nullable=False)
     short_name = Column(String, nullable=False)
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
 class Party(Base):
@@ -31,10 +33,12 @@ class Party(Base):
         self.id = uuid.uuid5(uuid.NAMESPACE_OID, f"party-{name}{short_name}")
         self.name = name
         self.short_name = short_name
+        self.updated_at = datetime.datetime.now(datetime.UTC)
 
     id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
     name = Column(String, nullable=False)
     short_name = Column(String, nullable=False)
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
 class ParliamentPeriod(Base):
@@ -61,6 +65,7 @@ class ParliamentPeriod(Base):
         self.start_date = start_date
         self.end_date = end_date
         self.election_date = election_date
+        self.updated_at = datetime.datetime.now(datetime.UTC)
 
     id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
     parliament_id: Mapped[uuid.UUID] = mapped_column(
@@ -71,6 +76,7 @@ class ParliamentPeriod(Base):
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
     election_date = Column(Date, nullable=True)
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
 class ElectionProgram(Base):
@@ -85,7 +91,7 @@ class ElectionProgram(Base):
         self.label = label
         self.file_name = file_name
         self.file_data = file_data
-        self.last_updated_at = datetime.datetime.now(datetime.UTC)
+        self.updated_at = datetime.datetime.now(datetime.UTC)
 
     parliament_period_id: Mapped[uuid.UUID] = mapped_column(
         DB_UUID(as_uuid=True), ForeignKey("parliament_periods.id"), nullable=False
@@ -94,6 +100,6 @@ class ElectionProgram(Base):
     label = Column(String, nullable=False)
     file_name = Column(String, nullable=False)
     file_data = Column(LargeBinary, nullable=False)
-    last_updated_at = Column(DateTime, default=lambda: datetime.datetime.now(datetime.UTC))
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
     __table_args__ = (PrimaryKeyConstraint("parliament_period_id", "party_id", "label"),)

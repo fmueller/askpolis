@@ -46,3 +46,21 @@ def test_core_data_model(session_maker: sessionmaker[Session]) -> None:
             session.query(ElectionProgram).filter(ElectionProgram.parliament_period_id == parliament_period.id).one()
         )
         assert election_program.file_name == "election_program.pdf"
+
+
+def test_updated_at_is_properly_updated(session_maker: sessionmaker[Session]) -> None:
+    first_last_updated_at = datetime.datetime.now(datetime.timezone.utc)
+    with session_maker() as session:
+        party = Party(name="Party of Canada", short_name="Canada")
+        party.updated_at = first_last_updated_at
+        session.add(party)
+        session.commit()
+
+    with session_maker() as session:
+        party = session.query(Party).filter(Party.short_name == "Canada").one()
+        party.updated_at = datetime.datetime.now(datetime.timezone.utc)
+        session.commit()
+
+    with session_maker() as session:
+        party = session.query(Party).filter(Party.short_name == "Canada").one()
+        assert party.updated_at > first_last_updated_at

@@ -29,6 +29,6 @@ def test_created_at_is_updated_for_election_programs() -> None:
         file_data=b"PDF data",
     )
 
-    assert election_program.last_updated_at is not None
-    assert other_election_program.last_updated_at is not None
-    assert election_program.last_updated_at != other_election_program.last_updated_at
+    assert election_program.updated_at is not None
+    assert other_election_program.updated_at is not None
+    assert election_program.updated_at != other_election_program.updated_at
