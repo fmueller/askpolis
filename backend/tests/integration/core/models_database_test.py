@@ -63,4 +63,5 @@ def test_updated_at_is_properly_updated(session_maker: sessionmaker[Session]) ->
 
     with session_maker() as session:
         party = session.query(Party).filter(Party.short_name == "Canada").one()
+        assert party.updated_at is not None
         assert party.updated_at > first_last_updated_at
