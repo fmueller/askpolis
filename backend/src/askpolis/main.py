@@ -1,6 +1,7 @@
 import pymupdf4llm
 import requests
 from fastapi import FastAPI
+from FlagEmbedding import FlagReranker
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.vectorstores import InMemoryVectorStore
@@ -46,6 +47,8 @@ embeddings = HuggingFaceEmbeddings(
 
 vector_store = InMemoryVectorStore(embeddings)
 
+reranker = FlagReranker("BAAI/bge-reranker-v2-m3")
+
 
 class HealthResponse(BaseModel):
     healthy: bool
@@ -68,13 +71,30 @@ def read_root() -> HealthResponse:
 
 
 @app.get("/v0/search")
-def search(query: str, limit: int = 5) -> SearchResponse:
+def search(query: str, limit: int = 5, reranking: bool = False) -> SearchResponse:
+    logger.info_with_attrs("Searching...", {"query": query, "limit": limit, "reranking": reranking})
     if limit < 1:
         limit = 5
-    logger.info_with_attrs("Searching...", {"query": query, "limit": limit})
-    results = vector_store.similarity_search_with_score_by_vector(embedding=embeddings.embed_query(query), k=limit)
+
+    query_size = limit
+    if reranking:
+        query_size *= 2
+
+    results = vector_store.similarity_search_with_score_by_vector(embedding=embeddings.embed_query(query), k=query_size)
     if len(results) == 0:
         logger.warning_with_attrs("No results found", {"query": query})
+
+    if reranking and len(results) > 0:
+        logger.info("Reranking...")
+        reranked_scores = reranker.compute_score([(query, r[0].page_content) for r in results], normalize=True)
+        ranked_docs = [doc for _, doc in sorted(zip(reranked_scores, results), reverse=True)][:limit]
+        return SearchResponse(
+            query=query,
+            search_results=sorted(
+                [(doc[0], score) for doc, score in zip(ranked_docs, reranked_scores)], key=lambda x: x[1], reverse=True
+            ),
+        )
+
     return SearchResponse(query=query, search_results=results)
 
 
