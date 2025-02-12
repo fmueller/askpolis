@@ -86,7 +86,7 @@ plugins = ["sqlalchemy.ext.mypy.plugin"]
 untyped_calls_exclude = ["sqlalchemy.dialects", "sqlalchemy.orm.mapped_column"]
 
 [[tool.mypy.overrides]]
-module = ["celery_typed_tasks.*", "testcontainers.*", "pymupdf4llm.*"]
+module = ["celery_typed_tasks.*", "FlagEmbedding.*", "testcontainers.*", "pymupdf4llm.*"]
 ignore_missing_imports = true
 
 [build-system]
