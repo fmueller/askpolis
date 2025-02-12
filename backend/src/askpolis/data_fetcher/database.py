@@ -36,7 +36,7 @@ class DataFetcherType(str, enum.Enum):
 class FetchedData(Base):
     __tablename__ = "fetched_data"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid7)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=lambda: uuid.uuid7())
     data_fetcher = Column(String, nullable=False)
     data_fetcher_type = Column(
         postgresql.ENUM(*DataFetcherType.values(), name="datafetchertype", create_type=False), nullable=False
