@@ -6,8 +6,7 @@ import uuid_utils.compat as uuid
 from sqlalchemy import UUID, Boolean, Column, DateTime, LargeBinary, String
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, declarative_base
 
 from askpolis.logging import get_logger
 
