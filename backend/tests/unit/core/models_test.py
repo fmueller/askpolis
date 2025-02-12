@@ -1,4 +1,5 @@
 import datetime
+import time
 
 from askpolis.core import ElectionProgram, Parliament, ParliamentPeriod, Party
 
@@ -21,6 +22,7 @@ def test_created_at_is_updated_for_election_programs() -> None:
         file_data=b"PDF data",
     )
 
+    time.sleep(0.1)  # not ideal, but we need to wait for the time to change
     other_election_program = ElectionProgram(
         parliament_period=parliament_period,
         party=party,
