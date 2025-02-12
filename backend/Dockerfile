@@ -1,4 +1,4 @@
-FROM python:3.13.2-slim AS base
+FROM python:3.12.9-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
@@ -31,6 +31,7 @@ FROM base AS model
 
 RUN pip install --no-cache-dir huggingface_hub[cli]==0.28.1
 RUN huggingface-cli download "BAAI/bge-m3" --exclude "onnx/*" --exclude "*.onnx"
+RUN huggingface-cli download "BAAI/bge-reranker-v2-m3" --exclude "onnx/*" --exclude "*.onnx"
 
 FROM base AS runtime
 
