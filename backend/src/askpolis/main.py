@@ -7,9 +7,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
-from langchain_text_splitters import MarkdownHeaderTextSplitter, MarkdownTextSplitter
 from pydantic import BaseModel
 
+from askpolis.core import MarkdownSplitter
 from askpolis.logging import configure_logging, get_logger
 
 configure_logging()
@@ -113,21 +113,9 @@ def get_answers(question: str) -> AnswerResponse:
             f.write(response.content)
 
         logger.info("Read PDF to Markdown...")
-        chunks = pymupdf4llm.to_markdown("temp.pdf", show_progress=False, page_chunks=True)
-        docs = [Document(page_content=chunk["text"], metadata=chunk["metadata"]) for chunk in chunks]
-
-        headers_to_split_on = [
-            ("#", "header_1"),
-            ("##", "header_2"),
-            ("###", "header_3"),
-        ]
-
-        header_splitter = MarkdownHeaderTextSplitter(headers_to_split_on=headers_to_split_on, strip_headers=False)
-        # TODO concatenate by respecting - word dividers and merging words that are split by the chunking
-        md_chunks = header_splitter.split_text("\n\n".join([doc.page_content for doc in docs]))
-
-        markdown_splitter = MarkdownTextSplitter(chunk_size=2000, chunk_overlap=400)
-        final_chunks = markdown_splitter.split_documents(md_chunks)
+        parsed_markdown = pymupdf4llm.to_markdown("temp.pdf", show_progress=False, page_chunks=True)
+        pages = [Document(page_content=md["text"], metadata=md["metadata"]) for md in parsed_markdown]
+        final_chunks = MarkdownSplitter(chunk_size=2000, chunk_overlap=400).split(pages)
         logger.info(f"Final chunks: {len(final_chunks)}")
         vector_store.add_documents(final_chunks)
         logger.info("Querying again...")
