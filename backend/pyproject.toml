@@ -49,6 +49,7 @@ celery-types = "^0.22.0"
 types-requests = "^2.32.0.20241016"
 pre-commit = "^4.1.0"
 sqlalchemy = { extras = ["mypy"], version = "^2.0.38" }
+faker = "^36.1.0"
 
 [[tool.poetry.source]]
 name = "pytorch"
