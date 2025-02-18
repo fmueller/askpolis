@@ -164,3 +164,89 @@ def test_with_page_break_in_a_paragraph() -> None:
     assert result[4].metadata["markdown_metadata"]["page"] == 3
     assert result[5].metadata["markdown_metadata"]["page"] == 4
     assert result[6].metadata["markdown_metadata"]["page"] == 4
+
+
+def test_merging_words_split_by_hyphens() -> None:
+    pages = [
+        Document(page_content="abc- \ndef and thi-\n s i-\ns and n\n  -ot", metadata={"page": 1}),
+        Document(page_content="Generati-**\nonen", metadata={"page": 2}),
+        Document(page_content="Hou-~~\n   se", metadata={"page": 3}),
+        Document(page_content="You-__\n   th", metadata={"page": 4}),
+    ]
+
+    result = splitter.split(pages)
+
+    assert len(result) == 1
+    assert result[0].page_content == "abcdef\nand this\nis\nand n\n-ot\nGenerationen**\nHouse~~\nYouth__"
+
+
+def test_merging_words_split_by_hyphens_and_newlines() -> None:
+    pages = [
+        Document(page_content="abc-", metadata={"page": 1}),
+        Document(page_content="def and thi-\n", metadata={"page": 2}),
+        Document(page_content="\ns i-", metadata={"page": 3}),
+        Document(page_content="\ns", metadata={"page": 4}),
+    ]
+
+    result = splitter.split(pages)
+
+    assert len(result) == 1
+    assert result[0].page_content == "abcdef\nand this\nis"
+
+
+def test_merging_words_split_by_hyphens_and_newlines_and_markdown_formatting() -> None:
+    pages = [
+        Document(page_content="** abc-", metadata={"page": 1}),
+        Document(page_content="\n def** and thi-  **\n", metadata={"page": 2}),
+        Document(page_content="\n s\n", metadata={"page": 3}),
+        Document(page_content="* i-  \n ", metadata={"page": 4}),
+        Document(page_content="\n s", metadata={"page": 5}),
+    ]
+
+    result = splitter.split(pages)
+
+    assert len(result) == 1
+    assert result[0].page_content == "** abcdef**\nand this**\n* is"
+
+
+def test_merging_across_multiple_pages() -> None:
+    pages = [
+        Document(page_content="# First\nabc-", metadata={"page": 1}),
+        Document(page_content="\n   def and thi-\n", metadata={"page": 2}),
+        Document(page_content="\ns i-", metadata={"page": 3}),
+        Document(page_content="s", metadata={"page": 4}),
+        Document(page_content="# Second\nabc-", metadata={"page": 5}),
+        Document(page_content="def and thi-**     \n", metadata={"page": 6}),
+        Document(page_content="s i-", metadata={"page": 7}),
+        Document(page_content="  \ns", metadata={"page": 8}),
+    ]
+
+    result = splitter.split(pages)
+
+    assert len(result) == 2
+    assert result[0].page_content == "# First\nabcdef\nand this\nis"
+    assert result[1].page_content == "# Second\nabcdef\nand this**\nis"
+
+
+def test_not_merging_words_due_to_markdown_divider_lines() -> None:
+    pages = [
+        Document(page_content="abc\n---\n", metadata={"page": 1}),
+        Document(page_content="def", metadata={"page": 2}),
+    ]
+
+    result = splitter.split(pages)
+
+    assert len(result) == 1
+    assert result[0].page_content == "abc\ndef"
+
+
+def test_merging_across_markdown_divider_lines() -> None:
+    pages = [
+        Document(page_content="abc-\n---\n", metadata={"page": 1}),
+        Document(page_content="def", metadata={"page": 2}),
+    ]
+
+    result = splitter.split(pages)
+
+    assert len(result) == 1
+    assert result[0].page_content == "abcdef"
