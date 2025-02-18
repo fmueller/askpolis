@@ -250,3 +250,16 @@ def test_merging_across_markdown_divider_lines() -> None:
 
     assert len(result) == 1
     assert result[0].page_content == "abcdef"
+
+
+def test_merging_across_markdown_dividers_at_end_of_page() -> None:
+    pages = [
+        Document(page_content="abc-----", metadata={"page": 1}),
+        Document(page_content="###### Headline\nabc", metadata={"page": 2}),
+    ]
+
+    result = splitter.split(pages)
+
+    assert len(result) == 2
+    assert result[0].page_content == "abc-----"
+    assert result[1].page_content == "###### Headline\nabc"

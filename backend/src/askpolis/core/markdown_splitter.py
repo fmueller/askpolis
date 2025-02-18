@@ -28,7 +28,9 @@ class MarkdownSplitter:
         self._header_splitter = MarkdownHeaderTextSplitter(
             headers_to_split_on=[(header.value, header.name) for header in HeaderLevel], strip_headers=False
         )
-        self._splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+        self._splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size, chunk_overlap=chunk_overlap, separators=["\n\n", "\n", ".", "?", "!", " ", ""]
+        )
 
     def split(self, markdown_documents: list[Document]) -> list[Document]:
         # Join pages with a marker that encodes each page's metadata
@@ -107,8 +109,13 @@ class MarkdownSplitter:
         position_md_formatting_at_end = MarkdownSplitter._position_markdown_formatting_end(text)
         if position_md_formatting_at_end != -1:
             end_of_non_md_text = position_md_formatting_at_end
-        ends = text[:end_of_non_md_text].rstrip().endswith("-")
-        return ends
+
+        cleaned_end = text[:end_of_non_md_text].rstrip()
+        if len(cleaned_end) < 2:
+            return False
+
+        ends_with_hyphen = cleaned_end.endswith("-")
+        return cleaned_end[-2].isalnum() and ends_with_hyphen
 
     @staticmethod
     def _merge_hyphenated_texts(text_1: str, text_2: str) -> str:
@@ -136,7 +143,7 @@ class MarkdownSplitter:
 
     @staticmethod
     def _first_word(text: str) -> str:
-        # TODO better use split(" ")?
+        # TODO use same logic as in _remove_first_word
         return text.lstrip().split()[0]
 
     @staticmethod
@@ -166,18 +173,18 @@ class MarkdownSplitter:
 
 
 if __name__ == "__main__":
-    # TODO test around page 70: there is still an issue with headers
+    # For testing purposes
     markdown_doc = PdfReader("temp.pdf").to_markdown()
     assert markdown_doc is not None
-    print(markdown_doc.pages[58].content)
-    print("NEXT PAGE")
-    print(markdown_doc.pages[59].content)
+    print(markdown_doc.pages[71].content)
+    print("-----")
+    print(markdown_doc.pages[72].content)
     print("SPLITTING")
     print("-----")
     splitter = MarkdownSplitter(chunk_size=2000, chunk_overlap=400)
     result = splitter.split(markdown_doc.to_langchain_documents())
     for r in result:
-        if r.metadata["markdown_metadata"]["page"] == 60 or r.metadata["markdown_metadata"]["page"] == 59:
+        if r.metadata["markdown_metadata"]["page"] == 71 or r.metadata["markdown_metadata"]["page"] == 72:
             print(r.page_content)
             print("-----")
     print(len(result))
