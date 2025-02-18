@@ -2,11 +2,27 @@ import datetime
 from typing import Any, Optional
 
 import uuid_utils.compat as uuid
+from langchain_core.documents import Document as LangchainDocument
+from pydantic import BaseModel
 from sqlalchemy import UUID as DB_UUID
 from sqlalchemy import Column, Date, DateTime, ForeignKey, LargeBinary, PrimaryKeyConstraint, String
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column
 
 Base = declarative_base()
+
+
+class Page(BaseModel):
+    page_number: int
+    content: str
+    metadata: dict[str, Any]
+
+
+class Document(BaseModel):
+    pages: list[Page]
+    path: str
+
+    def to_langchain_documents(self) -> list[LangchainDocument]:
+        return [LangchainDocument(page_content=page.content, metadata=page.metadata) for page in self.pages]
 
 
 class Parliament(Base):

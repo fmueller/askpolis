@@ -1,4 +1,3 @@
-import pymupdf4llm
 import requests
 from fastapi import FastAPI
 from FlagEmbedding import FlagReranker
@@ -10,6 +9,7 @@ from langchain_ollama import ChatOllama
 from pydantic import BaseModel
 
 from askpolis.core import MarkdownSplitter
+from askpolis.core.pdf_reader import PdfReader
 from askpolis.logging import configure_logging, get_logger
 
 configure_logging()
@@ -113,9 +113,9 @@ def get_answers(question: str) -> AnswerResponse:
             f.write(response.content)
 
         logger.info("Read PDF to Markdown...")
-        parsed_markdown = pymupdf4llm.to_markdown("temp.pdf", show_progress=False, page_chunks=True)
-        pages = [Document(page_content=md["text"], metadata=md["metadata"]) for md in parsed_markdown]
-        final_chunks = MarkdownSplitter(chunk_size=2000, chunk_overlap=400).split(pages)
+        markdown_doc = PdfReader("temp.pdf").to_markdown()
+        assert markdown_doc is not None
+        final_chunks = MarkdownSplitter(chunk_size=2000, chunk_overlap=400).split(markdown_doc.to_langchain_documents())
         logger.info(f"Final chunks: {len(final_chunks)}")
         vector_store.add_documents(final_chunks)
         logger.info("Querying again...")
