@@ -5,6 +5,7 @@ import re
 from langchain_core.documents import Document
 from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 
+from askpolis.core.pdf_reader import PdfReader
 from askpolis.logging import get_logger
 
 logger = get_logger(__name__)
@@ -29,17 +30,29 @@ class MarkdownSplitter:
         )
         self._splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
 
-    # TODO concatenate by respecting '-' word dividers and merging words that are split by the chunking
     def split(self, markdown_documents: list[Document]) -> list[Document]:
         # Join pages with a marker that encodes each page's metadata
         joined_lines = []
-        for doc in markdown_documents:
-            if re.search(PAGE_MARKER_REGEX, doc.page_content):
-                logger.warning("Existing page marker found in document content. Document may be malformed.")
-                doc.page_content = re.sub(PAGE_MARKER_REGEX, "", doc.page_content)
+        for i, page in enumerate(markdown_documents):
+            next_page = None
+            if i < len(markdown_documents) - 1:
+                next_page = markdown_documents[i + 1]
 
-            joined_lines.append(f"<!-- ASKPOLIS_PAGE_MARKER: {json.dumps(doc.metadata)} -->")
-            joined_lines.append(doc.page_content)
+            page.page_content = MarkdownSplitter._replace_horizontal_rule_with_newline(page.page_content)
+            ends_with_md = MarkdownSplitter._ends_with_hyphen(page.page_content)
+            if next_page and ends_with_md:
+                page.page_content = MarkdownSplitter._merge_hyphenated_texts(page.page_content, next_page.page_content)
+                next_page.page_content = MarkdownSplitter._replace_horizontal_rule_with_newline(next_page.page_content)
+                next_page.page_content = MarkdownSplitter._remove_first_word(next_page.page_content)
+
+            if re.search(PAGE_MARKER_REGEX, page.page_content):
+                logger.warning("Existing page marker found in document content. Document may be malformed.")
+                page.page_content = re.sub(PAGE_MARKER_REGEX, "", page.page_content)
+
+            joined_lines.append(f"<!-- ASKPOLIS_PAGE_MARKER: {json.dumps(page.metadata)} -->")
+            cleaned_page = MarkdownSplitter._clean_hyphenated_words_with_markdown_formatting(page.page_content)
+            if len(cleaned_page) > 0:
+                joined_lines.append(cleaned_page)
 
         joined_text = "\n".join(joined_lines)
 
@@ -54,7 +67,8 @@ class MarkdownSplitter:
 
         for header_chunk in header_chunks:
             markers = list(re.finditer(PAGE_MARKER_REGEX, header_chunk.page_content))
-            cleaned_chunk = re.sub(PAGE_MARKER_REGEX, "", header_chunk.page_content).strip()
+            cleaned_chunk = re.sub(PAGE_MARKER_REGEX, "", header_chunk.page_content)
+            cleaned_chunk = re.sub(r"\n+", "\n", cleaned_chunk)
 
             for sub_chunk in self._splitter.split_text(cleaned_chunk):
                 # Find the closest page marker prior to the sub_chunk within the header_chunk
@@ -86,3 +100,84 @@ class MarkdownSplitter:
                     )
 
         return chunked_documents
+
+    @staticmethod
+    def _ends_with_hyphen(text: str) -> bool:
+        end_of_non_md_text = len(text)
+        position_md_formatting_at_end = MarkdownSplitter._position_markdown_formatting_end(text)
+        if position_md_formatting_at_end != -1:
+            end_of_non_md_text = position_md_formatting_at_end
+        ends = text[:end_of_non_md_text].rstrip().endswith("-")
+        return ends
+
+    @staticmethod
+    def _merge_hyphenated_texts(text_1: str, text_2: str) -> str:
+        end_of_non_md_text = len(text_1)
+        position_md_formatting_at_end = MarkdownSplitter._position_markdown_formatting_end(text_1)
+        if position_md_formatting_at_end != -1:
+            end_of_non_md_text = position_md_formatting_at_end
+
+        markdown_formatting = text_1[end_of_non_md_text:]
+        merged_text_1 = (
+            text_1[:end_of_non_md_text].rstrip(" \t\r\n-") + MarkdownSplitter._first_word(text_2) + markdown_formatting
+        )
+        return merged_text_1
+
+    @staticmethod
+    def _position_markdown_formatting_end(text: str) -> int:
+        stripped = text.rstrip()
+        if len(stripped) < 2:
+            return -1
+
+        if stripped.endswith("**") or stripped.endswith("__") or stripped.endswith("~~"):
+            return len(stripped) - 2
+
+        return -1
+
+    @staticmethod
+    def _first_word(text: str) -> str:
+        # TODO better use split(" ")?
+        return text.lstrip().split()[0]
+
+    @staticmethod
+    def _remove_first_word(text: str) -> str:
+        stripped = text.lstrip()
+        first_whitespace = stripped.find(" ")
+        if first_whitespace == -1:
+            first_whitespace = stripped.find("\t")
+        if first_whitespace == -1:
+            return ""
+        if first_whitespace == len(stripped) - 1:
+            return stripped[:first_whitespace]
+        return stripped[first_whitespace + 1 :]
+
+    @staticmethod
+    def _replace_horizontal_rule_with_newline(text: str) -> str:
+        return re.sub(r"\n\s*---+\s*\n", "\n", text)
+
+    @staticmethod
+    def _clean_hyphenated_words_with_markdown_formatting(text: str) -> str:
+        text = re.sub(r"(\w+)-\s*\*\*\s*\n\s*(\w+)", r"\1\2**\n", text)
+        text = re.sub(r"(\w+)-\s*~~\s*\n\s*(\w+)", r"\1\2~~\n", text)
+        text = re.sub(r"(\w+)-\s*__\s*\n\s*(\w+)", r"\1\2__\n", text)
+        text = re.sub(r"(\w+)-\s*\n\s*(\w+)", r"\1\2\n", text)
+        text = re.sub(r"[ ]+", " ", text)
+        return text.strip()
+
+
+if __name__ == "__main__":
+    # TODO test around page 70: there is still an issue with headers
+    markdown_doc = PdfReader("temp.pdf").to_markdown()
+    assert markdown_doc is not None
+    print(markdown_doc.pages[58].content)
+    print("NEXT PAGE")
+    print(markdown_doc.pages[59].content)
+    print("SPLITTING")
+    print("-----")
+    splitter = MarkdownSplitter(chunk_size=2000, chunk_overlap=400)
+    result = splitter.split(markdown_doc.to_langchain_documents())
+    for r in result:
+        if r.metadata["markdown_metadata"]["page"] == 60 or r.metadata["markdown_metadata"]["page"] == 59:
+            print(r.page_content)
+            print("-----")
+    print(len(result))
