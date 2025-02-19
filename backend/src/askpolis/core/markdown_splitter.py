@@ -35,6 +35,7 @@ class MarkdownSplitter:
     def split(self, markdown_documents: list[Document]) -> list[Document]:
         # Join pages with a marker that encodes each page's metadata
         joined_lines = []
+        chunk_id = 0
         for i, page in enumerate(markdown_documents):
             next_page = None
             if i < len(markdown_documents) - 1:
@@ -89,9 +90,14 @@ class MarkdownSplitter:
                 chunked_documents.append(
                     Document(
                         page_content=sub_chunk,
-                        metadata={"headers_metadata": header_chunk.metadata, "markdown_metadata": current_page_marker},
+                        metadata={
+                            "chunk_id": chunk_id,
+                            "headers_metadata": header_chunk.metadata,
+                            "markdown_metadata": current_page_marker,
+                        },
                     )
                 )
+                chunk_id += 1
 
             if markers:
                 try:
