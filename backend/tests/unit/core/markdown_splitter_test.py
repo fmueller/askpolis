@@ -26,7 +26,7 @@ def test_one_text_line_is_not_split() -> None:
 
     assert len(result) == 1
     assert result[0].page_content == "Hello World!"
-    assert result[0].metadata == {"headers_metadata": {}, "markdown_metadata": {}}
+    assert result[0].metadata == {"chunk_id": 0, "headers_metadata": {}, "markdown_metadata": {}}
 
 
 def test_split_by_header() -> None:
@@ -263,3 +263,12 @@ def test_merging_across_markdown_dividers_at_end_of_page() -> None:
     assert len(result) == 2
     assert result[0].page_content == "abc-----"
     assert result[1].page_content == "###### Headline\nabc"
+
+
+def test_adds_chunk_id_counter_to_metadata() -> None:
+    result = splitter.split([Document("# First\nabc\n\n## Second\nabc\n\n### Third\nabc")])
+
+    assert len(result) == 3
+    assert result[0].metadata["chunk_id"] == 0
+    assert result[1].metadata["chunk_id"] == 1
+    assert result[2].metadata["chunk_id"] == 2
