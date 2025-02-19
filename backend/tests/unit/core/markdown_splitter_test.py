@@ -26,7 +26,7 @@ def test_one_text_line_is_not_split() -> None:
 
     assert len(result) == 1
     assert result[0].page_content == "Hello World!"
-    assert result[0].metadata == {"chunk_id": 0, "headers_metadata": {}, "markdown_metadata": {}}
+    assert result[0].metadata == {"chunk_id": 0, "headers": {}}
 
 
 def test_split_by_header() -> None:
@@ -84,9 +84,9 @@ def test_header_level_metadata() -> None:
     result = splitter.split([Document("# First\nabc\n\n## Second\nabc\n\n### Third\nabc")])
 
     assert len(result) == 3
-    assert len(result[0].metadata["headers_metadata"]) == 1
-    assert len(result[1].metadata["headers_metadata"]) == 2
-    assert len(result[2].metadata["headers_metadata"]) == 3
+    assert len(result[0].metadata["headers"]) == 1
+    assert len(result[1].metadata["headers"]) == 2
+    assert len(result[2].metadata["headers"]) == 3
 
 
 def test_joins_metadata_across_pages() -> None:
@@ -99,8 +99,8 @@ def test_joins_metadata_across_pages() -> None:
     result = splitter.split(pages)
 
     assert len(result) == 2
-    assert result[0].metadata["markdown_metadata"]["page"] == 1
-    assert result[1].metadata["markdown_metadata"]["page"] == 2
+    assert result[0].metadata["page"] == 1
+    assert result[1].metadata["page"] == 2
 
 
 def test_joins_metadata_across_pages_when_content_does_not_start_with_header() -> None:
@@ -113,8 +113,8 @@ def test_joins_metadata_across_pages_when_content_does_not_start_with_header() -
     result = splitter.split(pages)
 
     assert len(result) == 2
-    assert result[0].metadata["markdown_metadata"]["page"] == 1
-    assert result[1].metadata["markdown_metadata"]["page"] == 2
+    assert result[0].metadata["page"] == 1
+    assert result[1].metadata["page"] == 2
 
 
 def test_joining_metadata_with_headers_on_same_page() -> None:
@@ -126,9 +126,9 @@ def test_joining_metadata_with_headers_on_same_page() -> None:
     result = splitter.split(pages)
 
     assert len(result) == 3
-    assert result[0].metadata["markdown_metadata"]["page"] == 1
-    assert result[1].metadata["markdown_metadata"]["page"] == 1
-    assert result[2].metadata["markdown_metadata"]["page"] == 2
+    assert result[0].metadata["page"] == 1
+    assert result[1].metadata["page"] == 1
+    assert result[2].metadata["page"] == 2
 
 
 def test_with_page_marker_in_document() -> None:
@@ -141,9 +141,9 @@ def test_with_page_marker_in_document() -> None:
     result = splitter.split(pages)
 
     assert len(result) == 3
-    assert result[0].metadata["markdown_metadata"]["page"] == 1
-    assert result[1].metadata["markdown_metadata"]["page"] == 2
-    assert result[2].metadata["markdown_metadata"]["page"] == 3
+    assert result[0].metadata["page"] == 1
+    assert result[1].metadata["page"] == 2
+    assert result[2].metadata["page"] == 3
 
 
 def test_with_page_break_in_a_paragraph() -> None:
@@ -157,13 +157,13 @@ def test_with_page_break_in_a_paragraph() -> None:
     result = MarkdownSplitter(chunk_size=20, chunk_overlap=0).split(pages)
 
     assert len(result) == 7
-    assert result[0].metadata["markdown_metadata"]["page"] == 1
-    assert result[1].metadata["markdown_metadata"]["page"] == 1
-    assert result[2].metadata["markdown_metadata"]["page"] == 2
-    assert result[3].metadata["markdown_metadata"]["page"] == 3
-    assert result[4].metadata["markdown_metadata"]["page"] == 3
-    assert result[5].metadata["markdown_metadata"]["page"] == 4
-    assert result[6].metadata["markdown_metadata"]["page"] == 4
+    assert result[0].metadata["page"] == 1
+    assert result[1].metadata["page"] == 1
+    assert result[2].metadata["page"] == 2
+    assert result[3].metadata["page"] == 3
+    assert result[4].metadata["page"] == 3
+    assert result[5].metadata["page"] == 4
+    assert result[6].metadata["page"] == 4
 
 
 def test_merging_words_split_by_hyphens() -> None:

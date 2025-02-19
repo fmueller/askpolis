@@ -87,13 +87,20 @@ class MarkdownSplitter:
                             attrs={"marker": markers_before_sub_chunk[-1].group(1), "error": e},
                         )
                         current_page_marker = last_page_marker
+
+                if "chunk_id" in current_page_marker or "headers" in current_page_marker:
+                    logger.warning_with_attrs(
+                        "Page marker contains chunk_id or headers. These will be overwritten.",
+                        attrs={"page_marker": current_page_marker},
+                    )
+
                 chunked_documents.append(
                     Document(
                         page_content=sub_chunk,
                         metadata={
                             "chunk_id": chunk_id,
-                            "headers_metadata": header_chunk.metadata,
-                            "markdown_metadata": current_page_marker,
+                            "headers": header_chunk.metadata,
+                            **current_page_marker,
                         },
                     )
                 )
