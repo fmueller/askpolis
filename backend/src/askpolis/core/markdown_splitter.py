@@ -173,7 +173,10 @@ class MarkdownSplitter:
 
     @staticmethod
     def _replace_horizontal_rule_with_newline(text: str) -> str:
-        return re.sub(r"\n\s*---+\s*\n", "\n", text)
+        cleaned_text = re.sub(r"\n\s*---+\s*\n", "\n", text)
+        cleaned_text = re.sub(r"\n\s*\*\*\*+\s*\n", "\n", cleaned_text)
+        cleaned_text = re.sub(r"\n\s*___+\s*\n", "\n", cleaned_text)
+        return cleaned_text
 
     @staticmethod
     def _clean_hyphenated_words_with_markdown_formatting(text: str) -> str:
@@ -197,7 +200,7 @@ if __name__ == "__main__":
     splitter = MarkdownSplitter(chunk_size=2000, chunk_overlap=400)
     result = splitter.split(markdown_doc.to_langchain_documents())
     for r in result:
-        if r.metadata["markdown_metadata"]["page"] == 71 or r.metadata["markdown_metadata"]["page"] == 72:
+        if r.metadata["page"] == 71 or r.metadata["page"] == 72:
             print(r.page_content)
             print("-----")
     print(len(result))

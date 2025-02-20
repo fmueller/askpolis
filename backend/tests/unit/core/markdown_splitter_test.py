@@ -1,6 +1,7 @@
 import random
 import string
 
+import pytest
 from faker import Faker
 from langchain_core.documents import Document
 
@@ -240,9 +241,10 @@ def test_not_merging_words_due_to_markdown_divider_lines() -> None:
     assert result[0].page_content == "abc\ndef"
 
 
-def test_merging_across_markdown_divider_lines() -> None:
+@pytest.mark.parametrize("divider", ["---", "***", "___"])
+def test_merging_across_markdown_divider_lines(divider: str) -> None:
     pages = [
-        Document(page_content="abc-\n---\n", metadata={"page": 1}),
+        Document(page_content=f"abc-\n{divider}\n", metadata={"page": 1}),
         Document(page_content="def", metadata={"page": 2}),
     ]
 
@@ -252,16 +254,17 @@ def test_merging_across_markdown_divider_lines() -> None:
     assert result[0].page_content == "abcdef"
 
 
-def test_merging_across_markdown_dividers_at_end_of_page() -> None:
+@pytest.mark.parametrize("divider", ["---", "***", "___"])
+def test_merging_across_markdown_dividers_at_end_of_page(divider: str) -> None:
     pages = [
-        Document(page_content="abc-----", metadata={"page": 1}),
+        Document(page_content=f"abc{divider}", metadata={"page": 1}),
         Document(page_content="###### Headline\nabc", metadata={"page": 2}),
     ]
 
     result = splitter.split(pages)
 
     assert len(result) == 2
-    assert result[0].page_content == "abc-----"
+    assert result[0].page_content == f"abc{divider}"
     assert result[1].page_content == "###### Headline\nabc"
 
 
