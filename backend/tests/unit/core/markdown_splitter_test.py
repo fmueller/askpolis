@@ -275,3 +275,19 @@ def test_adds_chunk_id_counter_to_metadata() -> None:
     assert result[0].metadata["chunk_id"] == 0
     assert result[1].metadata["chunk_id"] == 1
     assert result[2].metadata["chunk_id"] == 2
+
+
+def test_no_whitespace_at_start_or_end_of_lines() -> None:
+    pages = [
+        Document(page_content="# First  \n### Some subsection \t \nasdasd", metadata={"page": 1}),
+        Document(page_content=" def \t  \n", metadata={"page": 2}),
+        Document(page_content="## Some Header  \nghi  \n  alkjalskdj   \n\n    \n", metadata={"page": 3}),
+        Document(page_content="\n jkl    \n", metadata={"page": 4}),
+    ]
+
+    result = splitter.split(pages)
+
+    for chunk in result:
+        for line in chunk.page_content.split("\n"):
+            assert not line.startswith(" ")
+            assert not line.endswith(" ")

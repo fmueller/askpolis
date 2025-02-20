@@ -54,6 +54,7 @@ class MarkdownSplitter:
 
             joined_lines.append(f"<!-- ASKPOLIS_PAGE_MARKER: {json.dumps(page.metadata)} -->")
             cleaned_page = MarkdownSplitter._clean_hyphenated_words_with_markdown_formatting(page.page_content)
+            cleaned_page = MarkdownSplitter._remove_whitespaces_surrounding_each_line(cleaned_page)
             if len(cleaned_page) > 0:
                 joined_lines.append(cleaned_page)
 
@@ -72,6 +73,8 @@ class MarkdownSplitter:
             markers = list(re.finditer(PAGE_MARKER_REGEX, header_chunk.page_content))
             cleaned_chunk = re.sub(PAGE_MARKER_REGEX, "", header_chunk.page_content)
             cleaned_chunk = re.sub(r"\n+", "\n", cleaned_chunk)
+            # the header splitter may have added whitespaces at the start or end of the chunk
+            cleaned_chunk = MarkdownSplitter._remove_whitespaces_surrounding_each_line(cleaned_chunk)
 
             for sub_chunk in self._splitter.split_text(cleaned_chunk):
                 # Find the closest page marker prior to the sub_chunk within the header_chunk
@@ -186,6 +189,12 @@ class MarkdownSplitter:
         text = re.sub(r"(\w+)-\s*\n\s*(\w+)", r"\1\2\n", text)
         text = re.sub(r"[ ]+", " ", text)
         return text.strip()
+
+    @staticmethod
+    def _remove_whitespaces_surrounding_each_line(text: str) -> str:
+        lines = text.split("\n")
+        lines = [line.strip() for line in lines]
+        return "\n".join(lines)
 
 
 if __name__ == "__main__":
