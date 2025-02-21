@@ -5,7 +5,7 @@
 ### 🌍 **Purpose and Vision**
 
 - **Empower Informed Decisions:** At its core, AskPolis serves as an engine for **political clarity and transparency**, ensuring users can navigate complex political information with ease.
-- **Scalable and Global:** While AskPolis will initially power platforms focused on **German elections** (e.g., _ParteiAtlas.de_), it is built with a **global perspective**.
+- **Scalable and Global:** While AskPolis will initially power platforms focused on **Germany** (e.g., _ParteiAtlas.de_), it is built with a **global perspective**.
 - **Document-Driven Analysis:** Users can feed AskPolis with **political programs, speeches, legislative texts, and external reports** to generate meaningful insights.
 - **Real-Time Adaptation:** The backend can **scrape and analyze online sources**, identifying trends, shifts, and key narratives in real time.
 
@@ -17,9 +17,9 @@
 - 🔍 **Custom Document Ingestion:** Users can upload or reference **specific political documents** for tailored analysis.
 - 📰 **Live Monitoring:** Identify **emerging trends and narratives** from political discourse across the internet.
 
-### 🚀 **Short-Term Goals (German Elections)**
+### 🚀 **Short-Term Goals**
 
-- Powering **[ParteiAtlas.de](https://parteiatlas.de)** as a tool to help citizens better understand political party programs and compare positions.
+- Powering **[ParteiAtlas.de](https://parteiatlas.de)** as a tool to help citizens better understand political party programs and compare positions in the context of Germany.
 - Providing **question-and-answer services** based on reliable political sources.
 - Supporting **transparent, unbiased dissemination of political information**.
 
@@ -43,4 +43,4 @@ In an era of **information overload**, AskPolis acts as a **reliable guide**, cu
 
 ### 🛠️ **Powered By AskPolis**
 
-**[ParteiAtlas.de](https://parteiatlas.de)** – A German-focused platform offering voters **clear, factual comparisons of party programs** and answering questions based on reliable political sources.
+**[ParteiAtlas.de](https://parteiatlas.de)** – A German-focused platform offering citizens and interested people **clear, factual comparisons of party programs** and answering questions based on reliable political sources using LLMs and AI.
