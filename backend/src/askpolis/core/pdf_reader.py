@@ -3,6 +3,9 @@ from typing import Optional
 import pymupdf4llm
 
 from askpolis.core.models import Document, Page
+from askpolis.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class PdfReader:
@@ -10,6 +13,36 @@ class PdfReader:
         self.pdf_path = pdf_path
 
     def to_markdown(self) -> Optional[Document]:
+        try:
+            return self._to_markdown_with_merging_concatenated_words()
+        except Exception as e:
+            logger.warning_with_attrs(
+                "Failed to parse PDF with merging concatenated words. Trying without it.",
+                attrs={"error": e, "pdf_path": self.pdf_path},
+            )
+            try:
+                parsed_markdown = pymupdf4llm.to_markdown(
+                    self.pdf_path, show_progress=False, page_chunks=True, extract_words=False
+                )
+                return Document(
+                    path=self.pdf_path,
+                    pages=[
+                        Page(
+                            content=str(parsed_page["text"]),
+                            page_number=int(parsed_page["metadata"]["page"]),
+                            metadata=parsed_page["metadata"],
+                        )
+                        for parsed_page in parsed_markdown
+                    ],
+                )
+            except Exception as e:
+                logger.error_with_attrs(
+                    "Failed to parse PDF without merging concatenated words.",
+                    attrs={"error": e, "pdf_path": self.pdf_path},
+                )
+                return None
+
+    def _to_markdown_with_merging_concatenated_words(self) -> Optional[Document]:
         # issue: https://github.com/pymupdf/RAG/issues/214
         parsed_markdown = pymupdf4llm.to_markdown(
             self.pdf_path, show_progress=False, page_chunks=True, extract_words=True
@@ -24,8 +57,6 @@ class PdfReader:
                     continue
 
                 current_word = words[i][4]
-                # if word != current_word:
-                #     print(f"word: {word}, current_word: {current_word}")
                 current_row = int(words[i][5])
                 end_of_row = i < len(words) - 1 and int(words[i + 1][5]) == current_row + 1 and words[i + 1][7] == 0
                 if end_of_row:
