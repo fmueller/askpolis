@@ -13,7 +13,7 @@ ENV HF_HOME=/app/models
 
 FROM base AS builder
 
-RUN pip install --no-compile --no-cache-dir poetry==2.0.1
+RUN pip install --no-compile --no-cache-dir poetry==2.1.1
 
 ENV POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=1 \
