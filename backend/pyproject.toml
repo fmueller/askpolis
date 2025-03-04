@@ -45,7 +45,7 @@ pytest = "^8.3.5"
 testcontainers = { extras = ["postgres"], version = "^4.9.1" }
 ruff = "^0.9.9"
 mypy = "^1.15.0"
-celery-types = "^0.22.0"
+celery-types = "^0.23.0"
 types-requests = "^2.32.0.20250301"
 pre-commit = "^4.1.0"
 sqlalchemy = { extras = ["mypy"], version = "^2.0.38" }
