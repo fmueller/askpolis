@@ -91,6 +91,13 @@ class ParliamentPeriod(Base):
     election_date = Column(Date, nullable=True)
     updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
+    def __repr__(self) -> str:
+        return (
+            f"<ParliamentPeriod(id={self.id}, parliament_id={self.parliament_id}, label={self.label}, "
+            f"period_type={self.period_type}, start_date={self.start_date}, end_date={self.end_date}, "
+            f"election_date={self.election_date}, updated_at={self.updated_at})>"
+        )
+
 
 class ElectionProgram(Base):
     __tablename__ = "election_programs"
