@@ -1698,27 +1698,24 @@ zookeeper = ["kazoo (>=2.8.0)"]
 
 [[package]]
 name = "langchain"
-version = "0.3.19"
+version = "0.3.20"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "langchain-0.3.19-py3-none-any.whl", hash = "sha256:1e16d97db9106640b7de4c69f8f5ed22eeda56b45b9241279e83f111640eff16"},
-    {file = "langchain-0.3.19.tar.gz", hash = "sha256:b96f8a445f01d15d522129ffe77cc89c8468dbd65830d153a676de8f6b899e7b"},
+    {file = "langchain-0.3.20-py3-none-any.whl", hash = "sha256:273287f8e61ffdf7e811cf8799e6a71e9381325b8625fd6618900faba79cfdd0"},
+    {file = "langchain-0.3.20.tar.gz", hash = "sha256:edcc3241703e1f6557ef5a5c35cd56f9ccc25ff12e38b4829c66d94971737a93"},
 ]
 
 [package.dependencies]
-aiohttp = ">=3.8.3,<4.0.0"
-langchain-core = ">=0.3.35,<1.0.0"
+langchain-core = ">=0.3.41,<1.0.0"
 langchain-text-splitters = ">=0.3.6,<1.0.0"
 langsmith = ">=0.1.17,<0.4"
-numpy = {version = ">=1.26.2,<3", markers = "python_version >= \"3.12\""}
 pydantic = ">=2.7.4,<3.0.0"
 PyYAML = ">=5.3"
 requests = ">=2,<3"
 SQLAlchemy = ">=1.4,<3"
-tenacity = ">=8.1.0,<8.4.0 || >8.4.0,<10"
 
 [package.extras]
 anthropic = ["langchain-anthropic"]
@@ -1765,14 +1762,14 @@ tenacity = ">=8.1.0,<8.4.0 || >8.4.0,<10"
 
 [[package]]
 name = "langchain-core"
-version = "0.3.37"
+version = "0.3.41"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "langchain_core-0.3.37-py3-none-any.whl", hash = "sha256:8202fd6506ce139a3a1b1c4c3006216b1c7fffa40bdd1779f7d2c67f75eb5f79"},
-    {file = "langchain_core-0.3.37.tar.gz", hash = "sha256:cda8786e616caa2f68f7cc9e811b9b50e3b63fb2094333318b348e5961a7ea01"},
+    {file = "langchain_core-0.3.41-py3-none-any.whl", hash = "sha256:1a27cca5333bae7597de4004fb634b5f3e71667a3da6493b94ce83bcf15a23bd"},
+    {file = "langchain_core-0.3.41.tar.gz", hash = "sha256:d3ee9f3616ebbe7943470ade23d4a04e1729b1512c0ec55a4a07bd2ac64dedb4"},
 ]
 
 [package.dependencies]
@@ -5709,4 +5706,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "5b983532cf28176163aadc505d133227c9eb221a619183e5d20cf42605dd368a"
+content-hash = "33487f6ea926f4f2658ebc1fb2ac45b6f7b8faf028ee5315b3fa88d1c386bb5c"
