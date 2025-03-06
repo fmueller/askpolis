@@ -49,6 +49,10 @@ class FetchedData(Base):
     json_data: Optional[list[dict[str, Any]]] = Column(JSONB, nullable=True)
     file_data = Column(LargeBinary, nullable=True)
 
+    @property
+    def json_with_data_field(self) -> dict[str, Any]:
+        return {"data": self.json_data}
+
     def __repr__(self) -> str:
         return (
             f"<FetchedData(id={self.id}, data_fetcher_type={self.data_fetcher_type}, data_fetcher={self.data_fetcher}, "
