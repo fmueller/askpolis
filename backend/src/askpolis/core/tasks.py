@@ -7,8 +7,8 @@ from celery import shared_task
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from askpolis.core import Parliament, ParliamentPeriod
-from askpolis.core.database import ParliamentPeriodRepository, ParliamentRepository
+from askpolis.core import Parliament, ParliamentPeriod, Party
+from askpolis.core.database import ParliamentPeriodRepository, ParliamentRepository, PartyRepository
 from askpolis.data_fetcher import FetchedData, FetchedDataRepository
 from askpolis.data_fetcher.abgeordnetenwatch import DATA_FETCHER_ID
 from askpolis.logging import get_logger
@@ -37,7 +37,9 @@ def transform_fetched_data_to_core_models() -> None:
             return
 
         parliament_repository = ParliamentRepository(session)
+        party_repository = PartyRepository(session)
         parliament_period_repository = ParliamentPeriodRepository(session)
+
         for parliament_json in parliaments.json_data:
             parliament_id = parliament_json["id"]
             parliament = parliament_repository.get_by_name(parliament_json["label_external_long"])
@@ -105,10 +107,29 @@ def transform_fetched_data_to_core_models() -> None:
                     )
                     continue
 
-                for _election_program in election_programs.json_data:
+                for election_program_json in election_programs.json_data:
+                    party_id = election_program_json["party"]["id"]
+                    party_json = fetched_data_repository.get_by_data_fetcher_and_entity(
+                        DATA_FETCHER_ID, FetchedData.get_entity_for_party(party_id)
+                    )
+
+                    if party_json is None:
+                        logger.warning_with_attrs("No party found", {"party_id": party_id})
+                        continue
+                    if party_json.json_data is None:
+                        logger.warning_with_attrs("No party json data found", {"party_id": party_id})
+                        continue
+
+                    name = party_json.json_with_data_field["data"]["full_name"]
+                    logger.info(f"Parsed party name: {name}")
+                    party = party_repository.get_by_name(name)
+                    if party is None:
+                        logger.info_with_attrs("Creating new party", {"party_name": name})
+                        party = Party(name, party_json.json_with_data_field["data"]["short_name"])
+                        party_repository.save(party)
+
                     logger.info("TODO Creating new election program...")
-                    # TODO also create party entities
-                    pass
+
     finally:
         session.close()
 
