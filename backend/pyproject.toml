@@ -46,7 +46,7 @@ testcontainers = { extras = ["postgres"], version = "^4.9.2" }
 ruff = "^0.9.9"
 mypy = "^1.15.0"
 celery-types = "^0.23.0"
-types-requests = "^2.32.0.20250301"
+types-requests = "^2.32.0.20250306"
 pre-commit = "^4.1.0"
 sqlalchemy = { extras = ["mypy"], version = "^2.0.38" }
 faker = "^36.1.0"
