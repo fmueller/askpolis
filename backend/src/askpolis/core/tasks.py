@@ -7,8 +7,13 @@ from celery import shared_task
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from askpolis.core import Parliament, ParliamentPeriod, Party
-from askpolis.core.database import ParliamentPeriodRepository, ParliamentRepository, PartyRepository
+from askpolis.core import ElectionProgram, Parliament, ParliamentPeriod, Party
+from askpolis.core.database import (
+    ElectionProgramRepository,
+    ParliamentPeriodRepository,
+    ParliamentRepository,
+    PartyRepository,
+)
 from askpolis.data_fetcher import FetchedData, FetchedDataRepository
 from askpolis.data_fetcher.abgeordnetenwatch import DATA_FETCHER_ID
 from askpolis.logging import get_logger
@@ -39,6 +44,7 @@ def transform_fetched_data_to_core_models() -> None:
         parliament_repository = ParliamentRepository(session)
         party_repository = PartyRepository(session)
         parliament_period_repository = ParliamentPeriodRepository(session)
+        election_program_repository = ElectionProgramRepository(session)
 
         for parliament_json in parliaments.json_data:
             parliament_id = parliament_json["id"]
@@ -121,14 +127,51 @@ def transform_fetched_data_to_core_models() -> None:
                         continue
 
                     name = party_json.json_with_data_field["data"]["full_name"]
-                    logger.info(f"Parsed party name: {name}")
                     party = party_repository.get_by_name(name)
                     if party is None:
                         logger.info_with_attrs("Creating new party", {"party_name": name})
                         party = Party(name, party_json.json_with_data_field["data"]["short_name"])
                         party_repository.save(party)
 
-                    logger.info("TODO Creating new election program...")
+                    election_program = election_program_repository.get(party, parliament_period)
+                    if election_program is None:
+                        fetched_program = fetched_data_repository.get_by_data_fetcher_and_entity(
+                            DATA_FETCHER_ID, FetchedData.get_entity_for_election_program(party_id, parliament_period_id)
+                        )
+                        if fetched_program is None:
+                            logger.warning_with_attrs(
+                                "No election program found",
+                                {
+                                    "party_id": party_id,
+                                    "parliament_period_id": parliament_period_id,
+                                },
+                            )
+                            continue
+                        if fetched_program.file_data is None:
+                            logger.warning_with_attrs(
+                                "No election program file data found",
+                                {
+                                    "party_id": party_id,
+                                    "parliament_period_id": parliament_period_id,
+                                },
+                            )
+                            continue
+
+                        logger.info_with_attrs(
+                            "Creating new election program",
+                            {
+                                "party_id": party_id,
+                                "parliament_period_id": parliament_period_id,
+                            },
+                        )
+                        election_program = ElectionProgram(
+                            parliament_period,
+                            party,
+                            "default",
+                            fetched_program.source or "no filename provided",
+                            fetched_program.file_data,
+                        )
+                        election_program_repository.save(election_program)
 
     finally:
         session.close()

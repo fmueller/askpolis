@@ -3,7 +3,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from askpolis.core import Parliament, ParliamentPeriod, Party
+from askpolis.core import ElectionProgram, Parliament, ParliamentPeriod, Party
 
 
 class ParliamentRepository:
@@ -59,4 +59,26 @@ class ParliamentPeriodRepository:
 
     def save(self, parliament_period: ParliamentPeriod) -> None:
         self.db.add(parliament_period)
+        self.db.commit()
+
+
+class ElectionProgramRepository:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get(
+        self, party: Party, parliament_period: ParliamentPeriod, label: str = "default"
+    ) -> Optional[ElectionProgram]:
+        return (
+            self.db.query(ElectionProgram)
+            .filter(
+                ElectionProgram.party_id == party.id,
+                ElectionProgram.parliament_period_id == parliament_period.id,
+                ElectionProgram.label == label,
+            )
+            .first()
+        )
+
+    def save(self, election_program: ElectionProgram) -> None:
+        self.db.add(election_program)
         self.db.commit()
