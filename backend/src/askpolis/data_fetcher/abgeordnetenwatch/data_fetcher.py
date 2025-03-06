@@ -39,8 +39,6 @@ class AbgeordnetenwatchDataFetcher:
             parliament_periods = self._client.get_all_parliament_periods(parliament_id)
             parliament_periods.data_fetcher = DATA_FETCHER_ID
             self._repository.add(parliament_periods)
-        else:
-            logger.info("Already fetched")
 
         assert parliament_periods.json_data is not None
         for parliament_period in parliament_periods.json_data:
@@ -57,13 +55,19 @@ class AbgeordnetenwatchDataFetcher:
                     election_programs = self._client.get_all_election_programs(parliament_period_id)
                     election_programs.data_fetcher = DATA_FETCHER_ID
                     self._repository.add(election_programs)
-                else:
-                    logger.info("Already fetched")
 
                 assert election_programs.json_data is not None
                 for election_program in election_programs.json_data:
                     party_id = election_program["party"]["id"]
-                    # TODO fetch pary data too
+                    party = self._repository.get_by_data_fetcher_and_entity(
+                        DATA_FETCHER_ID, FetchedData.get_entity_for_party(party_id)
+                    )
+                    if party is None:
+                        logger.info_with_attrs("Fetching party...", {"party_id": party_id})
+                        party = self._client.get_party(party_id, election_program["party"]["api_url"])
+                        party.data_fetcher = DATA_FETCHER_ID
+                        self._repository.add(party)
+
                     election_program_file = self._repository.get_by_data_fetcher_and_entity(
                         DATA_FETCHER_ID, FetchedData.get_entity_for_election_program(party_id, parliament_period_id)
                     )
@@ -81,7 +85,5 @@ class AbgeordnetenwatchDataFetcher:
                         )
                         election_program_file.data_fetcher = DATA_FETCHER_ID
                         self._repository.add(election_program_file)
-                    else:
-                        logger.info_with_attrs("Already downloaded", {"file": election_program_file.source})
 
         logger.info("Finished fetching of election programs.")
