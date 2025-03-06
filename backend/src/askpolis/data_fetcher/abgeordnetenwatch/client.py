@@ -56,6 +56,15 @@ class AbgeordnetenwatchClient:
             file_data=response.content,
         )
 
+    def get_party(self, party_id: int, url: str) -> FetchedData:
+        response = _get_request(url)
+        return FetchedData.create_party(
+            data_fetcher_type=DataFetcherType.ABGEORDNETENWATCH,
+            party_id=party_id,
+            source=url,
+            json_data=response["data"],
+        )
+
 
 def _get_request(url: str, params: Any | None = None) -> Any:
     response = requests.get(url, headers={"Accept": "application/json"}, params=params)

@@ -141,6 +141,26 @@ class FetchedData(Base):
         )
 
     @classmethod
+    def create_party(
+        cls,
+        data_fetcher_type: DataFetcherType,
+        party_id: int,
+        source: str,
+        text_data: Optional[str] = None,
+        json_data: Optional[list[dict[str, Any]]] = None,
+        file_data: Optional[bytes] = None,
+    ) -> "FetchedData":
+        return FetchedData(
+            data_fetcher_type=data_fetcher_type,
+            entity_type=EntityType.PARTY,
+            entity=cls.get_entity_for_party(party_id),
+            source=source,
+            text_data=text_data,
+            json_data=json_data,
+            file_data=file_data,
+        )
+
+    @classmethod
     def get_entity_for_list_of_parliaments(cls) -> str:
         return "parliaments"
 
@@ -153,8 +173,12 @@ class FetchedData(Base):
         return f"election_programs.{parliament_period_id}"
 
     @classmethod
+    def get_entity_for_party(cls, party_id: int) -> str:
+        return f"party.{party_id}"
+
+    @classmethod
     def get_entity_for_election_program(cls, party_id: int, parliament_period_id: int, label: str = "default") -> str:
-        return f"party.{party_id}.parliament_period.{parliament_period_id}.label.{label}"
+        return f"{FetchedData.get_entity_for_party(party_id)}.parliament_period.{parliament_period_id}.label.{label}"
 
 
 class FetchedDataRepository:
