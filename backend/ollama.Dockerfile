@@ -1,10 +1,10 @@
-FROM ollama/ollama:0.5.12 AS builder
+FROM ollama/ollama:0.5.13 AS builder
 
 RUN ollama serve & sleep 5 && \
     ollama pull llama3.1 && \
     ollama pull llama3.2 && \
     pkill ollama
 
-FROM ollama/ollama:0.5.12 AS runtime
+FROM ollama/ollama:0.5.13 AS runtime
 
 COPY --from=builder /root/.ollama /root/.ollama
