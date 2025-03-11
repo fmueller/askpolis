@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Optional
+from typing import Any
 
 import uuid_utils.compat as uuid
 from pgvector.sqlalchemy import Vector
@@ -20,7 +20,7 @@ class Embeddings(Base):
     def __init__(
         self,
         document: Document,
-        page: Optional[Page],
+        page: Page,
         chunk: str,
         embedding: list[float],
         metadata: dict[str, Any],
@@ -29,7 +29,7 @@ class Embeddings(Base):
         super().__init__(**kw)
         self.id = uuid.uuid7()
         self.document_id = document.id
-        self.page_id = page.id if page else None
+        self.page_id = page.id
         self.chunk = chunk
         self.embedding = Vector(embedding)
         self.chunk_metadata = metadata
