@@ -2,6 +2,7 @@ import uuid
 from datetime import date
 from typing import Optional
 
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
 from askpolis.core import Document, ElectionProgram, Page, Parliament, ParliamentPeriod, Party
@@ -34,6 +35,13 @@ class DocumentRepository:
 
     def get_by_name(self, name: str) -> Optional[Document]:
         return self.db.query(Document).filter(Document.name == name).first()
+
+    def get_by_references(self, reference_id_1: uuid.UUID, reference_id_2: uuid.UUID) -> Optional[Document]:
+        return (
+            self.db.query(Document)
+            .filter(Document.reference_id_1 == reference_id_1, Document.reference_id_2 == reference_id_2)
+            .first()
+        )
 
     def save(self, document: Document) -> None:
         self.db.add(document)
@@ -116,3 +124,17 @@ class ElectionProgramRepository:
     def save(self, election_program: ElectionProgram) -> None:
         self.db.add(election_program)
         self.db.commit()
+
+    def get_all_without_referenced_document(self) -> list[ElectionProgram]:
+        return (
+            self.db.query(ElectionProgram)
+            .outerjoin(
+                Document,
+                and_(
+                    Document.reference_id_1 == ElectionProgram.party_id,
+                    Document.reference_id_2 == ElectionProgram.parliament_period_id,
+                ),
+            )
+            .filter(Document.id == None)  # noqa: E711
+            .all()
+        )

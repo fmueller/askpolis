@@ -3,17 +3,22 @@ import re
 from datetime import date, datetime
 from typing import Any, Optional
 
+import uuid_utils.compat as uuid
 from celery import shared_task
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from askpolis.core import ElectionProgram, Parliament, ParliamentPeriod, Party
+from askpolis.core import Document, ElectionProgram, Parliament, ParliamentPeriod, Party
 from askpolis.core.database import (
+    DocumentRepository,
     ElectionProgramRepository,
+    PageRepository,
     ParliamentPeriodRepository,
     ParliamentRepository,
     PartyRepository,
 )
+from askpolis.core.models import DocumentType, Page
+from askpolis.core.pdf_reader import PdfReader
 from askpolis.data_fetcher import FetchedData, FetchedDataRepository
 from askpolis.data_fetcher.abgeordnetenwatch import DATA_FETCHER_ID
 from askpolis.logging import get_logger
@@ -173,6 +178,84 @@ def transform_fetched_data_to_core_models() -> None:
                         )
                         election_program_repository.save(election_program)
 
+    finally:
+        session.close()
+
+
+@shared_task(name="read_and_parse_election_programs_to_documents")
+def read_and_parse_election_programs_to_documents() -> None:
+    session = SessionLocal()
+    try:
+        election_program_repository = ElectionProgramRepository(session)
+        document_repository = DocumentRepository(session)
+        page_repository = PageRepository(session)
+
+        election_programs = election_program_repository.get_all_without_referenced_document()
+        for election_program in election_programs:
+            if election_program.file_data is None:
+                logger.warning_with_attrs(
+                    "No file data found",
+                    {
+                        "party_id": election_program.party_id,
+                        "parliament_period_id": election_program.parliament_period_id,
+                    },
+                )
+                continue
+
+            document = document_repository.get_by_references(
+                election_program.party_id, election_program.parliament_period_id
+            )
+            if document is None:
+                logger.info_with_attrs(
+                    "Creating new document",
+                    {
+                        "party_id": election_program.party_id,
+                        "parliament_period_id": election_program.parliament_period_id,
+                    },
+                )
+
+                pdf_reader = PdfReader(election_program.file_data)
+                pdf_document = pdf_reader.to_markdown()
+                if pdf_document is None:
+                    logger.warning_with_attrs(
+                        "Failed to parse PDF to markdown",
+                        {
+                            "party_id": election_program.party_id,
+                            "parliament_period_id": election_program.parliament_period_id,
+                        },
+                    )
+                    continue
+
+                logger.info_with_attrs(
+                    "Read and parsed a new document",
+                    {
+                        "party_id": election_program.party_id,
+                        "parliament_period_id": election_program.parliament_period_id,
+                        "pages": len(pdf_document.pages),
+                    },
+                )
+                document = Document(
+                    name=election_program.file_name
+                    if election_program.file_name is not None
+                    else f"no filename provided-{uuid.uuid7()}",
+                    document_type=DocumentType.ELECTION_PROGRAM,
+                    reference_id_1=election_program.party_id,
+                    reference_id_2=election_program.parliament_period_id,
+                )
+                document_repository.save(document)
+                page_repository.save_all(
+                    list(
+                        map(
+                            lambda pdf_page: Page(
+                                document_id=document.id,
+                                page_number=pdf_page.page_number,
+                                content=pdf_page.content,
+                                page_metadata=pdf_page.metadata,
+                            ),
+                            pdf_document.pages,
+                        )
+                    )
+                )
     finally:
         session.close()
 
