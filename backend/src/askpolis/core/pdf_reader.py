@@ -1,4 +1,5 @@
-from typing import Any, Optional
+import tempfile
+from typing import Any, Optional, Union
 
 import pymupdf4llm
 from langchain_core.documents import Document as LangchainDocument
@@ -24,8 +25,19 @@ class PdfDocument(BaseModel):
 
 
 class PdfReader:
-    def __init__(self, pdf_path: str):
-        self.pdf_path = pdf_path
+    def __init__(self, pdf_source: Union[str, bytes]):
+        self.pdf_source = pdf_source
+        self.temp_file: Any = None
+
+    def _get_pdf_path(self) -> str:
+        if isinstance(self.pdf_source, bytes):
+            if self.temp_file is None:
+                self.temp_file = tempfile.NamedTemporaryFile(delete=True, suffix=".pdf")  # noqa: SIM115
+                self.temp_file.write(self.pdf_source)
+                self.temp_file.flush()
+            assert self.temp_file is not None
+            return str(self.temp_file.name)
+        return self.pdf_source
 
     def to_markdown(self) -> Optional[PdfDocument]:
         try:
@@ -33,14 +45,14 @@ class PdfReader:
         except Exception as e:
             logger.warning_with_attrs(
                 "Failed to parse PDF with merging concatenated words. Trying without it.",
-                attrs={"error": e, "pdf_path": self.pdf_path},
+                attrs={"error": e, "pdf_path": self._get_pdf_path()},
             )
             try:
                 parsed_markdown = pymupdf4llm.to_markdown(
-                    self.pdf_path, show_progress=False, page_chunks=True, extract_words=False
+                    self._get_pdf_path(), show_progress=False, page_chunks=True, extract_words=False
                 )
                 return PdfDocument(
-                    path=self.pdf_path,
+                    path=self._get_pdf_path(),
                     pages=[
                         PdfPage(
                             content=str(parsed_page["text"]),
@@ -53,14 +65,17 @@ class PdfReader:
             except Exception as e:
                 logger.error_with_attrs(
                     "Failed to parse PDF without merging concatenated words.",
-                    attrs={"error": e, "pdf_path": self.pdf_path},
+                    attrs={"error": e, "pdf_path": self._get_pdf_path()},
                 )
                 return None
+        finally:
+            if self.temp_file is not None:
+                self.temp_file.close()
 
     def _to_markdown_with_merging_concatenated_words(self) -> Optional[PdfDocument]:
         # issue: https://github.com/pymupdf/RAG/issues/214
         parsed_markdown = pymupdf4llm.to_markdown(
-            self.pdf_path, show_progress=False, page_chunks=True, extract_words=True
+            self._get_pdf_path(), show_progress=False, page_chunks=True, extract_words=True
         )
         for page in parsed_markdown:
             cleaned_words = []
@@ -95,7 +110,7 @@ class PdfReader:
             page["text"] = " ".join(cleaned_words)
 
         return PdfDocument(
-            path=self.pdf_path,
+            path=self._get_pdf_path(),
             pages=[
                 PdfPage(
                     content=str(parsed_page["text"]),
