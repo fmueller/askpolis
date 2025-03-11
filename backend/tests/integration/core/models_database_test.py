@@ -79,11 +79,11 @@ def test_document_and_page_model(session_maker: sessionmaker[Session]) -> None:
 
     with session_maker() as session:
         document_repository = DocumentRepository(session)
-        document = document_repository.get_by_name("test")
-        assert document is not None
-        assert document.name == "test"
+        document_from_db = document_repository.get_by_name("test")
+        assert document_from_db is not None
+        assert document_from_db.name == "test"
 
         page_repository = PageRepository(session)
-        pages = page_repository.get_by_document_id(document.id)
+        pages = page_repository.get_by_document_id(document_from_db.id)
         assert len(pages) == 1
         assert pages[0].content == "some content"
