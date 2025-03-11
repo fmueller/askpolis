@@ -39,6 +39,7 @@ uuid-utils = "^0.10.0"
 psycopg = "^3.2.5"
 psycopg-pool = "^3.2.6"
 flagembedding = "^1.3.4"
+pgvector = "^0.3.6"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
@@ -87,7 +88,7 @@ plugins = ["sqlalchemy.ext.mypy.plugin"]
 untyped_calls_exclude = ["sqlalchemy.dialects", "sqlalchemy.orm.mapped_column"]
 
 [[tool.mypy.overrides]]
-module = ["celery_typed_tasks.*", "FlagEmbedding.*", "testcontainers.*", "pymupdf4llm.*"]
+module = ["celery_typed_tasks.*", "FlagEmbedding.*", "testcontainers.*", "pgvector.*", "pymupdf4llm.*"]
 ignore_missing_imports = true
 
 [build-system]
