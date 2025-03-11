@@ -37,7 +37,7 @@ class Embeddings(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
     document_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
-    page_id: Mapped[Optional[uuid.UUID]] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("pages.id"), nullable=True)
+    page_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("pages.id"), nullable=False)
     chunk = Column(String, nullable=False)
     embedding: Mapped[Vector] = Column(Vector(1024), nullable=False)
     chunk_metadata = Column(JSONB, nullable=True)
