@@ -1,28 +1,47 @@
 import datetime
+import enum
 from typing import Any, Optional
 
 import uuid_utils.compat as uuid
-from langchain_core.documents import Document as LangchainDocument
-from pydantic import BaseModel
 from sqlalchemy import UUID as DB_UUID
-from sqlalchemy import Column, Date, DateTime, ForeignKey, LargeBinary, PrimaryKeyConstraint, String
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, LargeBinary, PrimaryKeyConstraint, String
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column
 
 Base = declarative_base()
 
 
-class Page(BaseModel):
-    page_number: int
-    content: str
-    metadata: dict[str, Any]
+class Page(Base):
+    __tablename__ = "pages"
+
+    id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
+    document_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
+    page_number: int = Column(Integer, nullable=False)
+    content: str = Column(String, nullable=False)
+    page_metadata = Column(JSONB, nullable=True)
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
-class Document(BaseModel):
-    pages: list[Page]
-    path: str
+class DocumentType(str, enum.Enum):
+    ELECTION_PROGRAM = "election-program"
 
-    def to_langchain_documents(self) -> list[LangchainDocument]:
-        return [LangchainDocument(page_content=page.content, metadata=page.metadata) for page in self.pages]
+    @classmethod
+    def values(cls) -> list[str]:
+        return [e.value for e in cls]
+
+
+class Document(Base):
+    __tablename__ = "documents"
+
+    id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
+    name = Column(String, nullable=False)
+    document_type = Column(
+        postgresql.ENUM(*DocumentType.values(), name="documenttype", create_type=False), nullable=False
+    )
+    reference_id_1: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
+    reference_id_2: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
 class Parliament(Base):

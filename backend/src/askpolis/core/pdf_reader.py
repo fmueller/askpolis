@@ -1,18 +1,33 @@
-from typing import Optional
+from typing import Any, Optional
 
 import pymupdf4llm
+from langchain_core.documents import Document as LangchainDocument
+from pydantic import BaseModel
 
-from askpolis.core.models import Document, Page
 from askpolis.logging import get_logger
 
 logger = get_logger(__name__)
+
+
+class PdfPage(BaseModel):
+    page_number: int
+    content: str
+    metadata: dict[str, Any]
+
+
+class PdfDocument(BaseModel):
+    pages: list[PdfPage]
+    path: str
+
+    def to_langchain_documents(self) -> list[LangchainDocument]:
+        return [LangchainDocument(page_content=page.content, metadata=page.metadata) for page in self.pages]
 
 
 class PdfReader:
     def __init__(self, pdf_path: str):
         self.pdf_path = pdf_path
 
-    def to_markdown(self) -> Optional[Document]:
+    def to_markdown(self) -> Optional[PdfDocument]:
         try:
             return self._to_markdown_with_merging_concatenated_words()
         except Exception as e:
@@ -24,13 +39,13 @@ class PdfReader:
                 parsed_markdown = pymupdf4llm.to_markdown(
                     self.pdf_path, show_progress=False, page_chunks=True, extract_words=False
                 )
-                return Document(
+                return PdfDocument(
                     path=self.pdf_path,
                     pages=[
-                        Page(
+                        PdfPage(
                             content=str(parsed_page["text"]),
                             page_number=int(parsed_page["metadata"]["page"]),
-                            metadata=parsed_page["metadata"],
+                            metadata=dict[str, Any](parsed_page["metadata"]),
                         )
                         for parsed_page in parsed_markdown
                     ],
@@ -42,7 +57,7 @@ class PdfReader:
                 )
                 return None
 
-    def _to_markdown_with_merging_concatenated_words(self) -> Optional[Document]:
+    def _to_markdown_with_merging_concatenated_words(self) -> Optional[PdfDocument]:
         # issue: https://github.com/pymupdf/RAG/issues/214
         parsed_markdown = pymupdf4llm.to_markdown(
             self.pdf_path, show_progress=False, page_chunks=True, extract_words=True
@@ -79,13 +94,13 @@ class PdfReader:
                 i += 1
             page["text"] = " ".join(cleaned_words)
 
-        return Document(
+        return PdfDocument(
             path=self.pdf_path,
             pages=[
-                Page(
+                PdfPage(
                     content=str(parsed_page["text"]),
                     page_number=int(parsed_page["metadata"]["page"]),
-                    metadata=parsed_page["metadata"],
+                    metadata=dict[str, Any](parsed_page["metadata"]),
                 )
                 for parsed_page in parsed_markdown
             ],

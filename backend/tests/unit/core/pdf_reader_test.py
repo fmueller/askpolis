@@ -1,8 +1,7 @@
 import unittest.mock
 from unittest.mock import patch
 
-from askpolis.core.models import Document
-from askpolis.core.pdf_reader import PdfReader
+from askpolis.core.pdf_reader import PdfDocument, PdfReader
 
 pdf_reader = PdfReader("dummy_path.pdf")
 
@@ -25,7 +24,7 @@ def test_to_markdown_with_merging_words(mock_to_markdown: unittest.mock.Mock) ->
 
     result = pdf_reader.to_markdown()
 
-    assert isinstance(result, Document)
+    assert isinstance(result, PdfDocument)
     assert result.path == "dummy_path.pdf"
     assert len(result.pages) == 1
     assert result.pages[0].content == "This is a testdocument."
@@ -41,7 +40,7 @@ def test_to_markdown_with_default_fallback(mock_to_markdown: unittest.mock.Mock)
 
     result = pdf_reader.to_markdown()
 
-    assert isinstance(result, Document)
+    assert isinstance(result, PdfDocument)
     assert result.path == "dummy_path.pdf"
     assert len(result.pages) == 1
     assert result.pages[0].content == "This is a test document without dehyphenation."
