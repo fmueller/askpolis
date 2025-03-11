@@ -1,9 +1,43 @@
+import uuid
 from datetime import date
 from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from askpolis.core import ElectionProgram, Parliament, ParliamentPeriod, Party
+from askpolis.core import Document, ElectionProgram, Page, Parliament, ParliamentPeriod, Party
+
+
+class PageRepository:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get(self, page_id: uuid.UUID) -> Optional[Page]:
+        return self.db.query(Page).filter(Page.id == page_id).first()
+
+    def get_by_document_id(self, document_id: uuid.UUID) -> list[Page]:
+        return self.db.query(Page).filter(Page.document_id == document_id).all()
+
+    def save_all(self, pages: list[Page]) -> None:
+        self.db.add_all(pages)
+        self.db.commit()
+
+
+class DocumentRepository:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get_all(self) -> list[Document]:
+        return self.db.query(Document).all()
+
+    def get(self, document_id: uuid.UUID) -> Optional[Document]:
+        return self.db.query(Document).filter(Document.id == document_id).first()
+
+    def get_by_name(self, name: str) -> Optional[Document]:
+        return self.db.query(Document).filter(Document.name == name).first()
+
+    def save(self, document: Document) -> None:
+        self.db.add(document)
+        self.db.commit()
 
 
 class ParliamentRepository:

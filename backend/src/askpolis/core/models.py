@@ -15,6 +15,22 @@ Base = declarative_base()
 class Page(Base):
     __tablename__ = "pages"
 
+    def __init__(
+        self,
+        document_id: uuid.UUID,
+        page_number: int,
+        content: str,
+        page_metadata: Optional[dict[str, Any]] = None,
+        **kw: Any,
+    ) -> None:
+        super().__init__(**kw)
+        self.id = uuid.uuid7()
+        self.document_id = document_id
+        self.page_number = page_number
+        self.content = content
+        self.page_metadata = page_metadata
+        self.updated_at = datetime.datetime.now(datetime.UTC)
+
     id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
     document_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
     page_number: int = Column(Integer, nullable=False)
@@ -34,13 +50,29 @@ class DocumentType(str, enum.Enum):
 class Document(Base):
     __tablename__ = "documents"
 
+    def __init__(
+        self,
+        name: str,
+        document_type: DocumentType,
+        reference_id_1: Optional[uuid.UUID] = None,
+        reference_id_2: Optional[uuid.UUID] = None,
+        **kw: Any,
+    ) -> None:
+        super().__init__(**kw)
+        self.id = uuid.uuid7()
+        self.name = name
+        self.document_type = document_type
+        self.reference_id_1 = reference_id_1
+        self.reference_id_2 = reference_id_2
+        self.updated_at = datetime.datetime.now(datetime.UTC)
+
     id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
     name = Column(String, nullable=False)
     document_type = Column(
         postgresql.ENUM(*DocumentType.values(), name="documenttype", create_type=False), nullable=False
     )
-    reference_id_1: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
-    reference_id_2: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
+    reference_id_1: Mapped[Optional[uuid.UUID]] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
+    reference_id_2: Mapped[Optional[uuid.UUID]] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
     updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
