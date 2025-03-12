@@ -22,7 +22,7 @@ celery = "^5.4.0"
 redis = "^5.2.1"
 pymupdf = "^1.25.3"
 pymupdf4llm = "^0.0.17"
-sqlalchemy = "^2.0.38"
+sqlalchemy = "^2.0.39"
 alembic = "^1.15.1"
 psycopg-binary = "^3.2.5"
 celery-typed-tasks = "^0.1.25"
@@ -49,7 +49,7 @@ mypy = "^1.15.0"
 celery-types = "^0.23.0"
 types-requests = "^2.32.0.20250306"
 pre-commit = "^4.1.0"
-sqlalchemy = { extras = ["mypy"], version = "^2.0.38" }
+sqlalchemy = { extras = ["mypy"], version = "^2.0.39" }
 faker = "^37.0.0"
 
 [[tool.poetry.source]]
