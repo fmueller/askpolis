@@ -14,11 +14,30 @@ from askpolis.core import Document, Page
 Base = declarative_base()
 
 
+class EmbeddingsCollection(Base):
+    __tablename__ = "embeddings_collections"
+
+    def __init__(self, name: str, version: str, description: str, **kw: Any) -> None:
+        super().__init__(**kw)
+        self.id = uuid.uuid7()
+        self.name = name
+        self.version = version
+        self.description = description
+        self.created_at = datetime.datetime.now(datetime.UTC)
+
+    id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
+    name = Column(String, nullable=False)
+    version = Column(String, nullable=False)
+    description = Column(String, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
+
+
 class Embeddings(Base):
     __tablename__ = "embeddings"
 
     def __init__(
         self,
+        collection: EmbeddingsCollection,
         document: Document,
         page: Page,
         chunk: str,
@@ -28,6 +47,7 @@ class Embeddings(Base):
     ) -> None:
         super().__init__(**kw)
         self.id = uuid.uuid7()
+        self.collection_id = collection.id
         self.document_id = document.id
         self.page_id = page.id
         self.chunk = chunk
@@ -36,6 +56,9 @@ class Embeddings(Base):
         self.created_at = datetime.datetime.now(datetime.UTC)
 
     id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
+    collection_id: Mapped[uuid.UUID] = mapped_column(
+        DB_UUID(as_uuid=True), ForeignKey("embeddings_collections.id"), nullable=False
+    )
     document_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
     page_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("pages.id"), nullable=False)
     chunk = Column(String, nullable=False)
