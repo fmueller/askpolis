@@ -73,7 +73,7 @@ class Document(Base):
     id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
     name = Column(String, nullable=False)
     document_type = Column(
-        postgresql.ENUM(*DocumentType.values(), name="documenttype", create_type=False), nullable=False
+        postgresql.ENUM(*DocumentType.values(), name="documenttypetype", create_type=False), nullable=False
     )
     reference_id_1: Mapped[Optional[uuid.UUID]] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
     reference_id_2: Mapped[Optional[uuid.UUID]] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
