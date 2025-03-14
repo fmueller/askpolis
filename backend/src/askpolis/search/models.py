@@ -42,7 +42,7 @@ class Embeddings(Base):
         page: Page,
         chunk: str,
         embedding: list[float],
-        metadata: dict[str, Any],
+        chunk_metadata: dict[str, Any],
         **kw: Any,
     ) -> None:
         super().__init__(**kw)
@@ -52,7 +52,7 @@ class Embeddings(Base):
         self.page_id = page.id
         self.chunk = chunk
         self.embedding = Vector(embedding)
-        self.chunk_metadata = metadata
+        self.chunk_metadata = chunk_metadata
         self.created_at = datetime.datetime.now(datetime.UTC)
 
     id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
