@@ -19,7 +19,7 @@ def test_embeddings_data_model(session_maker: sessionmaker[Session]) -> None:
         session.add(document)
         session.add(page)
 
-        random_vector: list[float] = cast(list[float], np.random.rand(1024).astype(np.float32).tolist())
+        random_vector = cast(list[float], np.random.rand(1024).astype(np.float32).tolist())
         embeddings = Embeddings(
             collection=collection,
             document=document,
@@ -32,6 +32,7 @@ def test_embeddings_data_model(session_maker: sessionmaker[Session]) -> None:
 
     with session_maker() as session:
         document = DocumentRepository(session).get_by_name("Test Document")
+        assert document is not None
         embeddings_of_doc = EmbeddingsRepository(session).get_all_by_document(document)
 
         assert len(embeddings_of_doc) == 1
