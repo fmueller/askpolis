@@ -26,7 +26,12 @@ class EmbeddingsService:
 
     def embed_document(self, collection: EmbeddingsCollection, document: Document) -> list[Embeddings]:
         pages = self._page_repository.get_by_document_id(document.id)
+        logger.info_with_attrs("Embedding document...", {"document_id": document.id, "pages": len(pages)})
         chunks = self._splitter.split([page.to_langchain_document() for page in pages])
+        logger.info_with_attrs(
+            "Split document into chunks, start computing embeddings...",
+            {"document_id": document.id, "chunks": len(chunks)},
+        )
         computed_embeddings = self._embeddings.embed_documents([chunk.page_content for chunk in chunks])
         embeddings = [
             Embeddings(
@@ -40,6 +45,9 @@ class EmbeddingsService:
             for chunk, embedding in zip(chunks, computed_embeddings)
         ]
         self._embeddings_repository.save_all(embeddings)
+        logger.info_with_attrs(
+            "Saved embeddings for document", {"document_id": document.id, "embeddings": len(embeddings)}
+        )
         return embeddings
 
     def _get_page(self, pages: list[Page], chunk_metadata: dict[str, Any]) -> Page:
