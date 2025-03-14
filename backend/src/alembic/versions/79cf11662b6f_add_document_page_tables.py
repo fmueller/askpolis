@@ -14,7 +14,7 @@ from sqlalchemy import func
 from sqlalchemy.dialects import postgresql
 
 from alembic import op
-from askpolis.core.models import DocumentType
+from askpolis.core import DocumentType
 
 # revision identifiers, used by Alembic.
 revision: str = "79cf11662b6f"
