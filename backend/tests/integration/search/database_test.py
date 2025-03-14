@@ -31,9 +31,9 @@ def test_embeddings_data_model(session_maker: sessionmaker[Session]) -> None:
         EmbeddingsRepository(session).save_all([embeddings])
 
     with session_maker() as session:
-        document = DocumentRepository(session).get_by_name("Test Document")
-        assert document is not None
-        embeddings_of_doc = EmbeddingsRepository(session).get_all_by_document(document)
+        document_from_db = DocumentRepository(session).get_by_name("Test Document")
+        assert document_from_db is not None
+        embeddings_of_doc = EmbeddingsRepository(session).get_all_by_document(document_from_db)
 
         assert len(embeddings_of_doc) == 1
         np.testing.assert_array_equal(embeddings_of_doc[0].embedding, random_vector)
