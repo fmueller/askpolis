@@ -1,9 +1,14 @@
+from typing import Any, cast
+
 from langchain_core.embeddings import Embeddings as LangchainEmbeddings
 
-from askpolis.core import Document, MarkdownSplitter
+from askpolis.core import Document, MarkdownSplitter, Page
 from askpolis.core.database import PageRepository
+from askpolis.logging import get_logger
 from askpolis.search.database import EmbeddingsRepository
 from askpolis.search.models import Embeddings, EmbeddingsCollection
+
+logger = get_logger(__name__)
 
 
 class EmbeddingsService:
@@ -27,7 +32,7 @@ class EmbeddingsService:
             Embeddings(
                 collection=collection,
                 document=document,
-                page=next((page for page in pages if page.page_metadata["page"] == chunk.metadata["page"]), pages[0]),
+                page=self._get_page(pages, chunk.metadata),
                 chunk=chunk.page_content,
                 embedding=embedding,
                 chunk_metadata=chunk.metadata,
@@ -36,3 +41,12 @@ class EmbeddingsService:
         ]
         self._embeddings_repository.save_all(embeddings)
         return embeddings
+
+    def _get_page(self, pages: list[Page], chunk_metadata: dict[str, Any]) -> Page:
+        filtered_page = next(
+            (page for page in pages if cast(dict[str, Any], page.page_metadata)["page"] == chunk_metadata["page"]), None
+        )
+        if filtered_page is None:
+            logger.warning_with_attrs("Page not found", {"chunk_metadata": chunk_metadata})
+            return pages[0]
+        return filtered_page
