@@ -2,6 +2,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
+from askpolis.core import Document
 from askpolis.search.models import Embeddings, EmbeddingsCollection
 
 
@@ -28,6 +29,9 @@ class EmbeddingsCollectionRepository:
 class EmbeddingsRepository:
     def __init__(self, db: Session):
         self.db = db
+
+    def get_all_by_document(self, document: Document) -> list[Embeddings]:
+        return self.db.query(Embeddings).filter(Embeddings.document_id == document.id).all()
 
     def save_all(self, embeddings: list[Embeddings]) -> None:
         self.db.add_all(embeddings)
