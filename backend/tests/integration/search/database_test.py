@@ -1,3 +1,5 @@
+from typing import cast
+
 import numpy as np
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -17,7 +19,7 @@ def test_embeddings_data_model(session_maker: sessionmaker[Session]) -> None:
         session.add(document)
         session.add(page)
 
-        random_vector = np.random.rand(1024).astype(np.float32).tolist()
+        random_vector: list[float] = cast(list[float], np.random.rand(1024).astype(np.float32).tolist())
         embeddings = Embeddings(
             collection=collection,
             document=document,
@@ -30,7 +32,7 @@ def test_embeddings_data_model(session_maker: sessionmaker[Session]) -> None:
 
     with session_maker() as session:
         document = DocumentRepository(session).get_by_name("Test Document")
-        embeddings = EmbeddingsRepository(session).get_all_by_document(document)
+        embeddings_of_doc = EmbeddingsRepository(session).get_all_by_document(document)
 
-        assert len(embeddings) == 1
-        np.testing.assert_array_equal(embeddings[0].embedding, random_vector)
+        assert len(embeddings_of_doc) == 1
+        np.testing.assert_array_equal(embeddings_of_doc[0].embedding, random_vector)

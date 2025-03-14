@@ -64,6 +64,6 @@ def test_embed_document(
     assert embeddings[0].document_id == document.id
     assert embeddings[0].page_id == page.id
     assert embeddings[0].chunk == "Chunk content"
-    assert embeddings[0].embedding.dim == [0.1, 0.2, 0.3]
+    assert embeddings[0].embedding == [0.1, 0.2, 0.3]
     assert embeddings[0].chunk_metadata == {"page": 1}
     mock_embeddings_repository.save_all.assert_called_once_with(embeddings)
