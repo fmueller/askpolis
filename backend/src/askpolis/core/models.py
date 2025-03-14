@@ -3,6 +3,7 @@ import enum
 from typing import Any, Optional
 
 import uuid_utils.compat as uuid
+from langchain_core.documents import Document as LangchainDocument
 from sqlalchemy import UUID as DB_UUID
 from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, LargeBinary, PrimaryKeyConstraint, String
 from sqlalchemy.dialects import postgresql
@@ -37,6 +38,9 @@ class Page(Base):
     content: str = Column(String, nullable=False)
     page_metadata = Column(JSONB, nullable=True)
     updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
+
+    def to_langchain_document(self) -> LangchainDocument:
+        return LangchainDocument(page_content=self.content, metadata=self.page_metadata)
 
 
 class DocumentType(str, enum.Enum):
