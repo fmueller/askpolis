@@ -1,5 +1,6 @@
 import requests
-from fastapi import FastAPI
+from fastapi import FastAPI, status
+from fastapi.responses import JSONResponse
 from FlagEmbedding import FlagReranker
 from langchain_core.documents import Document
 from langchain_core.prompts import ChatPromptTemplate
@@ -8,6 +9,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
 from pydantic import BaseModel
 
+from askpolis.celery import app as celery_app
 from askpolis.core import MarkdownSplitter
 from askpolis.core.pdf_reader import PdfReader
 from askpolis.logging import configure_logging, get_logger
@@ -68,6 +70,12 @@ class AnswerResponse(BaseModel):
 @app.get("/")
 def read_root() -> HealthResponse:
     return HealthResponse(healthy=True)
+
+
+@app.get("/v0/tasks/embeddings")
+def trigger_embeddings_ingestion() -> JSONResponse:
+    celery_app.send_task("ingest_embeddings_for_one_document")
+    return JSONResponse(content={"status": "ok"}, status_code=status.HTTP_202_ACCEPTED)
 
 
 @app.get("/v0/search")
