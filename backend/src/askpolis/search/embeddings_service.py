@@ -27,7 +27,7 @@ class EmbeddingsService:
             Embeddings(
                 collection=collection,
                 document=document,
-                page=pages[0],  # TODO set page properly
+                page=next((page for page in pages if page.page_metadata["page"] == chunk.metadata["page"]), pages[0]),
                 chunk=chunk.page_content,
                 embedding=embedding,
                 chunk_metadata=chunk.metadata,
