@@ -24,6 +24,13 @@ class EmbeddingsService:
         self._splitter = splitter
         self._embeddings = embeddings
 
+    def find_similar_documents(
+        self, collection: EmbeddingsCollection, query: str, limit: int = 10
+    ) -> list[tuple[Embeddings, float]]:
+        logger.info_with_attrs("Searching for similar documents...", {"collection": collection.name, "limit": limit})
+        query_embedding = self._embeddings.embed_query(query)
+        return self._embeddings_repository.get_all_similar_to(collection, query_embedding, limit)
+
     def embed_document(self, collection: EmbeddingsCollection, document: Document) -> list[Embeddings]:
         pages = self._page_repository.get_by_document_id(document.id)
         logger.info_with_attrs("Embedding document...", {"document_id": document.id, "pages": len(pages)})

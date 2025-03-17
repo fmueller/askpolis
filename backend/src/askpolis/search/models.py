@@ -1,5 +1,5 @@
 import datetime
-from typing import Any
+from typing import Any, Optional
 
 import uuid_utils.compat as uuid
 from pgvector.sqlalchemy import Vector
@@ -59,9 +59,9 @@ class Embeddings(Base):
     )
     document_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
     page_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("pages.id"), nullable=False)
-    chunk = Column(String, nullable=False)
+    chunk: Mapped[str] = Column(String, nullable=False)
     embedding: Mapped[list[float]] = Column(Vector(1024), nullable=False)
-    chunk_metadata = Column(JSONB, nullable=True)
+    chunk_metadata: Mapped[Optional[dict[str, Any]]] = Column(JSONB, nullable=True)
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
@@ -69,6 +69,5 @@ class SearchResult(BaseModel):
     matching_text: str
     chunk_id: uuid.UUID
     document_id: uuid.UUID
-    page_number: int
-    metadata: dict[str, Any]
+    page_id: uuid.UUID
     score: float

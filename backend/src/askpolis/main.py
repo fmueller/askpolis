@@ -1,3 +1,5 @@
+import os
+
 import requests
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
@@ -8,18 +10,28 @@ from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
 from pydantic import BaseModel
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from askpolis.celery import app as celery_app
 from askpolis.core import MarkdownSplitter
+from askpolis.core.database import PageRepository
 from askpolis.core.pdf_reader import PdfReader
 from askpolis.logging import configure_logging, get_logger
+from askpolis.search import EmbeddingsService, SearchResult, SearchService
+from askpolis.search.database import EmbeddingsCollectionRepository, EmbeddingsRepository
 
 configure_logging()
 
 logger = get_logger(__name__)
 logger.info("Starting AskPolis API...")
 
+engine = create_engine(os.getenv("DATABASE_URL") or "postgresql+psycopg://postgres@postgres:5432/askpolis-db")
+SessionLocal = sessionmaker(bind=engine)
+
 app = FastAPI()
+
+splitter = MarkdownSplitter(chunk_size=2000, chunk_overlap=400)
 
 chat_model = ChatOllama(model="llama3.1")
 prompt = ChatPromptTemplate.from_messages(
@@ -56,9 +68,14 @@ class HealthResponse(BaseModel):
     healthy: bool
 
 
-class SearchResponse(BaseModel):
+class LegacySearchResponse(BaseModel):
     query: str
     search_results: list[tuple[Document, float]]
+
+
+class SearchResponse(BaseModel):
+    query: str
+    results: list[SearchResult]
 
 
 class AnswerResponse(BaseModel):
@@ -79,7 +96,25 @@ def trigger_embeddings_ingestion() -> JSONResponse:
 
 
 @app.get("/v0/search")
-def search(query: str, limit: int = 5, reranking: bool = False) -> SearchResponse:
+def search(query: str, limit: int = 5) -> SearchResponse:
+    if limit < 1:
+        limit = 5
+
+    with SessionLocal() as session:
+        default_collection = EmbeddingsCollectionRepository(session).get_most_recent_by_name("default")
+        if default_collection is None:
+            return SearchResponse(query=query, results=[])
+
+        # TODO: How does dependency injection work in FastAPI with database sessions?
+        embeddings_repository = EmbeddingsRepository(session)
+        page_repository = PageRepository(session)
+        embeddings_service = EmbeddingsService(page_repository, embeddings_repository, embeddings, splitter)
+        search_service = SearchService(default_collection, embeddings_service)
+        return SearchResponse(query=query, results=search_service.find_matching_texts(query, limit))
+
+
+@app.get("/v0/legacy-search")
+def legacy_search(query: str, limit: int = 5, reranking: bool = False) -> LegacySearchResponse:
     logger.info_with_attrs("Searching...", {"query": query, "limit": limit, "reranking": reranking})
     if limit < 1:
         limit = 5
@@ -96,14 +131,14 @@ def search(query: str, limit: int = 5, reranking: bool = False) -> SearchRespons
         logger.info("Reranking...")
         reranked_scores = reranker.compute_score([(query, r[0].page_content) for r in results], normalize=True)
         ranked_docs = [doc for _, doc in sorted(zip(reranked_scores, results), reverse=True)][:limit]
-        return SearchResponse(
+        return LegacySearchResponse(
             query=query,
             search_results=sorted(
                 [(doc[0], score) for doc, score in zip(ranked_docs, reranked_scores)], key=lambda x: x[1], reverse=True
             ),
         )
 
-    return SearchResponse(query=query, search_results=results)
+    return LegacySearchResponse(query=query, search_results=results)
 
 
 @app.get("/v0/answers")

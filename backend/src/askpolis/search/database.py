@@ -1,5 +1,6 @@
 from typing import Optional
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from askpolis.core import Document
@@ -32,6 +33,19 @@ class EmbeddingsRepository:
 
     def get_all_by_document(self, document: Document) -> list[Embeddings]:
         return self.db.query(Embeddings).filter(Embeddings.document_id == document.id).all()
+
+    def get_all_similar_to(
+        self, collection: EmbeddingsCollection, query_vector: list[float], limit: int = 10
+    ) -> list[tuple[Embeddings, float]]:
+        if limit <= 0:
+            return []
+        results = self.db.execute(
+            select(Embeddings, 1.0 - Embeddings.embedding.cosine_distance(query_vector).label("score"))
+            .filter(Embeddings.collection_id == collection.id)
+            .order_by(Embeddings.embedding.cosine_distance(query_vector))
+            .limit(limit)
+        ).all()
+        return [(embeddings, score) for embeddings, score in results]
 
     def get_documents_without_embeddings(self) -> list[Document]:
         return self.db.query(Document).outerjoin(Embeddings).filter(Embeddings.id.is_(None)).all()
