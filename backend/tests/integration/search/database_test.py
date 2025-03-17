@@ -61,7 +61,10 @@ def test_get_all_similar_to(session_maker: sessionmaker[Session]) -> None:
         EmbeddingsRepository(session).save_all([embeddings])
 
     with session_maker() as session:
-        collection = EmbeddingsCollectionRepository(session).get_most_recent_by_name("test")
-        embeddings = EmbeddingsRepository(session).get_all_similar_to(collection, random_vector)
-        assert len(embeddings) == 1
-        np.testing.assert_array_equal(embeddings[0][0].embedding, random_vector)
+        collection_from_db = EmbeddingsCollectionRepository(session).get_most_recent_by_name("test")
+        assert collection_from_db is not None
+
+        similar_docs = EmbeddingsRepository(session).get_all_similar_to(collection_from_db, random_vector)
+        assert len(similar_docs) == 1
+
+        np.testing.assert_array_equal(similar_docs[0][0].embedding, random_vector)
