@@ -18,8 +18,14 @@ from askpolis.core import MarkdownSplitter
 from askpolis.core.database import PageRepository
 from askpolis.core.pdf_reader import PdfReader
 from askpolis.logging import configure_logging, get_logger
-from askpolis.search import EmbeddingsService, SearchResult, SearchService
-from askpolis.search.database import EmbeddingsCollectionRepository, EmbeddingsRepository
+from askpolis.search import (
+    EmbeddingsCollectionRepository,
+    EmbeddingsRepository,
+    EmbeddingsService,
+    RerankerService,
+    SearchResult,
+    SearchService,
+)
 
 configure_logging()
 
@@ -32,6 +38,7 @@ SessionLocal = sessionmaker(bind=engine)
 app = FastAPI()
 
 splitter = MarkdownSplitter(chunk_size=2000, chunk_overlap=400)
+reranker_service = RerankerService()
 
 chat_model = ChatOllama(model="llama3.1")
 prompt = ChatPromptTemplate.from_messages(
@@ -96,7 +103,7 @@ def trigger_embeddings_ingestion() -> JSONResponse:
 
 
 @app.get("/v0/search")
-def search(query: str, limit: int = 5) -> SearchResponse:
+def search(query: str, limit: int = 5, reranking: bool = False) -> SearchResponse:
     if limit < 1:
         limit = 5
 
@@ -109,8 +116,8 @@ def search(query: str, limit: int = 5) -> SearchResponse:
         embeddings_repository = EmbeddingsRepository(session)
         page_repository = PageRepository(session)
         embeddings_service = EmbeddingsService(page_repository, embeddings_repository, embeddings, splitter)
-        search_service = SearchService(default_collection, embeddings_service)
-        return SearchResponse(query=query, results=search_service.find_matching_texts(query, limit))
+        search_service = SearchService(default_collection, embeddings_service, reranker_service)
+        return SearchResponse(query=query, results=search_service.find_matching_texts(query, limit, reranking))
 
 
 @app.get("/v0/legacy-search")
