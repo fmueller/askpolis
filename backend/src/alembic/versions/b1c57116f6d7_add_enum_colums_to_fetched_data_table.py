@@ -14,7 +14,7 @@ from sqlalchemy import func
 from sqlalchemy.dialects import postgresql
 
 from alembic import op
-from askpolis.data_fetcher.database import DataFetcherType, EntityType
+from askpolis.data_fetcher import DataFetcherType, EntityType
 
 # revision identifiers, used by Alembic.
 revision: str = "b1c57116f6d7"

@@ -2,9 +2,17 @@ import datetime
 
 from sqlalchemy.orm import Session, sessionmaker
 
-from askpolis.core import Document, ElectionProgram, Parliament, ParliamentPeriod, Party
-from askpolis.core.database import DocumentRepository, PageRepository
-from askpolis.core.models import DocumentType, Page
+from askpolis.core import (
+    Document,
+    DocumentRepository,
+    DocumentType,
+    ElectionProgram,
+    Page,
+    PageRepository,
+    Parliament,
+    ParliamentPeriod,
+    Party,
+)
 
 
 def test_core_data_model(session_maker: sessionmaker[Session]) -> None:

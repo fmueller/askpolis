@@ -3,10 +3,8 @@ from typing import cast
 import numpy as np
 from sqlalchemy.orm import Session, sessionmaker
 
-from askpolis.core import Document, DocumentType, Page
-from askpolis.core.database import DocumentRepository
-from askpolis.search import Embeddings, EmbeddingsCollection
-from askpolis.search.database import EmbeddingsCollectionRepository, EmbeddingsRepository
+from askpolis.core import Document, DocumentRepository, DocumentType, Page
+from askpolis.search import Embeddings, EmbeddingsCollection, EmbeddingsCollectionRepository, EmbeddingsRepository
 
 
 def test_embeddings_data_model(session_maker: sessionmaker[Session]) -> None:

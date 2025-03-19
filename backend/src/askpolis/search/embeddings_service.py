@@ -2,11 +2,10 @@ from typing import Any, cast
 
 from langchain_core.embeddings import Embeddings as LangchainEmbeddings
 
-from askpolis.core import Document, MarkdownSplitter, Page
-from askpolis.core.database import PageRepository
+from askpolis.core import Document, MarkdownSplitter, Page, PageRepository
 from askpolis.logging import get_logger
-from askpolis.search.database import EmbeddingsRepository
 from askpolis.search.models import Embeddings, EmbeddingsCollection
+from askpolis.search.repositories import EmbeddingsRepository
 
 logger = get_logger(__name__)
 
