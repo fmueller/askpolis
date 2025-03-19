@@ -9,7 +9,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from askpolis.core import Document, ElectionProgram, Parliament, ParliamentPeriod, Party
-from askpolis.core.database import (
+from askpolis.core.models import DocumentType, Page
+from askpolis.core.pdf_reader import PdfReader
+from askpolis.core.repositories import (
     DocumentRepository,
     ElectionProgramRepository,
     PageRepository,
@@ -17,8 +19,6 @@ from askpolis.core.database import (
     ParliamentRepository,
     PartyRepository,
 )
-from askpolis.core.models import DocumentType, Page
-from askpolis.core.pdf_reader import PdfReader
 from askpolis.data_fetcher import FetchedData, FetchedDataRepository
 from askpolis.data_fetcher.abgeordnetenwatch import DATA_FETCHER_ID
 from askpolis.logging import get_logger
