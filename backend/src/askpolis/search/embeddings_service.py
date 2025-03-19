@@ -1,6 +1,6 @@
 from typing import Any, cast
 
-from langchain_core.embeddings import Embeddings as LangchainEmbeddings
+from FlagEmbedding import BGEM3FlagModel
 
 from askpolis.core import Document, MarkdownSplitter, Page, PageRepository
 from askpolis.logging import get_logger
@@ -15,20 +15,21 @@ class EmbeddingsService:
         self,
         page_repository: PageRepository,
         embeddings_repository: EmbeddingsRepository,
-        embeddings: LangchainEmbeddings,
+        model: BGEM3FlagModel,
         splitter: MarkdownSplitter,
     ):
         self._page_repository = page_repository
         self._embeddings_repository = embeddings_repository
         self._splitter = splitter
-        self._embeddings = embeddings
+        self._model = model
 
     def find_similar_documents(
         self, collection: EmbeddingsCollection, query: str, limit: int = 10
     ) -> list[tuple[Embeddings, float]]:
         logger.info_with_attrs("Searching for similar documents...", {"collection": collection.name, "limit": limit})
-        query_embedding = self._embeddings.embed_query(query)
-        return self._embeddings_repository.get_all_similar_to(collection, query_embedding, limit)
+        query_embedding = self._model.encode(query, return_dense=True, return_sparse=True)
+        dense_query_embedding = cast(list[float], query_embedding["dense_vecs"].tolist())
+        return self._embeddings_repository.get_all_similar_to(collection, dense_query_embedding, limit)
 
     def embed_document(self, collection: EmbeddingsCollection, document: Document) -> list[Embeddings]:
         pages = self._page_repository.get_by_document_id(document.id)
@@ -38,17 +39,19 @@ class EmbeddingsService:
             "Split document into chunks, start computing embeddings...",
             {"document_id": document.id, "chunks": len(chunks)},
         )
-        computed_embeddings = self._embeddings.embed_documents([chunk.page_content for chunk in chunks])
+        computed_embeddings = self._model.encode_corpus(
+            [chunk.page_content for chunk in chunks], return_dense=True, return_sparse=True
+        )
         embeddings = [
             Embeddings(
                 collection=collection,
                 document=document,
                 page=self._get_page(pages, chunk.metadata),
                 chunk=chunk.page_content,
-                embedding=embedding,
+                embedding=cast(list[float], embedding.tolist()),
                 chunk_metadata=chunk.metadata,
             )
-            for chunk, embedding in zip(chunks, computed_embeddings)
+            for chunk, embedding in zip(chunks, computed_embeddings["dense_vecs"])
         ]
         self._embeddings_repository.save_all(embeddings)
         logger.info_with_attrs(
