@@ -6,11 +6,10 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from askpolis.core import MarkdownSplitter
-from askpolis.core.database import PageRepository
+from askpolis.core import MarkdownSplitter, PageRepository
 from askpolis.logging import get_logger
 from askpolis.search import EmbeddingsCollection, EmbeddingsService
-from askpolis.search.database import EmbeddingsCollectionRepository, EmbeddingsRepository
+from askpolis.search.repositories import EmbeddingsCollectionRepository, EmbeddingsRepository
 
 logger = get_logger(__name__)
 

@@ -10,8 +10,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from askpolis.celery import app as celery_app
-from askpolis.core import MarkdownSplitter
-from askpolis.core.database import PageRepository
+from askpolis.core import MarkdownSplitter, PageRepository
 from askpolis.logging import configure_logging, get_logger
 from askpolis.search import (
     EmbeddingsCollectionRepository,
