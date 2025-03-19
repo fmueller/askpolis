@@ -2,7 +2,7 @@ from typing import Any
 
 import requests
 
-from askpolis.data_fetcher.database import DataFetcherType, FetchedData
+from askpolis.data_fetcher import DataFetcherType, FetchedData
 
 
 class AbgeordnetenwatchClient:

@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session, sessionmaker
 
-from askpolis.data_fetcher import FetchedData, FetchedDataRepository
-from askpolis.data_fetcher.database import DataFetcherType
+from askpolis.data_fetcher import DataFetcherType, FetchedData, FetchedDataRepository
 
 
 def test_data_fetcher_data_model(session_maker: sessionmaker[Session]) -> None:

@@ -2,10 +2,8 @@ from unittest.mock import MagicMock, Mock
 
 import pytest
 
-from askpolis.core import Document, Page
-from askpolis.core.models import DocumentType
-from askpolis.search.embeddings_service import EmbeddingsService
-from askpolis.search.models import EmbeddingsCollection
+from askpolis.core import Document, DocumentType, Page
+from askpolis.search import EmbeddingsCollection, EmbeddingsService
 
 
 @pytest.fixture
