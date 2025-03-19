@@ -1,5 +1,6 @@
 from unittest.mock import MagicMock, Mock
 
+import numpy as np
 import pytest
 
 from askpolis.core import Document, DocumentType, Page
@@ -17,7 +18,7 @@ def mock_embeddings_repository() -> Mock:
 
 
 @pytest.fixture
-def mock_embeddings() -> Mock:
+def mock_model() -> Mock:
     return MagicMock()
 
 
@@ -28,12 +29,12 @@ def mock_splitter() -> Mock:
 
 @pytest.fixture
 def embeddings_service(
-    mock_page_repository: Mock, mock_embeddings_repository: Mock, mock_embeddings: Mock, mock_splitter: Mock
+    mock_page_repository: Mock, mock_embeddings_repository: Mock, mock_model: Mock, mock_splitter: Mock
 ) -> EmbeddingsService:
     return EmbeddingsService(
         page_repository=mock_page_repository,
         embeddings_repository=mock_embeddings_repository,
-        embeddings=mock_embeddings,
+        model=mock_model,
         splitter=mock_splitter,
     )
 
@@ -42,7 +43,7 @@ def test_embed_document(
     embeddings_service: EmbeddingsService,
     mock_page_repository: Mock,
     mock_embeddings_repository: Mock,
-    mock_embeddings: Mock,
+    mock_model: Mock,
     mock_splitter: Mock,
 ) -> None:
     document = Document(name="Test Document", document_type=DocumentType.ELECTION_PROGRAM)
@@ -53,7 +54,7 @@ def test_embed_document(
     chunk.page_content = "Chunk content"
     chunk.metadata = page.page_metadata
     mock_splitter.split.return_value = [chunk]
-    mock_embeddings.embed_documents.return_value = [[0.1, 0.2, 0.3]]
+    mock_model.encode_corpus.return_value = {"dense_vecs": [np.array([0.1, 0.2, 0.3])]}
 
     embeddings = embeddings_service.embed_document(collection, document)
 
@@ -71,7 +72,7 @@ def test_embed_document_sets_correct_page(
     embeddings_service: EmbeddingsService,
     mock_page_repository: Mock,
     mock_embeddings_repository: Mock,
-    mock_embeddings: Mock,
+    mock_model: Mock,
     mock_splitter: Mock,
 ) -> None:
     document = Document(name="Test Document", document_type=DocumentType.ELECTION_PROGRAM)
@@ -90,7 +91,7 @@ def test_embed_document_sets_correct_page(
     chunk2.metadata = page2.page_metadata
 
     mock_splitter.split.return_value = [chunk1, chunk2]
-    mock_embeddings.embed_documents.return_value = [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]
+    mock_model.encode_corpus.return_value = {"dense_vecs": [np.array([0.1, 0.2, 0.3]), np.array([0.4, 0.5, 0.6])]}
 
     embeddings = embeddings_service.embed_document(collection, document)
 

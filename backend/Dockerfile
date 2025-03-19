@@ -35,6 +35,7 @@ RUN huggingface-cli download "BAAI/bge-reranker-v2-m3" --exclude "onnx/*" --excl
 
 FROM base AS runtime
 
+ENV HF_HUB_CACHE=${HF_HOME}/hub
 ENV HF_HUB_OFFLINE=1
 ENV TRANSFORMERS_OFFLINE=1
 

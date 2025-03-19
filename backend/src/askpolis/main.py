@@ -2,8 +2,8 @@ import os
 
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
+from FlagEmbedding import BGEM3FlagModel
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_ollama import ChatOllama
 from pydantic import BaseModel
 from sqlalchemy import create_engine
@@ -54,10 +54,14 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-embeddings = HuggingFaceEmbeddings(
-    model_name="BAAI/bge-m3",
-    model_kwargs={"trust_remote_code": True},
-    encode_kwargs={"normalize_embeddings": True},
+model = BGEM3FlagModel(
+    "BAAI/bge-m3",
+    devices="cpu",
+    cache_dir=os.getenv("HF_HUB_CACHE"),
+    passage_max_length=8192,
+    query_max_length=8192,
+    trust_remote_code=True,
+    normalize_embeddings=True,
 )
 
 
@@ -100,7 +104,7 @@ def search(query: str, limit: int = 5, reranking: bool = False) -> SearchRespons
         # TODO: How does dependency injection work in FastAPI with database sessions?
         embeddings_repository = EmbeddingsRepository(session)
         page_repository = PageRepository(session)
-        embeddings_service = EmbeddingsService(page_repository, embeddings_repository, embeddings, splitter)
+        embeddings_service = EmbeddingsService(page_repository, embeddings_repository, model, splitter)
         search_service = SearchService(default_collection, embeddings_service, reranker_service)
         return SearchResponse(query=query, results=search_service.find_matching_texts(query, limit, reranking))
 
@@ -114,7 +118,7 @@ def get_answers(question: str) -> AnswerResponse:
 
         embeddings_repository = EmbeddingsRepository(session)
         page_repository = PageRepository(session)
-        embeddings_service = EmbeddingsService(page_repository, embeddings_repository, embeddings, splitter)
+        embeddings_service = EmbeddingsService(page_repository, embeddings_repository, model, splitter)
         search_service = SearchService(default_collection, embeddings_service, reranker_service)
         logger.info_with_attrs("Querying...", {"question": question})
         results = search_service.find_matching_texts(question, limit=5, use_reranker=True)
