@@ -16,4 +16,4 @@ def test_fetch_election_programs_returns_early_when_parliament_id_not_found() ->
     data_fetcher.fetch_election_programs(parliament_id=3)
 
     mock_client.get_all_parliaments.assert_not_called()
-    mock_repository.add.assert_not_called()
+    mock_repository.save.assert_not_called()

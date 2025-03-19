@@ -24,7 +24,7 @@ class AbgeordnetenwatchDataFetcher:
         if parliaments is None:
             parliaments = self._client.get_all_parliaments()
             parliaments.data_fetcher = DATA_FETCHER_ID
-            self._repository.add(parliaments)
+            self._repository.save(parliaments)
 
         assert parliaments.json_data is not None
         if not any(parliament["id"] == parliament_id for parliament in parliaments.json_data):
@@ -38,7 +38,7 @@ class AbgeordnetenwatchDataFetcher:
         if parliament_periods is None:
             parliament_periods = self._client.get_all_parliament_periods(parliament_id)
             parliament_periods.data_fetcher = DATA_FETCHER_ID
-            self._repository.add(parliament_periods)
+            self._repository.save(parliament_periods)
 
         assert parliament_periods.json_data is not None
         for parliament_period in parliament_periods.json_data:
@@ -54,7 +54,7 @@ class AbgeordnetenwatchDataFetcher:
                 if election_programs is None:
                     election_programs = self._client.get_all_election_programs(parliament_period_id)
                     election_programs.data_fetcher = DATA_FETCHER_ID
-                    self._repository.add(election_programs)
+                    self._repository.save(election_programs)
 
                 assert election_programs.json_data is not None
                 for election_program in election_programs.json_data:
@@ -66,7 +66,7 @@ class AbgeordnetenwatchDataFetcher:
                         logger.info_with_attrs("Fetching party...", {"party_id": party_id})
                         party = self._client.get_party(party_id, election_program["party"]["api_url"])
                         party.data_fetcher = DATA_FETCHER_ID
-                        self._repository.add(party)
+                        self._repository.save(party)
 
                     election_program_file = self._repository.get_by_data_fetcher_and_entity(
                         DATA_FETCHER_ID, FetchedData.get_entity_for_election_program(party_id, parliament_period_id)
@@ -84,6 +84,6 @@ class AbgeordnetenwatchDataFetcher:
                             party_id, parliament_period_id, file_to_download
                         )
                         election_program_file.data_fetcher = DATA_FETCHER_ID
-                        self._repository.add(election_program_file)
+                        self._repository.save(election_program_file)
 
         logger.info("Finished fetching of election programs.")
