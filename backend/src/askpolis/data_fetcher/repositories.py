@@ -12,7 +12,7 @@ class FetchedDataRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
 
-    def add(self, fetched_data: FetchedData) -> None:
+    def save(self, fetched_data: FetchedData) -> None:
         self.session.add(fetched_data)
         self.session.commit()
 
