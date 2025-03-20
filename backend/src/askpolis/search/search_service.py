@@ -12,7 +12,7 @@ class SearchService:
 
     def find_matching_texts(self, query: str, limit: int = 10, use_reranker: bool = False) -> list[SearchResult]:
         if limit < 1:
-            limit = 10
+            return []
 
         query_limit = limit * 2 if use_reranker else limit
         similar_documents = self._embeddings_service.find_similar_documents(self._collection, query, query_limit)
