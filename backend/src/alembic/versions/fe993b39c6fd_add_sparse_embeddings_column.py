@@ -34,7 +34,7 @@ def upgrade() -> None:
         sa.Column("page_id", sa.UUID(), nullable=False),
         sa.Column("chunk", sa.String(), nullable=False),
         sa.Column("embedding", VECTOR(1024), nullable=False),
-        sa.Column("sparse_embedding", SPARSEVEC(1024), nullable=False),
+        sa.Column("sparse_embedding", SPARSEVEC(250002), nullable=False),
         sa.Column("chunk_metadata", postgresql.JSONB(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False, server_default=func.now(timezone=True)),
         sa.ForeignKeyConstraint(

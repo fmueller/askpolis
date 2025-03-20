@@ -11,19 +11,23 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from askpolis.core import Base, Document, Page
+from askpolis.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 def convert_to_sparse_vector(lexical_weights: dict[str, float]) -> SparseVector:
     """Convert BGE-M3 lexical weights to PGVector SparseVector."""
 
     validated = []
-    max_dim = 1024
+    max_dim = 250002
 
     for token_id, weight in lexical_weights.items():
         idx = int(token_id) + 1  # Critical: BGE-M3 uses 0-based indices
-        if idx > max_dim:
-            continue  # TODO: add log, it should not happen
-        validated.append((idx, weight))
+        if 1 <= idx <= max_dim:
+            validated.append((idx, weight))
+        else:
+            logger.warning(f"Token index is out of bounds: 1 <= {idx} <= {max_dim}")
 
     sorted_entries = sorted(validated, key=lambda x: x[0])
     entries = [f"{k}:{v:.9f}" for k, v in sorted_entries]
@@ -81,7 +85,7 @@ class Embeddings(Base):
     page_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("pages.id"), nullable=False)
     chunk: Mapped[str] = mapped_column(String, nullable=False)
     embedding: Mapped[list[float]] = mapped_column(Vector(1024), nullable=False)
-    sparse_embedding: Mapped[SparseVector] = mapped_column(SPARSEVEC(1024), nullable=False)
+    sparse_embedding: Mapped[SparseVector] = mapped_column(SPARSEVEC(250002), nullable=False)
     chunk_metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
     created_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
