@@ -10,6 +10,16 @@ from askpolis.search.repositories import EmbeddingsRepository
 logger = get_logger(__name__)
 
 
+def _get_page(pages: list[Page], chunk_metadata: dict[str, Any]) -> Page:
+    filtered_page = next(
+        (page for page in pages if cast(dict[str, Any], page.page_metadata)["page"] == chunk_metadata["page"]), None
+    )
+    if filtered_page is None:
+        logger.warning_with_attrs("Page not found", {"chunk_metadata": chunk_metadata})
+        return pages[0]
+    return filtered_page
+
+
 class EmbeddingsService:
     def __init__(
         self,
@@ -46,24 +56,18 @@ class EmbeddingsService:
             Embeddings(
                 collection=collection,
                 document=document,
-                page=self._get_page(pages, chunk.metadata),
+                page=_get_page(pages, chunk.metadata),
                 chunk=chunk.page_content,
-                embedding=cast(list[float], embedding.tolist()),
+                embedding=cast(list[float], dense_vector.tolist()),
+                sparse_embedding=cast(dict[str, float], lexical_weights),
                 chunk_metadata=chunk.metadata,
             )
-            for chunk, embedding in zip(chunks, computed_embeddings["dense_vecs"])
+            for chunk, dense_vector, lexical_weights in zip(
+                chunks, computed_embeddings["dense_vecs"], computed_embeddings["lexical_weights"]
+            )
         ]
         self._embeddings_repository.save_all(embeddings)
         logger.info_with_attrs(
             "Saved embeddings for document", {"document_id": document.id, "embeddings": len(embeddings)}
         )
         return embeddings
-
-    def _get_page(self, pages: list[Page], chunk_metadata: dict[str, Any]) -> Page:
-        filtered_page = next(
-            (page for page in pages if cast(dict[str, Any], page.page_metadata)["page"] == chunk_metadata["page"]), None
-        )
-        if filtered_page is None:
-            logger.warning_with_attrs("Page not found", {"chunk_metadata": chunk_metadata})
-            return pages[0]
-        return filtered_page

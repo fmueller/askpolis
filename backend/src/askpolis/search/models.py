@@ -2,7 +2,8 @@ import datetime
 from typing import Any, Optional
 
 import uuid_utils.compat as uuid
-from pgvector.sqlalchemy import Vector
+from pgvector.sqlalchemy import SparseVector, Vector
+from pgvector.sqlalchemy.sparsevec import SPARSEVEC
 from pydantic import BaseModel
 from sqlalchemy import UUID as DB_UUID
 from sqlalchemy import Column, DateTime, ForeignKey, String
@@ -10,6 +11,23 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from askpolis.core import Base, Document, Page
+
+
+def convert_to_sparse_vector(lexical_weights: dict[str, float]) -> SparseVector:
+    """Convert BGE-M3 lexical weights to PGVector SparseVector."""
+
+    validated = []
+    max_dim = 1024
+
+    for token_id, weight in lexical_weights.items():
+        idx = int(token_id) + 1  # Critical: BGE-M3 uses 0-based indices
+        if idx > max_dim:
+            continue  # TODO: add log, it should not happen
+        validated.append((idx, weight))
+
+    sorted_entries = sorted(validated, key=lambda x: x[0])
+    entries = [f"{k}:{v:.9f}" for k, v in sorted_entries]
+    return SparseVector.from_text(f"{{{','.join(entries)}}}/{max_dim}")
 
 
 class EmbeddingsCollection(Base):
@@ -40,6 +58,7 @@ class Embeddings(Base):
         page: Page,
         chunk: str,
         embedding: list[float],
+        sparse_embedding: dict[str, float],
         chunk_metadata: dict[str, Any],
         **kw: Any,
     ) -> None:
@@ -50,6 +69,7 @@ class Embeddings(Base):
         self.page_id = page.id
         self.chunk = chunk
         self.embedding = embedding
+        self.sparse_embedding = convert_to_sparse_vector(sparse_embedding)
         self.chunk_metadata = chunk_metadata
         self.created_at = datetime.datetime.now(datetime.UTC)
 
@@ -61,6 +81,7 @@ class Embeddings(Base):
     page_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("pages.id"), nullable=False)
     chunk: Mapped[str] = Column(String, nullable=False)
     embedding: Mapped[list[float]] = Column(Vector(1024), nullable=False)
+    sparse_embedding: Mapped[SparseVector] = mapped_column(SPARSEVEC(1024), nullable=False)
     chunk_metadata: Mapped[Optional[dict[str, Any]]] = Column(JSONB, nullable=True)
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 

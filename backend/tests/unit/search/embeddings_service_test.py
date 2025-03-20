@@ -5,6 +5,7 @@ import pytest
 
 from askpolis.core import Document, DocumentType, Page
 from askpolis.search import EmbeddingsCollection, EmbeddingsService
+from askpolis.search.models import convert_to_sparse_vector
 
 
 @pytest.fixture
@@ -54,7 +55,16 @@ def test_embed_document(
     chunk.page_content = "Chunk content"
     chunk.metadata = page.page_metadata
     mock_splitter.split.return_value = [chunk]
-    mock_model.encode_corpus.return_value = {"dense_vecs": [np.array([0.1, 0.2, 0.3])]}
+    mock_model.encode_corpus.return_value = {
+        "dense_vecs": [np.array([0.1, 0.2, 0.3])],
+        "lexical_weights": [
+            {
+                "123": 0.123,
+                "456": 0.456,
+                "789": 0.789,
+            }
+        ],
+    }
 
     embeddings = embeddings_service.embed_document(collection, document)
 
@@ -64,6 +74,13 @@ def test_embed_document(
     assert embeddings[0].page_id == page.id
     assert embeddings[0].chunk == "Chunk content"
     assert embeddings[0].embedding == [0.1, 0.2, 0.3]
+    assert embeddings[0].sparse_embedding == convert_to_sparse_vector(
+        {
+            "123": 0.123,
+            "456": 0.456,
+            "789": 0.789,
+        }
+    )
     assert embeddings[0].chunk_metadata == {"page": 1}
     mock_embeddings_repository.save_all.assert_called_once_with(embeddings)
 
@@ -91,11 +108,41 @@ def test_embed_document_sets_correct_page(
     chunk2.metadata = page2.page_metadata
 
     mock_splitter.split.return_value = [chunk1, chunk2]
-    mock_model.encode_corpus.return_value = {"dense_vecs": [np.array([0.1, 0.2, 0.3]), np.array([0.4, 0.5, 0.6])]}
+    mock_model.encode_corpus.return_value = {
+        "dense_vecs": [np.array([0.1, 0.2, 0.3]), np.array([0.4, 0.5, 0.6])],
+        "lexical_weights": [
+            {
+                "123": 0.123,
+                "456": 0.456,
+                "789": 0.789,
+            },
+            {
+                "012": 0.123,
+                "8888": 0.456,
+                "12122": 0.789,
+            },
+        ],
+    }
 
     embeddings = embeddings_service.embed_document(collection, document)
 
     assert len(embeddings) == 2
     assert embeddings[0].page_id == page1.id
+    assert embeddings[0].embedding == [0.1, 0.2, 0.3]
+    assert embeddings[0].sparse_embedding == convert_to_sparse_vector(
+        {
+            "123": 0.123,
+            "456": 0.456,
+            "789": 0.789,
+        }
+    )
     assert embeddings[1].page_id == page2.id
+    assert embeddings[1].embedding == [0.4, 0.5, 0.6]
+    assert embeddings[1].sparse_embedding == convert_to_sparse_vector(
+        {
+            "012": 0.123,
+            "8888": 0.456,
+            "12122": 0.789,
+        }
+    )
     mock_embeddings_repository.save_all.assert_called_once_with(embeddings)
