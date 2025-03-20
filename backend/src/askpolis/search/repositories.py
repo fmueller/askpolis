@@ -1,10 +1,10 @@
-from typing import Optional
+from typing import Optional, Union
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from askpolis.core import Document
-from askpolis.search.models import Embeddings, EmbeddingsCollection
+from askpolis.search.models import Embeddings, EmbeddingsCollection, convert_to_sparse_vector
 
 
 class EmbeddingsCollectionRepository:
@@ -35,16 +35,29 @@ class EmbeddingsRepository:
         return self.db.query(Embeddings).filter(Embeddings.document_id == document.id).all()
 
     def get_all_similar_to(
-        self, collection: EmbeddingsCollection, query_vector: list[float], limit: int = 10
+        self, collection: EmbeddingsCollection, query_vector: Union[list[float], dict[str, float]], limit: int = 10
     ) -> list[tuple[Embeddings, float]]:
         if limit <= 0:
             return []
-        results = self.db.execute(
-            select(Embeddings, 1.0 - Embeddings.embedding.cosine_distance(query_vector).label("score"))
-            .filter(Embeddings.collection_id == collection.id)
-            .order_by(Embeddings.embedding.cosine_distance(query_vector))
-            .limit(limit)
-        ).all()
+
+        if isinstance(query_vector, list):
+            results = self.db.execute(
+                select(Embeddings, 1.0 - Embeddings.embedding.cosine_distance(query_vector).label("score"))
+                .filter(Embeddings.collection_id == collection.id)
+                .order_by(Embeddings.embedding.cosine_distance(query_vector))
+                .limit(limit)
+            ).all()
+        elif isinstance(query_vector, dict):
+            sparse_vector = convert_to_sparse_vector(query_vector)
+            results = self.db.execute(
+                select(Embeddings, 1.0 - Embeddings.sparse_embedding.cosine_distance(sparse_vector).label("score"))
+                .filter(Embeddings.collection_id == collection.id)
+                .order_by(Embeddings.sparse_embedding.cosine_distance(sparse_vector))
+                .limit(limit)
+            ).all()
+        else:
+            raise ValueError("Unsupported query_vector type")
+
         return [(embeddings, score) for embeddings, score in results]
 
     def get_documents_without_embeddings(self) -> list[Document]:
