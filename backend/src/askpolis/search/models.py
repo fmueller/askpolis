@@ -6,7 +6,7 @@ from pgvector.sqlalchemy import SparseVector, Vector
 from pgvector.sqlalchemy.sparsevec import SPARSEVEC
 from pydantic import BaseModel
 from sqlalchemy import UUID as DB_UUID
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -42,10 +42,10 @@ class EmbeddingsCollection(Base):
         self.created_at = datetime.datetime.now(datetime.UTC)
 
     id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
-    name = Column(String, nullable=False)
-    version = Column(String, nullable=False)
-    description = Column(String, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
+    name = mapped_column(String, nullable=False)
+    version = mapped_column(String, nullable=False)
+    description = mapped_column(String, nullable=False)
+    created_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
 class Embeddings(Base):
@@ -79,11 +79,11 @@ class Embeddings(Base):
     )
     document_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
     page_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("pages.id"), nullable=False)
-    chunk: Mapped[str] = Column(String, nullable=False)
-    embedding: Mapped[list[float]] = Column(Vector(1024), nullable=False)
+    chunk: Mapped[str] = mapped_column(String, nullable=False)
+    embedding: Mapped[list[float]] = mapped_column(Vector(1024), nullable=False)
     sparse_embedding: Mapped[SparseVector] = mapped_column(SPARSEVEC(1024), nullable=False)
-    chunk_metadata: Mapped[Optional[dict[str, Any]]] = Column(JSONB, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
+    chunk_metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    created_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
 
 class SearchResult(BaseModel):
