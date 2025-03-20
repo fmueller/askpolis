@@ -22,6 +22,7 @@ def ingest_embeddings_for_one_document() -> None:
     model = BGEM3FlagModel(
         "BAAI/bge-m3",
         devices="cpu",
+        use_fp16=False,
         cache_dir=os.getenv("HF_HUB_CACHE"),
         passage_max_length=8192,
         query_max_length=8192,
