@@ -29,7 +29,7 @@ RUN poetry install --only main --no-root && \
 
 FROM base AS model
 
-RUN pip install --no-cache-dir huggingface_hub[cli]==0.29.1
+RUN pip install --no-cache-dir huggingface_hub[cli]==0.29.3
 RUN huggingface-cli download "BAAI/bge-m3" --exclude "onnx/*" --exclude "*.onnx"
 RUN huggingface-cli download "BAAI/bge-reranker-v2-m3" --exclude "onnx/*" --exclude "*.onnx"
 
