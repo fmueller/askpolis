@@ -8,7 +8,7 @@ logger = get_logger(__name__)
 
 class RerankerService:
     def __init__(self) -> None:
-        self._reranker = FlagReranker("BAAI/bge-reranker-v2-m3")
+        self._reranker = FlagReranker("BAAI/bge-reranker-v2-m3", use_fp16=False)
 
     def rerank(self, query: str, embeddings: list[Embeddings], limit: int = 10) -> list[tuple[Embeddings, float]]:
         if len(embeddings) == 0:
