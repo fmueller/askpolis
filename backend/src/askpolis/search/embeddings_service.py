@@ -1,3 +1,4 @@
+import uuid
 from typing import Any, cast
 
 from FlagEmbedding import BGEM3FlagModel
@@ -8,6 +9,22 @@ from askpolis.search.models import Embeddings, EmbeddingsCollection
 from askpolis.search.repositories import EmbeddingsRepository
 
 logger = get_logger(__name__)
+
+
+def _rrf_merge(
+    dense_results: list[tuple[Embeddings, float]], sparse_results: list[tuple[Embeddings, float]], k: int = 60
+) -> list[tuple[Embeddings, float]]:
+    combined_scores: dict[uuid.UUID, float] = {}
+
+    for rank, (embedding, _) in enumerate(dense_results):
+        combined_scores[embedding.id] = combined_scores.get(embedding.id, 0) + 1 / (k + rank + 1)
+    for rank, (embedding, _) in enumerate(sparse_results):
+        combined_scores[embedding.id] = combined_scores.get(embedding.id, 0) + 1 / (k + rank + 1)
+
+    unique_embeddings = {embedding.id: embedding for embedding, _ in dense_results + sparse_results}
+    merged_results = [(unique_embeddings[embedding_id], score) for embedding_id, score in combined_scores.items()]
+    merged_results.sort(key=lambda x: x[1], reverse=True)
+    return merged_results
 
 
 def _get_page(pages: list[Page], chunk_metadata: dict[str, Any]) -> Page:
@@ -38,8 +55,14 @@ class EmbeddingsService:
     ) -> list[tuple[Embeddings, float]]:
         logger.info_with_attrs("Searching for similar documents...", {"collection": collection.name, "limit": limit})
         query_embedding = self._model.encode(query, return_dense=True, return_sparse=True)
+
         dense_query_embedding = cast(list[float], query_embedding["dense_vecs"].tolist())
-        return self._embeddings_repository.get_all_similar_to(collection, dense_query_embedding, limit)
+        sparse_query_embedding = cast(dict[str, float], query_embedding["lexical_weights"])
+
+        dense_results = self._embeddings_repository.get_all_similar_to(collection, dense_query_embedding, limit)
+        sparse_results = self._embeddings_repository.get_all_similar_to(collection, sparse_query_embedding, limit)
+
+        return _rrf_merge(dense_results, sparse_results)[:limit]
 
     def embed_document(self, collection: EmbeddingsCollection, document: Document) -> list[Embeddings]:
         pages = self._page_repository.get_by_document_id(document.id)
