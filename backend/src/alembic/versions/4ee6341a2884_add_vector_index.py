@@ -34,4 +34,4 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     with op.get_context().autocommit_block():
-        op.drop_index("hnsw_cosine_idx", table_name="embeddings", postgresql_concurrently=True)
+        op.drop_index("hnsw_cosine_idx", table_name="embeddings", postgresql_concurrently=True, if_exists=True)

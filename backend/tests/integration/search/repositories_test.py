@@ -24,6 +24,7 @@ def test_embeddings_data_model(session_maker: sessionmaker[Session]) -> None:
             page=page,
             chunk="chunk",
             embedding=random_vector,
+            sparse_embedding={"1": 0.123, "11": 0.456, "123": 0.789},
             chunk_metadata={"key": "value"},
         )
         EmbeddingsRepository(session).save_all([embeddings])
@@ -54,6 +55,7 @@ def test_get_all_similar_to(session_maker: sessionmaker[Session]) -> None:
             page=page,
             chunk="chunk",
             embedding=random_vector,
+            sparse_embedding={"1": 0.123, "11": 0.456, "123": 0.789},
             chunk_metadata={"key": "value"},
         )
         EmbeddingsRepository(session).save_all([embeddings])
