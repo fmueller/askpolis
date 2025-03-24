@@ -14,7 +14,7 @@ class RerankerService:
         if len(embeddings) == 0:
             return []
 
-        if len(embeddings) > limit:
+        if limit > len(embeddings):
             limit = len(embeddings)
 
         logger.info("Reranking...")
