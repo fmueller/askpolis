@@ -59,8 +59,8 @@ class EmbeddingsService:
         dense_query_embedding = cast(list[float], query_embedding["dense_vecs"].tolist())
         sparse_query_embedding = cast(dict[str, float], query_embedding["lexical_weights"])
 
-        dense_results = self._embeddings_repository.get_all_similar_to(collection, dense_query_embedding, limit)
-        sparse_results = self._embeddings_repository.get_all_similar_to(collection, sparse_query_embedding, limit)
+        dense_results = self._embeddings_repository.get_all_similar_to(collection, dense_query_embedding, limit * 2)
+        sparse_results = self._embeddings_repository.get_all_similar_to(collection, sparse_query_embedding, limit * 2)
 
         return _rrf_merge(dense_results, sparse_results)[:limit]
 
