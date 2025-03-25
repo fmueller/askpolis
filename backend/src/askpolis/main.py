@@ -1,13 +1,15 @@
 import os
+from collections.abc import Generator
+from typing import Annotated, Any, Optional
 
-from fastapi import FastAPI, status
+from fastapi import Depends, FastAPI, status
 from fastapi.responses import JSONResponse
 from FlagEmbedding import BGEM3FlagModel
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import ChatOllama
 from pydantic import BaseModel
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import Engine, create_engine
+from sqlalchemy.orm import Session, sessionmaker
 
 from askpolis.celery import app as celery_app
 from askpolis.core import MarkdownSplitter, PageRepository
@@ -26,8 +28,8 @@ configure_logging()
 logger = get_logger(__name__)
 logger.info("Starting AskPolis API...")
 
-engine = create_engine(os.getenv("DATABASE_URL") or "postgresql+psycopg://postgres@postgres:5432/askpolis-db")
-SessionLocal = sessionmaker(bind=engine)
+engine: Optional[Engine] = None
+DbSession: Optional[sessionmaker[Session]] = None
 
 app = FastAPI()
 
@@ -66,6 +68,36 @@ model = BGEM3FlagModel(
 )
 
 
+def get_db() -> Generator[Session, Any, None]:
+    global engine, DbSession
+    if not engine:
+        try:
+            engine = create_engine(
+                os.getenv("DATABASE_URL") or "postgresql+psycopg://postgres@postgres:5432/askpolis-db"
+            )
+        except Exception as e:
+            raise Exception("Error while connecting to database") from e
+
+    if not DbSession:
+        DbSession = sessionmaker(bind=engine)
+
+    db = DbSession()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+def get_search_service(db: Annotated[Session, Depends(get_db)]) -> SearchService:
+    default_collection = EmbeddingsCollectionRepository(db).get_most_recent_by_name("default")
+    if default_collection is None:
+        raise ValueError("No default embeddings collection!")
+    embeddings_repository = EmbeddingsRepository(db)
+    page_repository = PageRepository(db)
+    embeddings_service = EmbeddingsService(page_repository, embeddings_repository, model, splitter)
+    return SearchService(default_collection, embeddings_service, reranker_service)
+
+
 class HealthResponse(BaseModel):
     healthy: bool
 
@@ -93,40 +125,25 @@ def trigger_embeddings_ingestion() -> JSONResponse:
 
 
 @app.get("/v0/search")
-def search(query: str, limit: int = 5, reranking: bool = False) -> SearchResponse:
+def search(
+    search_service: Annotated[SearchService, Depends(get_search_service)],
+    query: str,
+    limit: int = 5,
+    reranking: bool = False,
+) -> SearchResponse:
     if limit < 1:
         limit = 5
-
-    with SessionLocal() as session:
-        default_collection = EmbeddingsCollectionRepository(session).get_most_recent_by_name("default")
-        if default_collection is None:
-            return SearchResponse(query=query, results=[])
-
-        # TODO: How does dependency injection work in FastAPI with database sessions?
-        embeddings_repository = EmbeddingsRepository(session)
-        page_repository = PageRepository(session)
-        embeddings_service = EmbeddingsService(page_repository, embeddings_repository, model, splitter)
-        search_service = SearchService(default_collection, embeddings_service, reranker_service)
-        return SearchResponse(query=query, results=search_service.find_matching_texts(query, limit, reranking))
+    return SearchResponse(query=query, results=search_service.find_matching_texts(query, limit, reranking))
 
 
 @app.get("/v0/answers")
-def get_answers(question: str) -> AnswerResponse:
-    with SessionLocal() as session:
-        default_collection = EmbeddingsCollectionRepository(session).get_most_recent_by_name("default")
-        if default_collection is None:
-            return AnswerResponse(question=question, answer="No default embeddings collection!", search_results=[])
+def get_answers(search_service: Annotated[SearchService, Depends(get_search_service)], question: str) -> AnswerResponse:
+    logger.info_with_attrs("Querying...", {"question": question})
+    results = search_service.find_matching_texts(question, limit=5, use_reranker=True)
 
-        embeddings_repository = EmbeddingsRepository(session)
-        page_repository = PageRepository(session)
-        embeddings_service = EmbeddingsService(page_repository, embeddings_repository, model, splitter)
-        search_service = SearchService(default_collection, embeddings_service, reranker_service)
-        logger.info_with_attrs("Querying...", {"question": question})
-        results = search_service.find_matching_texts(question, limit=5, use_reranker=True)
+    context = "\n\n".join(["<chunk>\n" + r.matching_text + "\n</chunk>" for r in results])
+    chain = prompt | chat_model
+    logger.info("Invoking LLM chain...")
+    answer = chain.invoke({"documents": context, "question": question})
 
-        context = "\n\n".join(["<chunk>\n" + r.matching_text + "\n</chunk>" for r in results])
-        chain = prompt | chat_model
-        logger.info("Invoking LLM chain...")
-        answer = chain.invoke({"documents": context, "question": question})
-
-        return AnswerResponse(question=question, answer=answer.pretty_repr(), search_results=results)
+    return AnswerResponse(question=question, answer=answer.pretty_repr(), search_results=results)
