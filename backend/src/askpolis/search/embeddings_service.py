@@ -28,6 +28,9 @@ def _rrf_merge(
 
 
 def _get_page(pages: list[Page], chunk_metadata: dict[str, Any]) -> Page:
+    if len(pages) == 0:
+        raise ValueError("No pages provided")
+
     filtered_page = next(
         (page for page in pages if cast(dict[str, Any], page.page_metadata)["page"] == chunk_metadata["page"]), None
     )
@@ -53,6 +56,9 @@ class EmbeddingsService:
     def find_similar_documents(
         self, collection: EmbeddingsCollection, query: str, limit: int = 10
     ) -> list[tuple[Embeddings, float]]:
+        if limit < 1:
+            return []
+
         logger.info_with_attrs("Searching for similar documents...", {"collection": collection.name, "limit": limit})
         query_embedding = self._model.encode(query, return_dense=True, return_sparse=True)
 
@@ -66,6 +72,10 @@ class EmbeddingsService:
 
     def embed_document(self, collection: EmbeddingsCollection, document: Document) -> list[Embeddings]:
         pages = self._page_repository.get_by_document_id(document.id)
+        if len(pages) == 0:
+            logger.warning_with_attrs("No pages found for document", {"document_id": document.id})
+            return []
+
         logger.info_with_attrs("Embedding document...", {"document_id": document.id, "pages": len(pages)})
         chunks = self._splitter.split([page.to_langchain_document() for page in pages])
         logger.info_with_attrs(
