@@ -26,14 +26,14 @@ from askpolis.logging import get_logger
 logger = get_logger(__name__)
 
 engine = create_engine(os.getenv("DATABASE_URL") or "postgresql+psycopg://postgres@postgres:5432/askpolis-db")
-SessionLocal = sessionmaker(bind=engine)
+DbSession = sessionmaker(bind=engine)
 
 date_pattern = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 @shared_task(name="transform_fetched_data_to_core_models")
 def transform_fetched_data_to_core_models() -> None:
-    session = SessionLocal()
+    session = DbSession()
     try:
         fetched_data_repository = FetchedDataRepository(session)
         parliaments = fetched_data_repository.get_by_data_fetcher_and_entity(
@@ -184,7 +184,7 @@ def transform_fetched_data_to_core_models() -> None:
 
 @shared_task(name="read_and_parse_election_programs_to_documents")
 def read_and_parse_election_programs_to_documents() -> None:
-    session = SessionLocal()
+    session = DbSession()
     try:
         election_program_repository = ElectionProgramRepository(session)
         document_repository = DocumentRepository(session)

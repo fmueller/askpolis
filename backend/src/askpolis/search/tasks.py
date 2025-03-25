@@ -14,7 +14,7 @@ from askpolis.search.repositories import EmbeddingsCollectionRepository, Embeddi
 logger = get_logger(__name__)
 
 engine = create_engine(os.getenv("DATABASE_URL") or "postgresql+psycopg://postgres@postgres:5432/askpolis-db")
-SessionLocal = sessionmaker(bind=engine)
+DbSession = sessionmaker(bind=engine)
 
 
 @shared_task(name="ingest_embeddings_for_one_document")
@@ -32,7 +32,7 @@ def ingest_embeddings_for_one_document() -> None:
 
     splitter = MarkdownSplitter(chunk_size=2000, chunk_overlap=400)
 
-    with SessionLocal() as session:
+    with DbSession() as session:
         collections_repository = EmbeddingsCollectionRepository(session)
         collection = collections_repository.get_most_recent_by_name("default")
         if collection is None:
