@@ -7,7 +7,7 @@ services:
       - "8000:8000"
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_URL=http://ollama:11434/v1
       - DATABASE_URL=postgresql+psycopg://postgres:secret@postgres:5432/askpolis-db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=askpolis-api
@@ -24,7 +24,7 @@ services:
     command: ./scripts/start-worker.sh
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
-      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_URL=http://ollama:11434/v1
       - DATABASE_URL=postgresql+psycopg://postgres:secret@postgres:5432/askpolis-db
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=askpolis-worker

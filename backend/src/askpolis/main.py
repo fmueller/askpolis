@@ -5,9 +5,11 @@ from typing import Annotated, Any, Optional
 from fastapi import Depends, FastAPI, status
 from fastapi.responses import JSONResponse
 from FlagEmbedding import BGEM3FlagModel
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_ollama import ChatOllama
 from pydantic import BaseModel
+from pydantic_ai import Agent
+from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.providers.openai import OpenAIProvider
+from pydantic_ai.settings import ModelSettings
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -33,30 +35,27 @@ DbSession: Optional[sessionmaker[Session]] = None
 
 app = FastAPI()
 
-splitter = MarkdownSplitter(chunk_size=2000, chunk_overlap=400)
-reranker_service = RerankerService()
-
-chat_model = ChatOllama(model="llama3.1")
-prompt = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            """
-    You are AskPolis, an helpful AI agent answering user questions about politics backed by documents.
-    You only use the provided document chunks to answer the question.
-    You respond in Markdown and use paragraphs to structure your answer.
-    You only provide the answer to the question without any additional fluff.
-
-    Chunks:
-
-    {documents}
-    """,
-        ),
-        ("human", "Question: {question}"),
-    ]
+ollama_model = OpenAIModel(
+    model_name="llama3.1",
+    provider=OpenAIProvider(base_url=os.getenv("OLLAMA_URL") or "http://localhost:11434/v1", api_key="ollama"),
 )
 
-model = BGEM3FlagModel(
+agent = Agent(
+    ollama_model,
+    model_settings=ModelSettings(
+        max_tokens=512,
+        temperature=0.7,
+        top_p=0.9,
+    ),
+    system_prompt="""
+    Answer the query by using ONLY the provided content below.
+    Respond with NO_ANSWER if the content is not relevant for answering the query.
+    Do NOT add additional information.
+    Be concise and respond succinctly using Markdown.
+    """,
+)
+
+embedding_model = BGEM3FlagModel(
     "BAAI/bge-m3",
     devices="cpu",
     use_fp16=False,
@@ -94,7 +93,9 @@ def get_search_service(db: Annotated[Session, Depends(get_db)]) -> SearchService
         raise ValueError("No default embeddings collection!")
     embeddings_repository = EmbeddingsRepository(db)
     page_repository = PageRepository(db)
-    embeddings_service = EmbeddingsService(page_repository, embeddings_repository, model, splitter)
+    splitter = MarkdownSplitter(chunk_size=2000, chunk_overlap=400)
+    embeddings_service = EmbeddingsService(page_repository, embeddings_repository, embedding_model, splitter)
+    reranker_service = RerankerService()
     return SearchService(default_collection, embeddings_service, reranker_service)
 
 
@@ -141,9 +142,8 @@ def get_answers(search_service: Annotated[SearchService, Depends(get_search_serv
     logger.info_with_attrs("Querying...", {"question": question})
     results = search_service.find_matching_texts(question, limit=5, use_reranker=True)
 
-    context = "\n\n".join(["<chunk>\n" + r.matching_text + "\n</chunk>" for r in results])
-    chain = prompt | chat_model
     logger.info("Invoking LLM chain...")
-    answer = chain.invoke({"documents": context, "question": question})
+    content = "\n\n".join([r.matching_text for r in results])
+    answer = agent.run_sync(user_prompt=f"Query: {question}\n\nContent:\n\n{content}")
 
-    return AnswerResponse(question=question, answer=answer.pretty_repr(), search_results=results)
+    return AnswerResponse(question=question, answer=answer.data, search_results=results)
