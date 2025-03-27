@@ -3969,33 +3969,33 @@ timezone = ["tzdata ; python_version >= \"3.9\" and platform_system == \"Windows
 
 [[package]]
 name = "pydantic-ai"
-version = "0.0.44"
+version = "0.0.46"
 description = "Agent Framework / shim to use Pydantic with LLMs"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pydantic_ai-0.0.44-py3-none-any.whl", hash = "sha256:fd5c6b025ea5ebc9499b0d29bf1c491addeec2776e14968ad03bea687cb5e67c"},
-    {file = "pydantic_ai-0.0.44.tar.gz", hash = "sha256:7a224710f4ffd87a07c1935f9e26a56ce9adf304147f608c6c2dd4fafa703967"},
+    {file = "pydantic_ai-0.0.46-py3-none-any.whl", hash = "sha256:777688d120494d4844e9b79a8bb813cadd0b6bb4fc71887a00bfca3e050a5d68"},
+    {file = "pydantic_ai-0.0.46.tar.gz", hash = "sha256:170827b35808f126070898f4169b59960a018e8643b0332369c7050665723b66"},
 ]
 
 [package.dependencies]
-pydantic-ai-slim = {version = "0.0.44", extras = ["anthropic", "bedrock", "cli", "cohere", "groq", "mcp", "mistral", "openai", "vertexai"]}
+pydantic-ai-slim = {version = "0.0.46", extras = ["anthropic", "bedrock", "cli", "cohere", "groq", "mcp", "mistral", "openai", "vertexai"]}
 
 [package.extras]
-examples = ["pydantic-ai-examples (==0.0.44)"]
+examples = ["pydantic-ai-examples (==0.0.46)"]
 logfire = ["logfire (>=2.3)"]
 
 [[package]]
 name = "pydantic-ai-slim"
-version = "0.0.44"
+version = "0.0.46"
 description = "Agent Framework / shim to use Pydantic with LLMs, slim package"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pydantic_ai_slim-0.0.44-py3-none-any.whl", hash = "sha256:f21f44464e6be5713dccf80b0832f15ffb4090212682960aea174ac48941c8e5"},
-    {file = "pydantic_ai_slim-0.0.44.tar.gz", hash = "sha256:5c8c53acd2d13e25ed3c568b15992a4f9c0d827878d1e5c2c8a9256d56e6f5ab"},
+    {file = "pydantic_ai_slim-0.0.46-py3-none-any.whl", hash = "sha256:7318f93583ac36f03263c6093343c94506dad753a9b0ee19a0074d83e898dd49"},
+    {file = "pydantic_ai_slim-0.0.46.tar.gz", hash = "sha256:235486e5116fa22ccd7363fee9e30b0acc3735525991e4aa76b8647cb180d6b0"},
 ]
 
 [package.dependencies]
@@ -4014,7 +4014,7 @@ openai = {version = ">=1.67.0", optional = true, markers = "extra == \"openai\""
 opentelemetry-api = ">=1.28.0"
 prompt-toolkit = {version = ">=3", optional = true, markers = "extra == \"cli\""}
 pydantic = ">=2.10"
-pydantic-graph = "0.0.44"
+pydantic-graph = "0.0.46"
 requests = {version = ">=2.32.3", optional = true, markers = "extra == \"vertexai\""}
 rich = {version = ">=13", optional = true, markers = "extra == \"cli\""}
 typing-inspection = ">=0.4.0"
@@ -4148,14 +4148,14 @@ typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
 name = "pydantic-graph"
-version = "0.0.44"
+version = "0.0.46"
 description = "Graph and state machine library"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pydantic_graph-0.0.44-py3-none-any.whl", hash = "sha256:f0a4dfcc0d0d82e60dbf542371e09ef5d8a6ac5e12758bfd14f02d5e76a81122"},
-    {file = "pydantic_graph-0.0.44.tar.gz", hash = "sha256:bf7e58a0e19caa801e8c0209badc4bc0bca571c34439b01dfc7993fe30ed94f9"},
+    {file = "pydantic_graph-0.0.46-py3-none-any.whl", hash = "sha256:df74a593cea2597569b8f4f5adc4af713cf90d815f6e9cc1616e0be2dfa3e1f3"},
+    {file = "pydantic_graph-0.0.46.tar.gz", hash = "sha256:3a0afc4915102083b81879af3c41100b0baddb6cda0b51f919621a061622c4e4"},
 ]
 
 [package.dependencies]
@@ -6279,4 +6279,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "741ed688c06309b6a311e8d1b8f4597ff7559282b71fca10d2cdd4710291b353"
+content-hash = "0c1fe1125503812185dcea23b748bf0ec49f00a017d8e0cead50cd73b20619ac"
