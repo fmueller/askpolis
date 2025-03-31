@@ -45,3 +45,4 @@ COPY --from=model ${HF_HOME} ${HF_HOME}
 WORKDIR /app
 
 COPY src/ ./
+RUN chmod +x ./scripts/*.sh

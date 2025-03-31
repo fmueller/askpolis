@@ -1,6 +1,5 @@
 #!/bin/bash
 set -o errexit
-set -o pipefail
 set -o nounset
 
 export OTEL_PYTHON_LOG_CORRELATION=true
