@@ -12,7 +12,7 @@ python = ">=3.12,<3.13"
 uvicorn = { extras = ["standard"], version = "^0.34.0" }
 fastapi = "^0.115.12"
 langchain = "^0.3.21"
-sentence-transformers = "^3.4.0"
+sentence-transformers = "^4.1.0"
 torch = { version = "^2.6.0", source = "pytorch" }
 einops = "^0.8.1"
 celery = "^5.4.0"
