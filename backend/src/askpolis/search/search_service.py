@@ -1,8 +1,17 @@
+from abc import ABC, abstractmethod
+
 from askpolis.search import EmbeddingsCollection, EmbeddingsService, SearchResult
 from askpolis.search.reranker_service import RerankerService
 
 
-class SearchService:
+class SearchServiceBase(ABC):
+    @abstractmethod
+    def find_matching_texts(self, query: str, limit: int = 5, use_reranker: bool = False) -> list[SearchResult]:
+        """Search for texts matching the query."""
+        pass
+
+
+class SearchService(SearchServiceBase):
     def __init__(
         self, collection: EmbeddingsCollection, embeddings_service: EmbeddingsService, reranker_service: RerankerService
     ) -> None:
@@ -30,3 +39,8 @@ class SearchService:
             )
             for result, score in similar_documents
         ]
+
+
+class EmptySearchService(SearchServiceBase):
+    def find_matching_texts(self, query: str, limit: int = 5, use_reranker: bool = False) -> list[SearchResult]:
+        return []

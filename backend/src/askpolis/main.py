@@ -20,9 +20,11 @@ from askpolis.search import (
     EmbeddingsCollectionRepository,
     EmbeddingsRepository,
     EmbeddingsService,
+    EmptySearchService,
     RerankerService,
     SearchResult,
     SearchService,
+    SearchServiceBase,
 )
 
 configure_logging()
@@ -87,10 +89,12 @@ def get_db() -> Generator[Session, Any, None]:
         db.close()
 
 
-def get_search_service(db: Annotated[Session, Depends(get_db)]) -> SearchService:
+def get_search_service(db: Annotated[Session, Depends(get_db)]) -> SearchServiceBase:
     default_collection = EmbeddingsCollectionRepository(db).get_most_recent_by_name("default")
     if default_collection is None:
-        raise ValueError("No default embeddings collection!")
+        logger.warning("No default embeddings collection found. Search will return empty results.")
+        return EmptySearchService()
+
     embeddings_repository = EmbeddingsRepository(db)
     page_repository = PageRepository(db)
     splitter = MarkdownSplitter(chunk_size=2000, chunk_overlap=400)
