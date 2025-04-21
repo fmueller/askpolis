@@ -26,7 +26,7 @@ def upgrade() -> None:
     op.alter_column(
         "election_programs",
         "updated_at",
-        server_default=func.now(timezone=True),
+        server_default=sa.text("NOW() AT TIME ZONE 'UTC'"),
         existing_type=sa.DateTime(timezone=True),
     )
 
@@ -57,7 +57,5 @@ def downgrade() -> None:
     op.drop_column("parties", "updated_at")
     op.drop_column("parliaments", "updated_at")
     op.drop_column("parliament_periods", "updated_at")
-    op.alter_column(
-        "election_programs", "updated_at", nullable=True, server_default=None, existing_type=sa.DateTime(timezone=True)
-    )
+    op.alter_column("election_programs", "updated_at", nullable=True, existing_type=sa.DateTime(timezone=True))
     op.alter_column("election_programs", "updated_at", new_column_name="last_updated_at")
