@@ -74,6 +74,9 @@ class PdfReader:
 
     def _to_markdown_with_merging_concatenated_words(self) -> Optional[PdfDocument]:
         # issue: https://github.com/pymupdf/RAG/issues/214
+        # from the issue: "TEXT_DEHYPHENATE - this is and will need to be kept off, because otherwise word particles
+        # will be included in boundary boxes of lines and spans - making the compilation into markdown impossible.
+        # Exposure to the API cannot be granted."
         parsed_markdown = pymupdf4llm.to_markdown(
             self._get_pdf_path(), show_progress=False, page_chunks=True, extract_words=True
         )

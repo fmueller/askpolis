@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from pathlib import Path
 from typing import cast
 
 import pytest
@@ -40,3 +41,8 @@ def database(postgres_container: DbContainer, alembic_config: Config, test_db_ur
 @pytest.fixture(scope="function")
 def session_maker(database: Engine) -> sessionmaker[Session]:
     return sessionmaker(bind=database)
+
+
+@pytest.fixture(scope="function")
+def resources_dir() -> Path:
+    return Path(__file__).parent / "resources"
