@@ -3,7 +3,7 @@ from pathlib import Path
 from askpolis.core import PdfReader
 
 
-def test_pdf_to_markdown_conversion(resources_dir: Path):
+def test_pdf_to_markdown_conversion(resources_dir: Path) -> None:
     pdf_reader = PdfReader(str(resources_dir / "sample_test.pdf"))
     parsed_document = pdf_reader.to_markdown()
 
@@ -11,7 +11,7 @@ def test_pdf_to_markdown_conversion(resources_dir: Path):
     assert len(parsed_document.pages) == 5
 
 
-def test_text_formatting_is_preserved(resources_dir: Path):
+def test_text_formatting_is_preserved(resources_dir: Path) -> None:
     pdf_reader = PdfReader(str(resources_dir / "sample_test.pdf"))
     parsed_document = pdf_reader.to_markdown()
 
@@ -21,7 +21,7 @@ def test_text_formatting_is_preserved(resources_dir: Path):
     assert "_This is italic green text._" in parsed_document.pages[1].content
 
 
-def test_dehyphenation(resources_dir: Path):
+def test_dehyphenation(resources_dir: Path) -> None:
     pdf_reader = PdfReader(str(resources_dir / "sample_test_hyphenated.pdf"))
     parsed_document = pdf_reader.to_markdown()
 
