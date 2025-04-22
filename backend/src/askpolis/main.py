@@ -57,17 +57,6 @@ agent = Agent(
     """,
 )
 
-embedding_model = BGEM3FlagModel(
-    "BAAI/bge-m3",
-    devices="cpu",
-    use_fp16=False,
-    cache_dir=os.getenv("HF_HUB_CACHE"),
-    passage_max_length=8192,
-    query_max_length=8192,
-    trust_remote_code=True,
-    normalize_embeddings=True,
-)
-
 
 def get_db() -> Generator[Session, Any, None]:
     global engine, DbSession
@@ -98,6 +87,17 @@ def get_search_service(db: Annotated[Session, Depends(get_db)]) -> SearchService
     embeddings_repository = EmbeddingsRepository(db)
     page_repository = PageRepository(db)
     splitter = MarkdownSplitter(chunk_size=2000, chunk_overlap=400)
+
+    embedding_model = BGEM3FlagModel(
+        "BAAI/bge-m3",
+        devices="cpu",
+        use_fp16=False,
+        cache_dir=os.getenv("HF_HUB_CACHE"),
+        passage_max_length=8192,
+        query_max_length=8192,
+        trust_remote_code=True,
+        normalize_embeddings=True,
+    )
     embeddings_service = EmbeddingsService(page_repository, embeddings_repository, embedding_model, splitter)
     reranker_service = RerankerService()
     return SearchService(default_collection, embeddings_service, reranker_service)

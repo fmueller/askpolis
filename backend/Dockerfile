@@ -29,9 +29,15 @@ RUN poetry install --only main --no-root && \
 
 FROM base AS model
 
+ARG DISABLE_HUGGINGFACE_DOWNLOAD=false
 RUN pip install --no-cache-dir huggingface_hub[cli]==0.30.2
-RUN huggingface-cli download "BAAI/bge-m3" --exclude "onnx/*" --exclude "*.onnx"
-RUN huggingface-cli download "BAAI/bge-reranker-v2-m3" --exclude "onnx/*" --exclude "*.onnx"
+RUN if [ "$DISABLE_HUGGINGFACE_DOWNLOAD" != "true" ]; then \
+        huggingface-cli download "BAAI/bge-m3" --exclude "onnx/*" --exclude "*.onnx" && \
+        huggingface-cli download "BAAI/bge-reranker-v2-m3" --exclude "onnx/*" --exclude "*.onnx"; \
+    else \
+        echo "Skipping Hugging Face model download because DISABLE_HUGGINGFACE_DOWNLOAD is true" && \
+        mkdir -p /app/models; \
+    fi
 
 FROM base AS runtime
 
