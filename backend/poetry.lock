@@ -2033,18 +2033,18 @@ zookeeper = ["kazoo (>=2.8.0)"]
 
 [[package]]
 name = "langchain"
-version = "0.3.23"
+version = "0.3.24"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "langchain-0.3.23-py3-none-any.whl", hash = "sha256:084f05ee7e80b7c3f378ebadd7309f2a37868ce2906fa0ae64365a67843ade3d"},
-    {file = "langchain-0.3.23.tar.gz", hash = "sha256:d95004afe8abebb52d51d6026270248da3f4b53d93e9bf699f76005e0c83ad34"},
+    {file = "langchain-0.3.24-py3-none-any.whl", hash = "sha256:596c5444716644ddd0cd819fb2bc9d0fd4221503b219fdfb5016edcfaa7da8ef"},
+    {file = "langchain-0.3.24.tar.gz", hash = "sha256:caf1bacdabbea429bc79b58b118c06c3386107d92812e15922072b91745f070f"},
 ]
 
 [package.dependencies]
-langchain-core = ">=0.3.51,<1.0.0"
+langchain-core = ">=0.3.55,<1.0.0"
 langchain-text-splitters = ">=0.3.8,<1.0.0"
 langsmith = ">=0.1.17,<0.4"
 pydantic = ">=2.7.4,<3.0.0"
@@ -2073,14 +2073,14 @@ xai = ["langchain-xai"]
 
 [[package]]
 name = "langchain-core"
-version = "0.3.54"
+version = "0.3.55"
 description = "Building applications with LLMs through composability"
 optional = false
 python-versions = "<4.0,>=3.9"
 groups = ["main"]
 files = [
-    {file = "langchain_core-0.3.54-py3-none-any.whl", hash = "sha256:cd42155d9089e2fd4695ee02a4b2bc6daf55b9d4e1a37639647cf2455ed4fa04"},
-    {file = "langchain_core-0.3.54.tar.gz", hash = "sha256:55ce38939038e19b1271f36f512335462d7f64057b531598b3651d2b403e1b42"},
+    {file = "langchain_core-0.3.55-py3-none-any.whl", hash = "sha256:b3cb36bf37755a616158a79866657c6697b43a2f7c69dd723ce425f1c76c1baa"},
+    {file = "langchain_core-0.3.55.tar.gz", hash = "sha256:0f2b3e311621116a83510c70b0ac9d959030a0a457a69483535cff18501fedc9"},
 ]
 
 [package.dependencies]
@@ -6310,4 +6310,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "2f61f06d8d1641ad0fbb365fb643b5bc25062e0c8855698cdf9b4bf694301d9b"
+content-hash = "fa3d31fea0468e5c2d11f70bd0d13036f261aef6d2667a82170d3256437d40cb"
