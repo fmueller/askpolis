@@ -18,7 +18,10 @@ def test_text_formatting_is_preserved(resources_dir: Path) -> None:
     assert parsed_document is not None
     assert len(parsed_document.pages) == 5
     assert "**This is bold red text.**" in parsed_document.pages[1].content
-    assert "_This is italic green text._" in parsed_document.pages[1].content
+    assert (
+        "*This is italic green text.*" in parsed_document.pages[1].content
+        or "_This is italic green text._" in parsed_document.pages[1].content
+    )
 
 
 def test_dehyphenation(resources_dir: Path) -> None:
