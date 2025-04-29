@@ -1,7 +1,10 @@
+import os
 import uuid
 from typing import Any, cast
 
+import numpy as np
 from FlagEmbedding import BGEM3FlagModel
+from FlagEmbedding.inference.embedder.encoder_only.m3 import M3Embedder
 
 from askpolis.core import Document, MarkdownSplitter, Page, PageRepository
 from askpolis.logging import get_logger
@@ -40,12 +43,58 @@ def _get_page(pages: list[Page], chunk_metadata: dict[str, Any]) -> Page:
     return filtered_page
 
 
+class FakeModel:
+    def __init__(self):
+        pass
+
+    def encode(self, text: str, return_dense: bool = True, return_sparse: bool = True) -> dict:
+        """
+        Encodes a single string and returns a dict with fake dense and sparse representations.
+        """
+        result = {}
+        if return_dense:
+            result["dense_vecs"] = np.array([0.1 * (i + 1) for i in range(1024)])
+        if return_sparse:
+            result["lexical_weights"] = {"0": 1.0}
+        return result
+
+    def encode_corpus(self, texts: list[str], return_dense: bool = True, return_sparse: bool = True) -> dict:
+        """
+        Encodes a corpus of texts and returns a dict with lists of fake dense and sparse representations.
+        """
+        result = {}
+        if return_dense:
+            # For each text in the corpus, return a dummy vector.
+            # Here we simply vary the vector slightly based on the index.
+            result["dense_vecs"] = [np.array([0.1 * (i + 1)] * 1024) for i, _ in enumerate(texts)]
+        if return_sparse:
+            # For each text, we return a dummy dictionary.
+            result["lexical_weights"] = [{"0": float(len(text))} for text in texts]
+        return result
+
+
+def get_embedding_model() -> FakeModel | M3Embedder:
+    if os.getenv("DISABLE_INFERENCE") == "true":
+        return FakeModel()
+
+    return BGEM3FlagModel(
+        "BAAI/bge-m3",
+        devices="cpu",
+        use_fp16=False,
+        cache_dir=os.getenv("HF_HUB_CACHE"),
+        passage_max_length=8192,
+        query_max_length=8192,
+        trust_remote_code=True,
+        normalize_embeddings=True,
+    )
+
+
 class EmbeddingsService:
     def __init__(
         self,
         page_repository: PageRepository,
         embeddings_repository: EmbeddingsRepository,
-        model: BGEM3FlagModel,
+        model: FakeModel | M3Embedder,
         splitter: MarkdownSplitter,
     ):
         self._page_repository = page_repository

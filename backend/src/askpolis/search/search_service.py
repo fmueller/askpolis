@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 
-from askpolis.search import EmbeddingsCollection, EmbeddingsService, SearchResult
+from askpolis.search import EmbeddingsCollectionRepository, EmbeddingsService, SearchResult
 from askpolis.search.reranker_service import RerankerService
 
 
@@ -13,18 +14,31 @@ class SearchServiceBase(ABC):
 
 class SearchService(SearchServiceBase):
     def __init__(
-        self, collection: EmbeddingsCollection, embeddings_service: EmbeddingsService, reranker_service: RerankerService
+        self,
+        collections_repository: EmbeddingsCollectionRepository,
+        embeddings_service: EmbeddingsService,
+        reranker_service: RerankerService,
     ) -> None:
-        self._collection = collection
+        self._collections_repository = collections_repository
         self._embeddings_service = embeddings_service
         self._reranker_service = reranker_service
 
-    def find_matching_texts(self, query: str, limit: int = 10, use_reranker: bool = False) -> list[SearchResult]:
+    def find_matching_texts(
+        self, query: str, limit: int = 10, use_reranker: bool = False, indexes: Optional[list[str]] = None
+    ) -> list[SearchResult]:
+        if indexes is None:
+            indexes = ["default"]
         if limit < 1:
             return []
 
         query_limit = limit * 2 if use_reranker else limit
-        similar_documents = self._embeddings_service.find_similar_documents(self._collection, query, query_limit)
+        similar_documents = [
+            result
+            for index in indexes
+            for result in self._embeddings_service.find_similar_documents(
+                self._collections_repository.get_most_recent_by_name(index), query, query_limit
+            )
+        ]
 
         if use_reranker:
             similar_documents = self._reranker_service.rerank(query, [e for e, _ in similar_documents], limit)
@@ -39,8 +53,3 @@ class SearchService(SearchServiceBase):
             )
             for result, score in similar_documents
         ]
-
-
-class EmptySearchService(SearchServiceBase):
-    def find_matching_texts(self, query: str, limit: int = 5, use_reranker: bool = False) -> list[SearchResult]:
-        return []

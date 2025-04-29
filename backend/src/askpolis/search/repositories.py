@@ -1,10 +1,13 @@
-from typing import Optional, Union
+from typing import Union
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from askpolis.core import Document
+from askpolis.logging import get_logger
 from askpolis.search.models import Embeddings, EmbeddingsCollection, convert_to_sparse_vector
+
+logger = get_logger(__name__)
 
 
 class EmbeddingsCollectionRepository:
@@ -14,13 +17,23 @@ class EmbeddingsCollectionRepository:
     def get_all(self) -> list[EmbeddingsCollection]:
         return self.db.query(EmbeddingsCollection).all()
 
-    def get_most_recent_by_name(self, name: str) -> Optional[EmbeddingsCollection]:
-        return (
+    def get_most_recent_by_name(self, name: str) -> EmbeddingsCollection:
+        collection = (
             self.db.query(EmbeddingsCollection)
             .filter(EmbeddingsCollection.name == name)
             .order_by(EmbeddingsCollection.created_at.desc())
             .first()
         )
+        if collection is not None:
+            return collection
+
+        if name == "default":
+            logger.info("Creating default embeddings collection...")
+            collection = EmbeddingsCollection(name="default", version="v0", description="Default collection")
+            self.save(collection)
+            return collection
+
+        return self.get_most_recent_by_name("default")
 
     def save(self, collection: EmbeddingsCollection) -> None:
         self.db.add(collection)

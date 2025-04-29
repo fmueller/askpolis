@@ -4,7 +4,6 @@ from typing import Annotated, Any, Optional
 
 from fastapi import Depends, FastAPI, status
 from fastapi.responses import JSONResponse
-from FlagEmbedding import BGEM3FlagModel
 from pydantic import BaseModel
 from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIModel
@@ -20,11 +19,11 @@ from askpolis.search import (
     EmbeddingsCollectionRepository,
     EmbeddingsRepository,
     EmbeddingsService,
-    EmptySearchService,
     RerankerService,
     SearchResult,
     SearchService,
     SearchServiceBase,
+    get_embedding_model,
 )
 
 configure_logging()
@@ -79,28 +78,12 @@ def get_db() -> Generator[Session, Any, None]:
 
 
 def get_search_service(db: Annotated[Session, Depends(get_db)]) -> SearchServiceBase:
-    default_collection = EmbeddingsCollectionRepository(db).get_most_recent_by_name("default")
-    if default_collection is None:
-        logger.warning("No default embeddings collection found. Search will return empty results.")
-        return EmptySearchService()
-
     embeddings_repository = EmbeddingsRepository(db)
     page_repository = PageRepository(db)
     splitter = MarkdownSplitter(chunk_size=2000, chunk_overlap=400)
-
-    embedding_model = BGEM3FlagModel(
-        "BAAI/bge-m3",
-        devices="cpu",
-        use_fp16=False,
-        cache_dir=os.getenv("HF_HUB_CACHE"),
-        passage_max_length=8192,
-        query_max_length=8192,
-        trust_remote_code=True,
-        normalize_embeddings=True,
-    )
-    embeddings_service = EmbeddingsService(page_repository, embeddings_repository, embedding_model, splitter)
+    embeddings_service = EmbeddingsService(page_repository, embeddings_repository, get_embedding_model(), splitter)
     reranker_service = RerankerService()
-    return SearchService(default_collection, embeddings_service, reranker_service)
+    return SearchService(EmbeddingsCollectionRepository(db), embeddings_service, reranker_service)
 
 
 class HealthResponse(BaseModel):
@@ -129,16 +112,25 @@ def trigger_embeddings_ingestion() -> JSONResponse:
     return JSONResponse(content={"status": "ok"}, status_code=status.HTTP_202_ACCEPTED)
 
 
+@app.get("/v0/tasks/tests/embeddings")
+def trigger_embeddings_test() -> JSONResponse:
+    celery_app.send_task("test_embeddings")
+    return JSONResponse(content={"status": "ok"}, status_code=status.HTTP_202_ACCEPTED)
+
+
 @app.get("/v0/search")
 def search(
     search_service: Annotated[SearchService, Depends(get_search_service)],
     query: str,
     limit: int = 5,
     reranking: bool = False,
+    indexes: Optional[list[str]] = None,
 ) -> SearchResponse:
+    if indexes is None:
+        indexes = ["default"]
     if limit < 1:
         limit = 5
-    return SearchResponse(query=query, results=search_service.find_matching_texts(query, limit, reranking))
+    return SearchResponse(query=query, results=search_service.find_matching_texts(query, limit, reranking, indexes))
 
 
 @app.get("/v0/answers")
