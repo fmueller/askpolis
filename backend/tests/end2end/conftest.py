@@ -1,33 +1,57 @@
 import subprocess
 import time
 from collections.abc import Generator
-from typing import cast
+from typing import Any
 
 import pytest
 import requests
+from docker import from_env
+from docker.models.networks import Network
 from testcontainers.core.container import DockerContainer
-from testcontainers.core.generic import DbContainer
 from testcontainers.postgres import PostgresContainer
+from testcontainers.redis import RedisContainer
 
 
 @pytest.fixture(scope="session")
-def postgres_container() -> DbContainer:
-    with PostgresContainer("pgvector/pgvector:pg17") as container:
-        yield container.start()
+def docker_network() -> Generator[Network, None, None]:
+    client = from_env()
+    network = client.networks.create(name="askpolis_e2e_test_shared", driver="bridge", check_duplicate=True)
+    yield network
+    network.remove()
 
 
 @pytest.fixture(scope="session")
-def test_db_url(postgres_container: DbContainer) -> str:
-    return cast(str, postgres_container.get_connection_url().replace("psycopg2", "psycopg"))
+def redis_container(docker_network: Network) -> Generator[RedisContainer, None, None]:
+    with RedisContainer("redis:7.4.2-bookworm").with_network(docker_network).with_network_aliases("redis") as container:
+        yield container
 
 
 @pytest.fixture(scope="session")
-def api_url(test_db_url: str) -> Generator[str, None, None]:
+def celery_broker_url(redis_container: RedisContainer) -> str:
+    return "redis://redis:6379/0"
+
+
+@pytest.fixture(scope="session")
+def postgres_container(docker_network: Network) -> Generator[PostgresContainer, Any, None]:
+    with (
+        PostgresContainer(image="pgvector/pgvector:pg17", driver="psycopg")
+        .with_network(docker_network)
+        .with_network_aliases("postgres") as container
+    ):
+        yield container
+
+
+@pytest.fixture(scope="session")
+def test_db_connection_url(postgres_container: PostgresContainer) -> str:
+    return f"postgresql+psycopg://{postgres_container.username}:{postgres_container.password}@postgres:5432/{postgres_container.dbname}"
+
+
+@pytest.fixture(scope="session")
+def docker_test_image() -> str:
     """
-    Build the Docker image with a build argument to disable Hugging Face downloads,
-    then starts the Docker container using Testcontainers.
+    Build the Docker image with a build argument to disable Hugging Face downloads
     """
-    subprocess.run(
+    result = subprocess.run(
         [
             "docker",
             "build",
@@ -43,15 +67,42 @@ def api_url(test_db_url: str) -> Generator[str, None, None]:
         ],
         check=True,
     )
+    assert result.returncode == 0
+    return "askpolis-e2e-test:latest"
 
+
+@pytest.fixture(scope="session")
+def worker_container(
+    docker_test_image: str, docker_network: Network, test_db_connection_url: str, celery_broker_url: str
+) -> Generator[DockerContainer, None, None]:
     with (
-        DockerContainer("askpolis-e2e-test:latest")
-        .with_env("CELERY_BROKER_URL", "redis://localhost:11111/0")
-        .with_env("DATABASE_URL", test_db_url)
-        .with_exposed_ports(8000)
-        .with_command("uvicorn askpolis.main:app --host 0.0.0.0 --port 8000") as container
+        DockerContainer(docker_test_image)
+        .with_network(docker_network)
+        .with_env("CELERY_BROKER_URL", celery_broker_url)
+        .with_env("DATABASE_URL", test_db_connection_url)
+        .with_env("DISABLE_INFERENCE", "true")
+        .with_command("./scripts/start-worker.sh") as container
     ):
-        # container.start()
+        yield container
+
+
+@pytest.fixture(scope="session")
+def api_url(
+    docker_test_image: str,
+    docker_network: Network,
+    worker_container: DockerContainer,
+    test_db_connection_url: str,
+    celery_broker_url: str,
+) -> Generator[str, None, None]:
+    with (
+        DockerContainer(docker_test_image)
+        .with_network(docker_network)
+        .with_env("CELERY_BROKER_URL", celery_broker_url)
+        .with_env("DATABASE_URL", test_db_connection_url)
+        .with_env("DISABLE_INFERENCE", "true")
+        .with_exposed_ports(8000)
+        .with_command("./scripts/start-api.sh") as container
+    ):
         host = container.get_container_host_ip()
         port = container.get_exposed_port(8000)
         base_url = f"http://{host}:{port}"
