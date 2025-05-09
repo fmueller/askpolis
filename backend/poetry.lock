@@ -3429,14 +3429,14 @@ test = ["black", "datasets", "diffusers", "hf-doc-builder", "parameterized", "pr
 
 [[package]]
 name = "pgvector"
-version = "0.4.0"
+version = "0.4.1"
 description = "pgvector support for Python"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pgvector-0.4.0-py3-none-any.whl", hash = "sha256:9d3e0c27f676c61d2fd4270ac1bc520d39b947b199200babe4a56d6d00c74a07"},
-    {file = "pgvector-0.4.0.tar.gz", hash = "sha256:f909f8e8081b57fb8a2442c36c3a1e521228d0d4ad66100c28c674806ff62688"},
+    {file = "pgvector-0.4.1-py3-none-any.whl", hash = "sha256:34bb4e99e1b13d08a2fe82dda9f860f15ddcd0166fbb25bffe15821cbfeb7362"},
+    {file = "pgvector-0.4.1.tar.gz", hash = "sha256:83d3a1c044ff0c2f1e95d13dfb625beb0b65506cfec0941bfe81fd0ad44f4003"},
 ]
 
 [package.dependencies]
@@ -6326,4 +6326,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "bdb84086448c766e63460f4e181b93ae24abc0001d69373507d38a9e61532206"
+content-hash = "89f6aaaf518e69596bfc8aa6d916d14f653a8578d07fcc683ad038d57038ff27"
