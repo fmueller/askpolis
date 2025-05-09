@@ -5382,6 +5382,22 @@ cbor = ">=1.0.0"
 numpy = ">=1.11.2"
 
 [[package]]
+name = "types-docker"
+version = "7.1.0.20250503"
+description = "Typing stubs for docker"
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "types_docker-7.1.0.20250503-py3-none-any.whl", hash = "sha256:30c343982d35441f9eaf64b6c2a41fd59fc1575d20e5b8c9b8d4a820ed6e5105"},
+    {file = "types_docker-7.1.0.20250503.tar.gz", hash = "sha256:ea183b91cd46669d193d1ac34e2eaa0a0f1ca3b6fb7512f7b7652611fc40c1d3"},
+]
+
+[package.dependencies]
+types-requests = "*"
+urllib3 = ">=2"
+
+[[package]]
 name = "types-requests"
 version = "2.32.0.20250328"
 description = "Typing stubs for requests"
@@ -6309,4 +6325,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "0c2239fc7c847ab4de6fafde41fef6273e553c3e0e5fe9245bd65a75e024ce85"
+content-hash = "e3dd53dc06ed9c53323db941041d0a4d8e3558a71a201e8efbe90f3d37c64791"

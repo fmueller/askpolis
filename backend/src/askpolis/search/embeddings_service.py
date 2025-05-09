@@ -1,7 +1,8 @@
 import os
 import uuid
-from typing import Any, cast
+from typing import Any, cast, TypedDict
 
+import numpy.typing as npt
 import numpy as np
 from FlagEmbedding import BGEM3FlagModel
 from FlagEmbedding.inference.embedder.encoder_only.m3 import M3Embedder
@@ -43,26 +44,36 @@ def _get_page(pages: list[Page], chunk_metadata: dict[str, Any]) -> Page:
     return filtered_page
 
 
+class Encoded(TypedDict, total=False):
+    dense_vecs: npt.NDArray[np.float32]
+    lexical_weights: dict[str, float]
+
+
+class EncodedCorpus(TypedDict, total=False):
+    dense_vecs: list[npt.NDArray[np.float32]]
+    lexical_weights: list[dict[str, float]]
+
+
 class FakeModel:
-    def __init__(self):
+    def __init__(self) -> None:
         pass
 
-    def encode(self, text: str, return_dense: bool = True, return_sparse: bool = True) -> dict:
+    def encode(self, text: str, return_dense: bool = True, return_sparse: bool = True) -> Encoded:
         """
         Encodes a single string and returns a dict with fake dense and sparse representations.
         """
-        result = {}
+        result: Encoded = {}
         if return_dense:
             result["dense_vecs"] = np.array([0.1 * (i + 1) for i in range(1024)])
         if return_sparse:
             result["lexical_weights"] = {"0": 1.0}
         return result
 
-    def encode_corpus(self, texts: list[str], return_dense: bool = True, return_sparse: bool = True) -> dict:
+    def encode_corpus(self, texts: list[str], return_dense: bool = True, return_sparse: bool = True) -> EncodedCorpus:
         """
         Encodes a corpus of texts and returns a dict with lists of fake dense and sparse representations.
         """
-        result = {}
+        result: EncodedCorpus = {}
         if return_dense:
             # For each text in the corpus, return a dummy vector.
             # Here we simply vary the vector slightly based on the index.
@@ -103,9 +114,9 @@ class EmbeddingsService:
         self._model = model
 
     def find_similar_documents(
-        self, collection: EmbeddingsCollection, query: str, limit: int = 10
+        self, collection: EmbeddingsCollection | None, query: str, limit: int = 10
     ) -> list[tuple[Embeddings, float]]:
-        if limit < 1:
+        if limit < 1 or collection is None:
             return []
 
         logger.info_with_attrs("Searching for similar documents...", {"collection": collection.name, "limit": limit})

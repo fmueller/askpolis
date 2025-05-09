@@ -49,6 +49,7 @@ types-requests = "^2.32.0.20250328"
 pre-commit = "^4.2.0"
 sqlalchemy = { extras = ["mypy"], version = "^2.0.40" }
 faker = "^37.1.0"
+types-docker = "^7.1.0.20250503"
 
 [[tool.poetry.source]]
 name = "pytorch"
