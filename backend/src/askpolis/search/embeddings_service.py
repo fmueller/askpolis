@@ -1,9 +1,9 @@
 import os
 import uuid
-from typing import Any, cast, TypedDict
+from typing import Any, TypedDict, cast
 
-import numpy.typing as npt
 import numpy as np
+import numpy.typing as npt
 from FlagEmbedding import BGEM3FlagModel
 from FlagEmbedding.inference.embedder.encoder_only.m3 import M3Embedder
 
