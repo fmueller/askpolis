@@ -18,7 +18,7 @@ def test_embed_document_and_search_for_it(api_url: str) -> None:
 
     for _ in range(30):
         try:
-            response = requests.get(f"{api_url}/v0/search?query=test&limit=1&indexes=test", timeout=1)
+            response = requests.get(f"{api_url}/v0/search?query=test&limit=1&index=test", timeout=1)
             if response.status_code == status.HTTP_200_OK:
                 search_response = SearchResponse.model_validate(response.json())
                 if len(search_response.results) == 0:
@@ -34,7 +34,6 @@ def test_embed_document_and_search_for_it(api_url: str) -> None:
         pytest.fail("The search did not respond within the expected time.")
 
 
-# TODO: this test seems to fail when other e2e tests ran before, so cleanup seems to be wrong or the default index
 def test_search_on_default_index_returns_empty_results(api_url: str) -> None:
     for _ in range(5):
         try:
