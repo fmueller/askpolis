@@ -2,7 +2,7 @@ import os
 from collections.abc import Generator
 from typing import Annotated, Any, Optional
 
-from fastapi import Depends, FastAPI, status
+from fastapi import Depends, FastAPI, Query, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from pydantic_ai import Agent
@@ -124,13 +124,13 @@ def search(
     query: str,
     limit: int = 5,
     reranking: bool = False,
-    indexes: Optional[list[str]] = None,
+    index: Annotated[list[str] | None, Query()] = None,
 ) -> SearchResponse:
-    if indexes is None:
-        indexes = ["default"]
+    if index is None:
+        index = ["default"]
     if limit < 1:
         limit = 5
-    return SearchResponse(query=query, results=search_service.find_matching_texts(query, limit, reranking, indexes))
+    return SearchResponse(query=query, results=search_service.find_matching_texts(query, limit, reranking, index))
 
 
 @app.get("/v0/answers")

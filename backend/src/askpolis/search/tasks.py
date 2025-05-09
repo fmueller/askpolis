@@ -61,6 +61,11 @@ def ingest_embeddings_for_one_document() -> None:
     with DbSession() as session:
         collections_repository = EmbeddingsCollectionRepository(session)
         collection = collections_repository.get_most_recent_by_name("default")
+        if collection is None:
+            logger.info("Creating default embeddings collection...")
+            collection = EmbeddingsCollection(name="default", version="v0", description="Default collection")
+            collections_repository.save(collection)
+
         embeddings_repository = EmbeddingsRepository(session)
         documents = embeddings_repository.get_documents_without_embeddings()
         if len(documents) == 0:
