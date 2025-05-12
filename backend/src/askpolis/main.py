@@ -1,10 +1,13 @@
+import datetime
 import os
 from collections.abc import Generator
 from typing import Annotated, Any, Optional
 
-from fastapi import Depends, FastAPI, Query, status
+import uuid_utils.compat as uuid
+from fastapi import Depends, FastAPI, Query, Request, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIModel
 from pydantic_ai.providers.openai import OpenAIProvider
@@ -101,6 +104,19 @@ class AnswerResponse(BaseModel):
     search_results: list[SearchResult]
 
 
+class QuestionResponse(BaseModel):
+    id: uuid.UUID
+    text: str
+    status: str
+    created_at: str
+    answer_url: str | None = None
+    answer: AnswerResponse | None = None
+
+
+class CreateQuestionRequest(BaseModel):
+    question: str = Field()
+
+
 @app.get("/")
 def read_root() -> HealthResponse:
     return HealthResponse(healthy=True)
@@ -143,3 +159,32 @@ def get_answers(search_service: Annotated[SearchService, Depends(get_search_serv
     answer = agent.run_sync(user_prompt=f"Query: {question}\n\nContent:\n\n{content}")
 
     return AnswerResponse(question=question, answer=answer.data, search_results=results)
+
+
+@app.post("/v0/questions", status_code=status.HTTP_201_CREATED, response_model=QuestionResponse)
+def create_question(request: Request, payload: CreateQuestionRequest) -> JSONResponse:
+    question_id = uuid.uuid7()
+    question = QuestionResponse(
+        id=question_id,
+        text=payload.question,
+        status="pending",
+        answer_url=str(request.url_for("get_answer", question_id=question_id)),
+        created_at=datetime.datetime.now(datetime.UTC).isoformat(),
+    )
+    return JSONResponse(
+        content=jsonable_encoder(question),
+        status_code=status.HTTP_201_CREATED,
+        headers={"Location": str(request.url_for("get_question", question_id=question.id))},
+    )
+
+
+@app.get("/v0/questions/{question_id}")
+def get_question(question_id: uuid.UUID) -> QuestionResponse:
+    return QuestionResponse(
+        id=question_id, text="", status="pending", created_at=datetime.datetime.now(datetime.UTC).isoformat()
+    )
+
+
+@app.get("/v0/questions/{question_id}/answer")
+def get_answer(question_id: uuid.UUID) -> AnswerResponse:
+    return AnswerResponse(question="", answer="", search_results=[])
