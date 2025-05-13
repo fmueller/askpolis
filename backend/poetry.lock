@@ -4250,14 +4250,14 @@ files = [
 
 [[package]]
 name = "pymupdf4llm"
-version = "0.0.21"
+version = "0.0.24"
 description = "PyMuPDF Utilities for LLM/RAG"
 optional = false
 python-versions = "*"
 groups = ["main"]
 files = [
-    {file = "pymupdf4llm-0.0.21-py3-none-any.whl", hash = "sha256:cf78fc0957ed13f56cb531b3bc0546cb5ae543541e54ce7ec4194165549cfe2e"},
-    {file = "pymupdf4llm-0.0.21.tar.gz", hash = "sha256:77b49d5f8efd48ca3b7322f620afa4bcbb2a01d17079baeeb7ad04add434ce0b"},
+    {file = "pymupdf4llm-0.0.24-py3-none-any.whl", hash = "sha256:98cb424e28acfd1a371d6c9880c774510f1eb5bae5bd48dbea4e7ecb4eec04f3"},
+    {file = "pymupdf4llm-0.0.24.tar.gz", hash = "sha256:56a9100f920ea5e02d2eee34f9aa2b6f7c8ed7dc9fa535fc9236a47e386632ab"},
 ]
 
 [package.dependencies]
@@ -6326,4 +6326,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "e2abfbf4f0e5e5a9f9bfae1cea789634542d8147b2a422c74eda1c26d1f07406"
+content-hash = "d6657d2bdef2307088b5f4c8587f0c942c8de48d82fb288109dbd64bded1a148"
