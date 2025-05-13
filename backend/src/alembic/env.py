@@ -3,6 +3,8 @@ from logging.config import fileConfig
 
 from sqlalchemy import create_engine
 
+import askpolis.qa.models  # noqa: F401
+import askpolis.search.models  # noqa: F401
 from alembic import context
 from askpolis.core import Base as Core_Base
 from askpolis.data_fetcher import Base as DataFetcher_Base
@@ -30,7 +32,7 @@ def get_database_url() -> str:
     return (
         os.environ.get("DATABASE_URL")
         or config.get_main_option("sqlalchemy.url")
-        or "postgresql+psycopg://postgres@postgres:5432/askpolis"
+        or "postgresql+psycopg://postgres:secret@localhost:5432/askpolis-db"
     )
 
 
