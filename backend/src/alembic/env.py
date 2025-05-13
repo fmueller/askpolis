@@ -32,7 +32,7 @@ def get_database_url() -> str:
     return (
         os.environ.get("DATABASE_URL")
         or config.get_main_option("sqlalchemy.url")
-        or "postgresql+psycopg://postgres:secret@localhost:5432/askpolis-db"
+        or "postgresql+psycopg://postgres@postgres:5432/askpolis"
     )
 
 
