@@ -106,7 +106,7 @@ class AnswerResponse(BaseModel):
 
 class QuestionResponse(BaseModel):
     id: uuid.UUID
-    text: str
+    content: str
     status: str
     created_at: str
     answer_url: str | None = None
@@ -166,7 +166,7 @@ def create_question(request: Request, payload: CreateQuestionRequest) -> JSONRes
     question_id = uuid.uuid7()
     question = QuestionResponse(
         id=question_id,
-        text=payload.question,
+        content=payload.question,
         status="pending",
         answer_url=str(request.url_for("get_answer", question_id=question_id)),
         created_at=datetime.datetime.now(datetime.UTC).isoformat(),
@@ -181,7 +181,7 @@ def create_question(request: Request, payload: CreateQuestionRequest) -> JSONRes
 @app.get("/v0/questions/{question_id}")
 def get_question(question_id: uuid.UUID) -> QuestionResponse:
     return QuestionResponse(
-        id=question_id, text="", status="pending", created_at=datetime.datetime.now(datetime.UTC).isoformat()
+        id=question_id, content="", status="pending", created_at=datetime.datetime.now(datetime.UTC).isoformat()
     )
 
 
