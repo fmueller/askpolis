@@ -3,7 +3,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from askpolis.qa.models import Question
+from askpolis.qa.models import Answer, Question
 
 
 class QuestionRepository:
@@ -18,4 +18,16 @@ class QuestionRepository:
 
     def save(self, question: Question) -> None:
         self.db.add(question)
+        self.db.commit()
+
+
+class AnswerRepository:
+    def __init__(self, db: Session):
+        self.db = db
+
+    def get(self, answer_id: uuid.UUID) -> Optional[Answer]:
+        return self.db.query(Answer).filter(Answer.id == answer_id).first()
+
+    def save(self, answer: Answer) -> None:
+        self.db.add(answer)
         self.db.commit()
