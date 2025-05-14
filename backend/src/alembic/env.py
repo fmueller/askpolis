@@ -29,10 +29,22 @@ target_metadata = [Core_Base.metadata, DataFetcher_Base.metadata]
 
 
 def get_database_url() -> str:
-    return (
-        os.environ.get("DATABASE_URL")
-        or config.get_main_option("sqlalchemy.url")
-        or "postgresql+psycopg://postgres@postgres:5432/askpolis"
+    env_url = os.environ.get("DATABASE_URL")
+    cfg_url = config.get_main_option("sqlalchemy.url")
+
+    # prefer the environment variable if set
+    if isinstance(env_url, str) and env_url:
+        return env_url
+
+    # fall back to the config file
+    if isinstance(cfg_url, str) and cfg_url:
+        return cfg_url
+
+    # if neither yielded a non-empty string, that's a fatal misconfiguration
+    raise RuntimeError(
+        "No database URL provided: "
+        "set the DATABASE_URL environment variable or "
+        "define sqlalchemy.url in your Alembic configuration."
     )
 
 
