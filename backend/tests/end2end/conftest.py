@@ -19,16 +19,16 @@ configure_logging()
 containers_logger = get_logger("containers")
 
 
-def _attach_log_stream(container, prefix: str):
+def _attach_log_stream(container: DockerContainer, prefix: str) -> None:
     """
     Spins up a daemon thread that tails `container.logs(stream=True, follow=True)`
     and emits each line to our `containers` logger.
     """
 
-    def _stream():
+    def _stream() -> None:
         for raw_line in container.get_wrapped_container().logs(stream=True, follow=True):
             try:
-                text = raw_line.decode("utf-8", "ignore").rstrip()
+                text = raw_line.decode(encoding="utf-8", errors="ignore").rstrip()
             except Exception:
                 text = repr(raw_line)
             containers_logger.info(f"{prefix}{text}")
