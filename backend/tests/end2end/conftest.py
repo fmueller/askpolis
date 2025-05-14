@@ -136,7 +136,7 @@ def api_url(
         port = container.get_exposed_port(8000)
         base_url = f"http://{host}:{port}"
 
-        for _ in range(30):
+        for _ in range(60):
             try:
                 response = requests.get(base_url, timeout=1)
                 if response.status_code == 200:
