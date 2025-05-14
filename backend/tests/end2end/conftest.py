@@ -1,4 +1,5 @@
 import subprocess
+import threading
 import time
 from collections.abc import Generator
 from typing import Any
@@ -10,6 +11,30 @@ from docker.models.networks import Network
 from testcontainers.core.container import DockerContainer
 from testcontainers.postgres import PostgresContainer
 from testcontainers.redis import RedisContainer
+
+from askpolis.logging import configure_logging, get_logger
+
+configure_logging()
+
+containers_logger = get_logger("containers")
+
+
+def _attach_log_stream(container, prefix: str):
+    """
+    Spins up a daemon thread that tails `container.logs(stream=True, follow=True)`
+    and emits each line to our `containers` logger.
+    """
+
+    def _stream():
+        for raw_line in container.get_wrapped_container().logs(stream=True, follow=True):
+            try:
+                text = raw_line.decode("utf-8", "ignore").rstrip()
+            except Exception:
+                text = repr(raw_line)
+            containers_logger.info(f"{prefix}{text}")
+
+    thread = threading.Thread(target=_stream, daemon=True, name=f"log-stream-{prefix}")
+    thread.start()
 
 
 @pytest.fixture(scope="session")
@@ -23,6 +48,7 @@ def docker_network() -> Generator[Network, None, None]:
 @pytest.fixture(scope="session")
 def redis_container(docker_network: Network) -> Generator[RedisContainer, None, None]:
     with RedisContainer("redis:7.4.2-bookworm").with_network(docker_network).with_network_aliases("redis") as container:
+        _attach_log_stream(container, "[redis] ")
         yield container
 
 
@@ -38,6 +64,7 @@ def postgres_container(docker_network: Network) -> Generator[PostgresContainer, 
         .with_network(docker_network)
         .with_network_aliases("postgres") as container
     ):
+        _attach_log_stream(container, "[postgres] ")
         yield container
 
 
@@ -83,6 +110,7 @@ def worker_container(
         .with_env("DISABLE_INFERENCE", "true")
         .with_command("./scripts/start-worker.sh") as container
     ):
+        _attach_log_stream(container, "[worker] ")
         yield container
 
 
@@ -103,6 +131,7 @@ def api_url(
         .with_exposed_ports(8000)
         .with_command("./scripts/start-api.sh") as container
     ):
+        _attach_log_stream(container, "[api] ")
         host = container.get_container_host_ip()
         port = container.get_exposed_port(8000)
         base_url = f"http://{host}:{port}"
