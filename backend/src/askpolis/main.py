@@ -1,10 +1,9 @@
-import datetime
 import os
 from collections.abc import Generator
 from typing import Annotated, Any, Optional
 
 import uuid_utils.compat as uuid
-from fastapi import Depends, FastAPI, Query, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
@@ -16,8 +15,10 @@ from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from askpolis.celery import app as celery_app
-from askpolis.core import MarkdownSplitter, PageRepository
+from askpolis.core import MarkdownSplitter, PageRepository, ParliamentRepository
 from askpolis.logging import configure_logging, get_logger
+from askpolis.qa.qa_service import QAService
+from askpolis.qa.repositories import QuestionRepository
 from askpolis.search import (
     EmbeddingsCollectionRepository,
     EmbeddingsRepository,
@@ -89,6 +90,12 @@ def get_search_service(db: Annotated[Session, Depends(get_db)]) -> SearchService
     return SearchService(EmbeddingsCollectionRepository(db), embeddings_service, reranker_service)
 
 
+def get_qa_service(db: Annotated[Session, Depends(get_db)]) -> QAService:
+    question_repository = QuestionRepository(db)
+    parliament_repository = ParliamentRepository(db)
+    return QAService(question_repository, parliament_repository)
+
+
 class HealthResponse(BaseModel):
     healthy: bool
 
@@ -98,10 +105,19 @@ class SearchResponse(BaseModel):
     results: list[SearchResult]
 
 
-class AnswerResponse(BaseModel):
+class LegacyAnswerResponse(BaseModel):
     question: str
     answer: str
     search_results: list[SearchResult]
+
+
+class AnswerResponse(BaseModel):
+    answer: str | None = None
+    language: str | None = None
+    status: str
+    citations: list[SearchResult]
+    created_at: str | None = None
+    updated_at: str | None = None
 
 
 class QuestionResponse(BaseModel):
@@ -109,6 +125,7 @@ class QuestionResponse(BaseModel):
     content: str
     status: str
     created_at: str
+    updated_at: str
     answer_url: str | None = None
     answer: AnswerResponse | None = None
 
@@ -150,7 +167,9 @@ def search(
 
 
 @app.get("/v0/answers")
-def get_answers(search_service: Annotated[SearchService, Depends(get_search_service)], question: str) -> AnswerResponse:
+def get_answers(
+    search_service: Annotated[SearchService, Depends(get_search_service)], question: str
+) -> LegacyAnswerResponse:
     logger.info_with_attrs("Querying...", {"question": question})
     results = search_service.find_matching_texts(question, limit=5, use_reranker=True)
 
@@ -158,33 +177,73 @@ def get_answers(search_service: Annotated[SearchService, Depends(get_search_serv
     content = "\n\n".join([r.matching_text for r in results])
     answer = agent.run_sync(user_prompt=f"Query: {question}\n\nContent:\n\n{content}")
 
-    return AnswerResponse(question=question, answer=answer.data, search_results=results)
+    return LegacyAnswerResponse(question=question, answer=answer.output, search_results=results)
 
 
 @app.post("/v0/questions", status_code=status.HTTP_201_CREATED, response_model=QuestionResponse)
-def create_question(request: Request, payload: CreateQuestionRequest) -> JSONResponse:
-    question_id = uuid.uuid7()
-    question = QuestionResponse(
-        id=question_id,
-        content=payload.question,
-        status="pending",
-        answer_url=str(request.url_for("get_answer", question_id=question_id)),
-        created_at=datetime.datetime.now(datetime.UTC).isoformat(),
-    )
+def create_question(
+    request: Request, payload: CreateQuestionRequest, qa_service: Annotated[QAService, Depends(get_qa_service)]
+) -> JSONResponse:
+    question = qa_service.add_question(payload.question)
     return JSONResponse(
-        content=jsonable_encoder(question),
+        content=jsonable_encoder(
+            QuestionResponse(
+                id=question.id,
+                content=payload.question,
+                status="pending",
+                answer_url=str(request.url_for("get_answer", question_id=question.id)),
+                created_at=question.created_at.isoformat(),
+                updated_at=question.updated_at.isoformat(),
+            )
+        ),
         status_code=status.HTTP_201_CREATED,
         headers={"Location": str(request.url_for("get_question", question_id=question.id))},
     )
 
 
-@app.get("/v0/questions/{question_id}")
-def get_question(question_id: uuid.UUID) -> QuestionResponse:
+@app.get(
+    path="/v0/questions/{question_id}",
+    response_model=QuestionResponse,
+    responses={404: {"description": "Question not found"}},
+)
+def get_question(
+    request: Request, question_id: uuid.UUID, qa_service: Annotated[QAService, Depends(get_qa_service)]
+) -> QuestionResponse:
+    question = qa_service.get_question(question_id)
+    if question is None:
+        raise HTTPException(status_code=404, detail="Question not found")
     return QuestionResponse(
-        id=question_id, content="", status="pending", created_at=datetime.datetime.now(datetime.UTC).isoformat()
+        id=question.id,
+        content=question.content,
+        status="pending" if len(question.answers) == 0 else "answered",
+        answer_url=str(request.url_for("get_answer", question_id=question.id)),
+        created_at=question.created_at.isoformat(),
+        updated_at=question.updated_at.isoformat(),
     )
 
 
-@app.get("/v0/questions/{question_id}/answer")
-def get_answer(question_id: uuid.UUID) -> AnswerResponse:
-    return AnswerResponse(question="", answer="", search_results=[])
+@app.get(
+    path="/v0/questions/{question_id}/answer",
+    response_model=AnswerResponse,
+    responses={404: {"description": "Question not found"}},
+)
+def get_answer(question_id: uuid.UUID, qa_service: Annotated[QAService, Depends(get_qa_service)]) -> AnswerResponse:
+    question = qa_service.get_question(question_id)
+    if question is None:
+        raise HTTPException(status_code=404, detail="Question not found")
+    if len(question.answers) == 0:
+        return AnswerResponse(
+            status="in_progress",
+            citations=[],
+        )
+    answer = question.answers[0]
+    if len(answer.contents) == 0:
+        raise HTTPException(status_code=500, detail="Answer without content pieces should not exist")
+    return AnswerResponse(
+        answer=answer.contents[0].content,
+        language=answer.contents[0].language,
+        status="completed",
+        citations=[],
+        created_at=answer.created_at.isoformat(),
+        updated_at=answer.updated_at.isoformat(),
+    )
