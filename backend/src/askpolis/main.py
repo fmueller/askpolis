@@ -15,7 +15,7 @@ from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from askpolis.celery import app as celery_app
-from askpolis.core import MarkdownSplitter, PageRepository, ParliamentRepository
+from askpolis.core import DocumentRepository, MarkdownSplitter, PageRepository, ParliamentRepository
 from askpolis.logging import configure_logging, get_logger
 from askpolis.qa.qa_service import QAService
 from askpolis.qa.repositories import QuestionRepository
@@ -96,6 +96,14 @@ def get_qa_service(db: Annotated[Session, Depends(get_db)]) -> QAService:
     return QAService(question_repository, parliament_repository)
 
 
+def get_document_repository(db: Annotated[Session, Depends(get_db)]) -> DocumentRepository:
+    return DocumentRepository(db)
+
+
+def get_embeddings_repository(db: Annotated[Session, Depends(get_db)]) -> EmbeddingsRepository:
+    return EmbeddingsRepository(db)
+
+
 class HealthResponse(BaseModel):
     healthy: bool
 
@@ -111,11 +119,16 @@ class LegacyAnswerResponse(BaseModel):
     search_results: list[SearchResult]
 
 
+class CitationResponse(BaseModel):
+    title: str
+    content: str
+
+
 class AnswerResponse(BaseModel):
     answer: str | None = None
     language: str | None = None
     status: str
-    citations: list[SearchResult]
+    citations: list[CitationResponse] = []
     created_at: str | None = None
     updated_at: str | None = None
 
@@ -225,25 +238,47 @@ def get_question(
 @app.get(
     path="/v0/questions/{question_id}/answer",
     response_model=AnswerResponse,
-    responses={404: {"description": "Question not found"}},
+    responses={
+        404: {"description": "Question not found"},
+        500: {"description": "Answer without content pieces should not exist"},
+    },
 )
-def get_answer(question_id: uuid.UUID, qa_service: Annotated[QAService, Depends(get_qa_service)]) -> AnswerResponse:
+def get_answer(
+    question_id: uuid.UUID,
+    qa_service: Annotated[QAService, Depends(get_qa_service)],
+    document_repository: Annotated[DocumentRepository, Depends(get_document_repository)],
+    embeddings_repository: Annotated[EmbeddingsRepository, Depends(get_embeddings_repository)],
+) -> AnswerResponse:
     question = qa_service.get_question(question_id)
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
+
     if len(question.answers) == 0:
         return AnswerResponse(
             status="in_progress",
             citations=[],
         )
+
     answer = question.answers[0]
     if len(answer.contents) == 0:
         raise HTTPException(status_code=500, detail="Answer without content pieces should not exist")
+
+    citation_responses: list[CitationResponse] = []
+    for cit in answer.citations:
+        doc = document_repository.get(cit.document_id)
+        emb = embeddings_repository.get(cit.embeddings_id)
+        citation_responses.append(
+            CitationResponse(
+                title=doc.name if doc else "Unknown",
+                content=emb.chunk if emb else "Unknown",
+            )
+        )
+
     return AnswerResponse(
         answer=answer.contents[0].content,
         language=answer.contents[0].language,
         status="completed",
-        citations=[],
+        citations=citation_responses,
         created_at=answer.created_at.isoformat(),
         updated_at=answer.updated_at.isoformat(),
     )

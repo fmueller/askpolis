@@ -1,3 +1,4 @@
+import uuid
 from typing import Optional, Union
 
 from sqlalchemy import select
@@ -33,6 +34,9 @@ class EmbeddingsCollectionRepository:
 class EmbeddingsRepository:
     def __init__(self, db: Session):
         self.db = db
+
+    def get(self, embeddings_id: uuid.UUID) -> Optional[Embeddings]:
+        return self.db.query(Embeddings).filter(Embeddings.id == embeddings_id).first()
 
     def get_all_by_document(self, document: Document) -> list[Embeddings]:
         return self.db.query(Embeddings).filter(Embeddings.document_id == document.id).all()

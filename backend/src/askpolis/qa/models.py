@@ -7,6 +7,7 @@ from sqlalchemy import UUID as DB_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from askpolis.core import Base, Document, Parliament, ParliamentPeriod, Party
+from askpolis.search import SearchResult
 
 
 class AnswerContent(Base):
@@ -28,7 +29,7 @@ class AnswerContent(Base):
     content: Mapped[str] = mapped_column(Text, nullable=False)
     translated_from: Mapped[Optional[uuid.UUID]] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
     created_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
-    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
+    updated_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
     __table_args__ = (UniqueConstraint("answer_id", "language", name="uq_answer_contents_answer_id_lang"),)
 
@@ -37,6 +38,37 @@ class AnswerContent(Base):
             f"<AnswerContent(id={self.id!r}, language={self.language!r}, answer_id={self.answer_id!r}, "
             f"translated_from={self.translated_from!r})>"
         )
+
+
+class Citation(Base):
+    __tablename__ = "citations"
+
+    def __init__(self, search_result: SearchResult, **kw: Any) -> None:
+        super().__init__(**kw)
+        self.id = uuid.uuid7()
+        self.embeddings_id = search_result.chunk_id
+        self.document_id = search_result.document_id
+        self.page_id = search_result.page_id
+        self.created_at = datetime.datetime.now(datetime.UTC)
+
+    id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
+    answer_id: Mapped[uuid.UUID] = mapped_column(
+        DB_UUID(as_uuid=True), ForeignKey("answers.id", ondelete="CASCADE"), nullable=False
+    )
+    embeddings_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("embeddings.id"), nullable=False)
+    document_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
+    page_id: Mapped[Optional[uuid.UUID]] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("pages.id"), nullable=True)
+    created_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
+
+    __table_args__ = (
+        UniqueConstraint(
+            "answer_id",
+            "embeddings_id",
+            "document_id",
+            "page_id",
+            name="uq_citations_dims",
+        ),
+    )
 
 
 class Answer(Base):
@@ -65,8 +97,10 @@ class Answer(Base):
     document_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         DB_UUID(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), nullable=True
     )
+    contents: Mapped[list[AnswerContent]] = relationship("AnswerContent", cascade="all, delete-orphan")
+    citations: Mapped[list[Citation]] = relationship("Citation", cascade="all, delete-orphan")
     created_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
-    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
+    updated_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
     __table_args__ = (
         UniqueConstraint(
@@ -83,8 +117,6 @@ class Answer(Base):
             name="ck_answers_at_least_one_dimension",
         ),
     )
-
-    contents: Mapped[list[AnswerContent]] = relationship("AnswerContent", cascade="all, delete-orphan")
 
     def __repr__(self) -> str:
         dims = (
@@ -143,7 +175,7 @@ class Question(Base):
     id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
     content = mapped_column(String, nullable=False)
     created_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
-    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
+    updated_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
     answers: Mapped[list[Answer]] = relationship(
         "Answer",
