@@ -267,10 +267,14 @@ def get_answer(
     for cit in answer.citations:
         doc = document_repository.get(cit.document_id)
         emb = embeddings_repository.get(cit.embeddings_id)
+
+        title = doc.name if doc and doc.name else "Unknown"
+        content = emb.chunk if emb and emb.chunk else "Unknown"
+
         citation_responses.append(
             CitationResponse(
-                title=doc.name if doc else "Unknown",
-                content=emb.chunk if emb else "Unknown",
+                title=title,
+                content=content,
             )
         )
 
