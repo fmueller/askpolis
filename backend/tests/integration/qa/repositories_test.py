@@ -29,7 +29,7 @@ def test_answer_model(session_maker: sessionmaker[Session]) -> None:
         question = Question("a test question")
         question_id = question.id
         session.add(question)
-        answer = Answer([AnswerContent("en-US", "a test answer")])
+        answer = Answer(contents=[AnswerContent("en-US", "a test answer")], citations=[])
         answer.parliament_id = parliament.id
         question.answers.append(answer)
         answer_id = answer.id
