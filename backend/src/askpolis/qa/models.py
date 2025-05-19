@@ -74,10 +74,11 @@ class Citation(Base):
 class Answer(Base):
     __tablename__ = "answers"
 
-    def __init__(self, contents: list[AnswerContent], **kw: Any) -> None:
+    def __init__(self, contents: list[AnswerContent], citations: list[Citation], **kw: Any) -> None:
         super().__init__(**kw)
         self.id = uuid.uuid7()
         self.contents = contents
+        self.citations = citations
         self.created_at = datetime.datetime.now(datetime.UTC)
         self.updated_at = self.created_at
 

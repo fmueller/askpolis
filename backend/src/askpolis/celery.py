@@ -21,4 +21,4 @@ app.conf.beat_schedule = {
     },
 }
 
-app.autodiscover_tasks(packages=["askpolis.core", "askpolis.data_fetcher", "askpolis.search"])
+app.autodiscover_tasks(packages=["askpolis.core", "askpolis.data_fetcher", "askpolis.qa", "askpolis.search"])
