@@ -19,6 +19,7 @@ app.conf.beat_schedule = {
         "task": "read_and_parse_election_programs_to_documents",
         "schedule": 1800,
     },
+    "qa/answer_stale_questions_task": {"task": "answer_stale_questions_task", "schedule": 1800},
 }
 
 app.autodiscover_tasks(packages=["askpolis.core", "askpolis.data_fetcher", "askpolis.qa", "askpolis.search"])

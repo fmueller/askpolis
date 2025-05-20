@@ -37,17 +37,30 @@ def get_search_service(db: Session) -> SearchServiceBase:
     return SearchService(EmbeddingsCollectionRepository(db), embeddings_service, reranker_service)
 
 
+def get_qa_service(db: Session) -> QAService:
+    question_repository = QuestionRepository(db)
+    parliament_repository = ParliamentRepository(db)
+    return QAService(
+        question_repository, parliament_repository, CeleryQuestionScheduler(), AnswerAgent(get_search_service(db))
+    )
+
+
 @shared_task(name="answer_question_task")
 def answer_question_task(question_id: str) -> Optional[Question]:
     with DbSession() as session:
-        qa_service = QAService(
-            QuestionRepository(session),
-            ParliamentRepository(session),
-            CeleryQuestionScheduler(),
-            AnswerAgent(get_search_service(session)),
-        )
         qid = uuid.UUID(question_id)
-        return qa_service.answer_question(qid)
+        return get_qa_service(session).answer_question(qid)
+
+
+@shared_task(name="answer_stale_questions_task")
+def answer_stale_questions_task() -> None:
+    with DbSession() as session:
+        question_repository = QuestionRepository(session)
+        stale_questions = question_repository.get_stale_questions()
+        logger.info(f"Scheduling {len(stale_questions)} stale questions...")
+        for question in stale_questions:
+            answer_question_task.delay(str(question.id))
+        logger.info(f"Scheduled {len(stale_questions)} stale questions")
 
 
 class CeleryQuestionScheduler:

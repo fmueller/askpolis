@@ -44,12 +44,18 @@ class QAService:
             logger.warning_with_attrs("Question not found", {"question_id": question_id})
             return None
 
+        # for now, this is ok - later this will come from the tenant configuration and the api
+        bundestag = self._parliament_repository.get_by_name("Bundestag")
+        if bundestag is None:
+            raise Exception("Parliament 'Bundestag' not found")
+
+        # currently, we only support parliament dimension for questions, needs to be extended later
+        if any(a.parliament_id == bundestag.id for a in question.answers):
+            logger.info_with_attrs("Question already answered", {"question_id": question_id})
+            return question
+
         answer = self._answer_agent.answer(question)
         if answer is not None:
-            # for now, this is ok - later this will come from the tenant configuration and the api
-            bundestag = self._parliament_repository.get_by_name("Bundestag")
-            if bundestag is None:
-                raise Exception("Parliament 'Bundestag' not found")
             answer.parliament_id = bundestag.id
             question.answers.append(answer)
             self._question_repository.save(question)
