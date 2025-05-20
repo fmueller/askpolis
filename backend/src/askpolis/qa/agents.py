@@ -42,13 +42,12 @@ class AnswerAgent:
         logger.info("Invoking LLM chain...")
         content = "\n\n".join([r.matching_text for r in results])
         answer = _agent.run_sync(user_prompt=f"Query: {question}\n\nContent:\n\n{content}")
-        if answer is not None and answer.output.strip() != "NO_ANSWER":
-            return Answer(
-                contents=[AnswerContent(language="de", content=answer.output.strip())],
-                citations=[Citation(r) for r in results],
-            )
+        if answer is None:
+            logger.warning_with_attrs("No answer was generated", attrs={"question": question.content})
+            return None
 
-        logger.warning_with_attrs(
-            "No answer was generated", attrs={"question": question.content, "answer": answer.output}
+        # for now, we also store NO_ANSWER in the database
+        return Answer(
+            contents=[AnswerContent(language="de", content=answer.output.strip())],
+            citations=[Citation(r) for r in results],
         )
-        return None
