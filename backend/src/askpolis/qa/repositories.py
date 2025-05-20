@@ -1,6 +1,7 @@
 import uuid
 from typing import Optional
 
+from sqlalchemy import not_
 from sqlalchemy.orm import Session
 
 from askpolis.qa.models import Answer, Question
@@ -19,6 +20,9 @@ class QuestionRepository:
     def save(self, question: Question) -> None:
         self.db.add(question)
         self.db.commit()
+
+    def get_stale_questions(self) -> list[Question]:
+        return self.db.query(Question).filter(not_(Question.answers.any())).all()
 
 
 class AnswerRepository:
