@@ -54,7 +54,7 @@ def _get_service_image_version_from_compose(service_name: str) -> str:
     image = service.get("image", "")
     if ":" not in image:
         raise RuntimeError(f"No version tag found for '{service_name}' in compose.yaml")
-    return image.split(":", 1)[1]
+    return str(image.split(":", 1)[1])
 
 
 def _get_ollama_version_from_dockerfile() -> str:
