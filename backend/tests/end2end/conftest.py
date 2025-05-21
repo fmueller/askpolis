@@ -109,7 +109,7 @@ def ollama_container(docker_network: Network) -> Generator[DockerContainer, None
 
 @pytest.fixture(scope="session")
 def ollama_url(ollama_container: DockerContainer) -> str:
-    return "http://ollama:11434"
+    return "http://ollama:11434/v1"
 
 
 @pytest.fixture(scope="session")
