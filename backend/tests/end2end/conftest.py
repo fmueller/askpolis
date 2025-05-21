@@ -71,7 +71,6 @@ def ollama_container(docker_network: Network) -> Generator[DockerContainer, None
     ):
         _attach_log_stream(container, "[ollama] ")
 
-        # base_url = f"http://ollama:11434"
         host = container.get_container_host_ip()
         port = container.get_exposed_port(11434)
         base_url = f"http://{host}:{port}"
@@ -180,6 +179,7 @@ def worker_container(
         .with_env("CELERY_BROKER_URL", celery_broker_url)
         .with_env("DATABASE_URL", test_db_connection_url)
         .with_env("OLLAMA_URL", ollama_url)
+        .with_env("OLLAMA_MODEL", ollama_model)
         .with_env("DISABLE_INFERENCE", "true")
         .with_command("./scripts/start-worker.sh") as container
     ):
@@ -202,6 +202,7 @@ def api_url(
         .with_env("CELERY_BROKER_URL", celery_broker_url)
         .with_env("DATABASE_URL", test_db_connection_url)
         .with_env("OLLAMA_URL", ollama_url)
+        .with_env("OLLAMA_MODEL", ollama_model)
         .with_env("DISABLE_INFERENCE", "true")
         .with_exposed_ports(8000)
         .with_command("./scripts/start-api.sh") as container

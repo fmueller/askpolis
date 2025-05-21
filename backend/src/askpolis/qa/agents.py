@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 
 _agent = Agent(
     OpenAIModel(
-        model_name="llama3.1",
+        model_name=os.getenv("OLLAMA_MODEL") or "llama3.1",
         provider=OpenAIProvider(base_url=os.getenv("OLLAMA_URL") or "http://localhost:11434/v1", api_key="ollama"),
     ),
     model_settings=ModelSettings(
