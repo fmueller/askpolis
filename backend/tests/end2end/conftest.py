@@ -8,6 +8,7 @@ from typing import Any
 
 import pytest
 import requests
+import yaml
 from docker import from_env
 from docker.models.networks import Network
 from testcontainers.core.container import DockerContainer
@@ -40,6 +41,20 @@ def _attach_log_stream(container: DockerContainer, prefix: str) -> None:
 
     thread = threading.Thread(target=_stream, daemon=True, name=f"log-stream-{prefix}")
     thread.start()
+
+
+def _get_service_image_version_from_compose(service_name: str) -> str:
+    compose_path = Path(__file__).parent.parent.parent / "compose.yaml"
+    with compose_path.open() as f:
+        data = yaml.safe_load(f)
+    services = data.get("services", {})
+    service = services.get(service_name)
+    if not service:
+        raise RuntimeError(f"Service '{service_name}' not found in compose.yaml")
+    image = service.get("image", "")
+    if ":" not in image:
+        raise RuntimeError(f"No version tag found for '{service_name}' in compose.yaml")
+    return image.split(":", 1)[1]
 
 
 def _get_ollama_version_from_dockerfile() -> str:
@@ -114,7 +129,11 @@ def ollama_url(ollama_container: DockerContainer) -> str:
 
 @pytest.fixture(scope="session")
 def redis_container(docker_network: Network) -> Generator[RedisContainer, None, None]:
-    with RedisContainer("redis:7.4.2-bookworm").with_network(docker_network).with_network_aliases("redis") as container:
+    with (
+        RedisContainer(f"redis:{_get_service_image_version_from_compose('redis')}")
+        .with_network(docker_network)
+        .with_network_aliases("redis") as container
+    ):
         _attach_log_stream(container, "[redis] ")
         yield container
 
@@ -126,8 +145,9 @@ def celery_broker_url(redis_container: RedisContainer) -> str:
 
 @pytest.fixture(scope="session")
 def postgres_container(docker_network: Network) -> Generator[PostgresContainer, Any, None]:
+    postgres_version = _get_service_image_version_from_compose("postgres")
     with (
-        PostgresContainer(image="pgvector/pgvector:pg17", driver="psycopg")
+        PostgresContainer(image=f"pgvector/pgvector:{postgres_version}", driver="psycopg")
         .with_network(docker_network)
         .with_network_aliases("postgres") as container
     ):
