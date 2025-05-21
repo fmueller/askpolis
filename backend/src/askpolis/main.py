@@ -11,7 +11,7 @@ from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from askpolis.celery import app as celery_app
-from askpolis.core import DocumentRepository, MarkdownSplitter, PageRepository, ParliamentRepository
+from askpolis.core import DocumentRepository, MarkdownSplitter, PageRepository, Parliament, ParliamentRepository
 from askpolis.logging import configure_logging, get_logger
 from askpolis.qa.agents import AnswerAgent
 from askpolis.qa.qa_service import QAService
@@ -85,6 +85,10 @@ def get_embeddings_repository(db: Annotated[Session, Depends(get_db)]) -> Embedd
     return EmbeddingsRepository(db)
 
 
+def get_parliament_repository(db: Annotated[Session, Depends(get_db)]) -> ParliamentRepository:
+    return ParliamentRepository(db)
+
+
 class HealthResponse(BaseModel):
     healthy: bool
 
@@ -122,6 +126,17 @@ class CreateQuestionRequest(BaseModel):
     question: str = Field()
 
 
+class ParliamentResponse(BaseModel):
+    id: uuid.UUID
+    name: str
+    short_name: str
+
+
+class CreateParliamentRequest(BaseModel):
+    name: str = Field()
+    short_name: str = Field()
+
+
 @app.get("/")
 def read_root() -> HealthResponse:
     return HealthResponse(healthy=True)
@@ -137,6 +152,28 @@ def trigger_embeddings_ingestion() -> JSONResponse:
 def trigger_embeddings_test() -> JSONResponse:
     celery_app.send_task("test_embeddings")
     return JSONResponse(content={"status": "ok"}, status_code=status.HTTP_202_ACCEPTED)
+
+
+@app.post("/v0/parliaments", status_code=status.HTTP_201_CREATED, response_model=ParliamentResponse)
+def create_parliament(
+    payload: CreateParliamentRequest,
+    parliament_repository: Annotated[ParliamentRepository, Depends(get_parliament_repository)],
+) -> JSONResponse:
+    parliament = parliament_repository.get_by_name(payload.name)
+    if parliament is not None:
+        raise HTTPException(status_code=409, detail="Parliament already exists")
+    parliament = Parliament(payload.name, payload.short_name)
+    parliament_repository.save(parliament)
+    return JSONResponse(
+        content=jsonable_encoder(
+            ParliamentResponse(
+                id=parliament.id,
+                name=payload.name,
+                short_name=payload.short_name,
+            )
+        ),
+        status_code=status.HTTP_201_CREATED,
+    )
 
 
 @app.get("/v0/search")
