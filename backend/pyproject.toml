@@ -16,7 +16,7 @@ sentence-transformers = "^4.1.0"
 torch = { version = "^2.7.0+cpu", source = "pytorch" }
 einops = "^0.8.1"
 celery = "^5.5.2"
-redis = "^5.2.1"
+redis = "^6.1.0"
 pymupdf = "^1.25.5"
 pymupdf4llm = "^0.0.24"
 sqlalchemy = "^2.0.41"
