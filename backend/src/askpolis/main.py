@@ -7,18 +7,16 @@ from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
-from pydantic_ai import Agent
-from pydantic_ai.models.openai import OpenAIModel
-from pydantic_ai.providers.openai import OpenAIProvider
-from pydantic_ai.settings import ModelSettings
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from askpolis.celery import app as celery_app
-from askpolis.core import DocumentRepository, MarkdownSplitter, PageRepository, ParliamentRepository
+from askpolis.core import DocumentRepository, MarkdownSplitter, PageRepository, Parliament, ParliamentRepository
 from askpolis.logging import configure_logging, get_logger
+from askpolis.qa.agents import AnswerAgent
 from askpolis.qa.qa_service import QAService
 from askpolis.qa.repositories import QuestionRepository
+from askpolis.qa.tasks import CeleryQuestionScheduler
 from askpolis.search import (
     EmbeddingsCollectionRepository,
     EmbeddingsRepository,
@@ -39,26 +37,6 @@ engine: Optional[Engine] = None
 DbSession: Optional[sessionmaker[Session]] = None
 
 app = FastAPI()
-
-ollama_model = OpenAIModel(
-    model_name="llama3.1",
-    provider=OpenAIProvider(base_url=os.getenv("OLLAMA_URL") or "http://localhost:11434/v1", api_key="ollama"),
-)
-
-agent = Agent(
-    ollama_model,
-    model_settings=ModelSettings(
-        max_tokens=512,
-        temperature=0.7,
-        top_p=0.9,
-    ),
-    system_prompt="""
-    Answer the query by using ONLY the provided content below.
-    Respond with NO_ANSWER if the content is not relevant for answering the query.
-    Do NOT add additional information.
-    Be concise and respond succinctly using Markdown.
-    """,
-)
 
 
 def get_db() -> Generator[Session, Any, None]:
@@ -90,10 +68,13 @@ def get_search_service(db: Annotated[Session, Depends(get_db)]) -> SearchService
     return SearchService(EmbeddingsCollectionRepository(db), embeddings_service, reranker_service)
 
 
-def get_qa_service(db: Annotated[Session, Depends(get_db)]) -> QAService:
+def get_qa_service(
+    db: Annotated[Session, Depends(get_db)],
+    search_service: Annotated[SearchServiceBase, Depends(get_search_service)],
+) -> QAService:
     question_repository = QuestionRepository(db)
     parliament_repository = ParliamentRepository(db)
-    return QAService(question_repository, parliament_repository)
+    return QAService(question_repository, parliament_repository, CeleryQuestionScheduler(), AnswerAgent(search_service))
 
 
 def get_document_repository(db: Annotated[Session, Depends(get_db)]) -> DocumentRepository:
@@ -104,6 +85,10 @@ def get_embeddings_repository(db: Annotated[Session, Depends(get_db)]) -> Embedd
     return EmbeddingsRepository(db)
 
 
+def get_parliament_repository(db: Annotated[Session, Depends(get_db)]) -> ParliamentRepository:
+    return ParliamentRepository(db)
+
+
 class HealthResponse(BaseModel):
     healthy: bool
 
@@ -111,12 +96,6 @@ class HealthResponse(BaseModel):
 class SearchResponse(BaseModel):
     query: str
     results: list[SearchResult]
-
-
-class LegacyAnswerResponse(BaseModel):
-    question: str
-    answer: str
-    search_results: list[SearchResult]
 
 
 class CitationResponse(BaseModel):
@@ -147,6 +126,17 @@ class CreateQuestionRequest(BaseModel):
     question: str = Field()
 
 
+class ParliamentResponse(BaseModel):
+    id: uuid.UUID
+    name: str
+    short_name: str
+
+
+class CreateParliamentRequest(BaseModel):
+    name: str = Field()
+    short_name: str = Field()
+
+
 @app.get("/")
 def read_root() -> HealthResponse:
     return HealthResponse(healthy=True)
@@ -164,6 +154,28 @@ def trigger_embeddings_test() -> JSONResponse:
     return JSONResponse(content={"status": "ok"}, status_code=status.HTTP_202_ACCEPTED)
 
 
+@app.post("/v0/parliaments", status_code=status.HTTP_201_CREATED, response_model=ParliamentResponse)
+def create_parliament(
+    payload: CreateParliamentRequest,
+    parliament_repository: Annotated[ParliamentRepository, Depends(get_parliament_repository)],
+) -> JSONResponse:
+    parliament = parliament_repository.get_by_name(payload.name)
+    if parliament is not None:
+        raise HTTPException(status_code=409, detail="Parliament already exists")
+    parliament = Parliament(payload.name, payload.short_name)
+    parliament_repository.save(parliament)
+    return JSONResponse(
+        content=jsonable_encoder(
+            ParliamentResponse(
+                id=parliament.id,
+                name=payload.name,
+                short_name=payload.short_name,
+            )
+        ),
+        status_code=status.HTTP_201_CREATED,
+    )
+
+
 @app.get("/v0/search")
 def search(
     search_service: Annotated[SearchService, Depends(get_search_service)],
@@ -177,20 +189,6 @@ def search(
     if limit < 1:
         limit = 5
     return SearchResponse(query=query, results=search_service.find_matching_texts(query, limit, reranking, index))
-
-
-@app.get("/v0/answers")
-def get_answers(
-    search_service: Annotated[SearchService, Depends(get_search_service)], question: str
-) -> LegacyAnswerResponse:
-    logger.info_with_attrs("Querying...", {"question": question})
-    results = search_service.find_matching_texts(question, limit=5, use_reranker=True)
-
-    logger.info("Invoking LLM chain...")
-    content = "\n\n".join([r.matching_text for r in results])
-    answer = agent.run_sync(user_prompt=f"Query: {question}\n\nContent:\n\n{content}")
-
-    return LegacyAnswerResponse(question=question, answer=answer.output, search_results=results)
 
 
 @app.post("/v0/questions", status_code=status.HTTP_201_CREATED, response_model=QuestionResponse)

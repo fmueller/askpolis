@@ -4,7 +4,7 @@ import pytest
 import requests
 from starlette import status
 
-from askpolis.main import SearchResponse
+from askpolis.main import AnswerResponse, SearchResponse
 
 
 def test_root_endpoint_returns_ok(api_url: str) -> None:
@@ -47,3 +47,33 @@ def test_search_on_default_index_returns_empty_results(api_url: str) -> None:
             time.sleep(1)
     else:
         pytest.fail("The search did not respond within the expected time.")
+
+
+def test_question_answering_works(api_url: str) -> None:
+    parliament_response = requests.post(
+        f"{api_url}/v0/parliaments", json={"name": "Bundestag", "short_name": "Bundestag"}
+    )
+    assert parliament_response.status_code == status.HTTP_201_CREATED
+
+    response = requests.post(
+        f"{api_url}/v0/questions",
+        json={
+            "question": "What is the answer?",
+        },
+    )
+    assert response.status_code == status.HTTP_201_CREATED
+    question_id = response.json()["id"]
+
+    # ping the answer endpoint and exit when status is showing "completed"
+    for _ in range(60):
+        try:
+            response = requests.get(f"{api_url}/v0/questions/{question_id}/answer", timeout=2)
+            if response.status_code == status.HTTP_200_OK:
+                answer_response = AnswerResponse.model_validate(response.json())
+                if answer_response.status == "completed":
+                    break
+                time.sleep(1)
+        except requests.RequestException:
+            time.sleep(1)
+    else:
+        pytest.fail("The answer was not generated within the expected time.")
