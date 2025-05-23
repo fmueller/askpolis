@@ -3,7 +3,7 @@ from collections.abc import Generator
 from typing import Annotated, Any, Optional
 
 import uuid_utils.compat as uuid
-from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Path, Query, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
@@ -14,6 +14,7 @@ from askpolis.celery import app as celery_app
 from askpolis.core import DocumentRepository, MarkdownSplitter, PageRepository, Parliament, ParliamentRepository
 from askpolis.logging import configure_logging, get_logger
 from askpolis.qa.agents import AnswerAgent
+from askpolis.qa.models import Question
 from askpolis.qa.qa_service import QAService
 from askpolis.qa.repositories import QuestionRepository
 from askpolis.qa.tasks import CeleryQuestionScheduler
@@ -87,6 +88,16 @@ def get_embeddings_repository(db: Annotated[Session, Depends(get_db)]) -> Embedd
 
 def get_parliament_repository(db: Annotated[Session, Depends(get_db)]) -> ParliamentRepository:
     return ParliamentRepository(db)
+
+
+def get_question_from_path(
+    question_id: Annotated[uuid.UUID, Path()],
+    qa_service: Annotated[QAService, Depends(get_qa_service)],
+) -> Question:
+    question = qa_service.get_question(question_id)
+    if question is None:
+        raise HTTPException(status_code=404, detail="Question not found")
+    return question
 
 
 class HealthResponse(BaseModel):
@@ -218,11 +229,9 @@ def create_question(
     responses={404: {"description": "Question not found"}},
 )
 def get_question(
-    request: Request, question_id: uuid.UUID, qa_service: Annotated[QAService, Depends(get_qa_service)]
+    request: Request,
+    question: Annotated[Question, Depends(get_question_from_path)],
 ) -> QuestionResponse:
-    question = qa_service.get_question(question_id)
-    if question is None:
-        raise HTTPException(status_code=404, detail="Question not found")
     return QuestionResponse(
         id=question.id,
         content=question.content,
@@ -242,15 +251,10 @@ def get_question(
     },
 )
 def get_answer(
-    question_id: uuid.UUID,
-    qa_service: Annotated[QAService, Depends(get_qa_service)],
+    question: Annotated[Question, Depends(get_question_from_path)],
     document_repository: Annotated[DocumentRepository, Depends(get_document_repository)],
     embeddings_repository: Annotated[EmbeddingsRepository, Depends(get_embeddings_repository)],
 ) -> AnswerResponse:
-    question = qa_service.get_question(question_id)
-    if question is None:
-        raise HTTPException(status_code=404, detail="Question not found")
-
     if len(question.answers) == 0:
         return AnswerResponse(
             status="in_progress",
