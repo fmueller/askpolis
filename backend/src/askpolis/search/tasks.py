@@ -9,7 +9,8 @@ from sqlalchemy.orm import sessionmaker
 from askpolis.core import Document, DocumentRepository, DocumentType, MarkdownSplitter, Page, PageRepository
 from askpolis.logging import get_logger
 
-from .embeddings_service import EmbeddingsCollection, EmbeddingsService, get_embedding_model
+from .embeddings_service import EmbeddingsService, get_embedding_model
+from .models import EmbeddingsCollection
 from .repositories import EmbeddingsCollectionRepository, EmbeddingsRepository
 
 logger = get_logger(__name__)
