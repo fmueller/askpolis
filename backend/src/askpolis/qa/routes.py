@@ -11,7 +11,7 @@ from askpolis.qa.models import AnswerResponse, CitationResponse, CreateQuestionR
 from askpolis.qa.qa_service import QAService
 from askpolis.search import EmbeddingsRepository, get_embeddings_repository
 
-router = APIRouter(prefix="/questions", tags=["questions"])
+router = APIRouter(prefix="/questions", responses={404: {"description": "Question not found"}}, tags=["questions"])
 
 
 def get_question_from_path(
@@ -45,11 +45,7 @@ def create_question(
     )
 
 
-@router.get(
-    path="/{question_id}",
-    response_model=QuestionResponse,
-    responses={404: {"description": "Question not found"}},
-)
+@router.get(path="/{question_id}", response_model=QuestionResponse)
 def get_question(
     request: Request,
     question: Annotated[Question, Depends(get_question_from_path)],
@@ -68,7 +64,6 @@ def get_question(
     path="/{question_id}/answer",
     response_model=AnswerResponse,
     responses={
-        404: {"description": "Question not found"},
         500: {"description": "Answer without content pieces should not exist"},
     },
 )
