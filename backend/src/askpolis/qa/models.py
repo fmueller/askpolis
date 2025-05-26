@@ -2,6 +2,7 @@ import datetime
 from typing import Any, Optional
 
 import uuid_utils.compat as uuid
+from pydantic import BaseModel, Field
 from sqlalchemy import CHAR, CheckConstraint, Column, DateTime, ForeignKey, String, Table, Text, UniqueConstraint
 from sqlalchemy import UUID as DB_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -192,3 +193,31 @@ class Question(Base):
 
     def __repr__(self) -> str:
         return f"<Question(id={self.id!r}, content={self.content!r}), created_at={self.created_at.isoformat()!r}>"
+
+
+class CitationResponse(BaseModel):
+    title: str
+    content: str
+
+
+class AnswerResponse(BaseModel):
+    answer: str | None = None
+    language: str | None = None
+    status: str
+    citations: list[CitationResponse] = []
+    created_at: str | None = None
+    updated_at: str | None = None
+
+
+class QuestionResponse(BaseModel):
+    id: uuid.UUID
+    content: str
+    status: str
+    created_at: str
+    updated_at: str
+    answer_url: str | None = None
+    answer: AnswerResponse | None = None
+
+
+class CreateQuestionRequest(BaseModel):
+    question: str = Field()

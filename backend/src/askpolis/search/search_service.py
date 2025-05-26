@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from askpolis.search import EmbeddingsCollectionRepository, EmbeddingsService, SearchResult
-from askpolis.search.reranker_service import RerankerService
+from .embeddings_service import EmbeddingsService
+from .models import SearchResult
+from .repositories import EmbeddingsCollectionRepository
+from .reranker_service import RerankerService
 
 
 class SearchServiceBase(ABC):

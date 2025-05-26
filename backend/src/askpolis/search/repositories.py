@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 
 from askpolis.core import Document
 from askpolis.logging import get_logger
-from askpolis.search.models import Embeddings, EmbeddingsCollection, convert_to_sparse_vector
+
+from .models import Embeddings, EmbeddingsCollection, convert_to_sparse_vector
 
 logger = get_logger(__name__)
 

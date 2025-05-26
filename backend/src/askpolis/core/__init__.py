@@ -1,3 +1,4 @@
+from .dependencies import get_db, get_document_repository, get_parliament_repository
 from .markdown_splitter import MarkdownSplitter
 from .models import Base, Document, DocumentType, ElectionProgram, Page, Parliament, ParliamentPeriod, Party
 from .pdf_reader import PdfDocument, PdfPage, PdfReader
@@ -9,6 +10,9 @@ __all__ = [
     "DocumentRepository",
     "DocumentType",
     "ElectionProgram",
+    "get_db",
+    "get_document_repository",
+    "get_parliament_repository",
     "MarkdownSplitter",
     "Page",
     "PageRepository",

@@ -9,8 +9,9 @@ from FlagEmbedding.inference.embedder.encoder_only.m3 import M3Embedder
 
 from askpolis.core import Document, MarkdownSplitter, Page, PageRepository
 from askpolis.logging import get_logger
-from askpolis.search.models import Embeddings, EmbeddingsCollection
-from askpolis.search.repositories import EmbeddingsRepository
+
+from .models import Embeddings, EmbeddingsCollection
+from .repositories import EmbeddingsRepository
 
 logger = get_logger(__name__)
 
