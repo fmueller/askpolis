@@ -3,7 +3,8 @@ import os
 from FlagEmbedding import FlagReranker
 
 from askpolis.logging import get_logger
-from askpolis.search import Embeddings
+
+from .models import Embeddings
 
 logger = get_logger(__name__)
 

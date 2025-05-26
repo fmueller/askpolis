@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from askpolis.core import Document, ElectionProgram, Page, Parliament, ParliamentPeriod, Party
+from .models import Document, ElectionProgram, Page, Parliament, ParliamentPeriod, Party
 
 
 class PageRepository:
