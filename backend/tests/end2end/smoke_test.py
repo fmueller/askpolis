@@ -4,8 +4,8 @@ import pytest
 import requests
 from starlette import status
 
-from askpolis.main import SearchResponse
 from askpolis.qa import AnswerResponse
+from askpolis.search import SearchResponse
 
 
 def test_root_endpoint_returns_ok(api_url: str) -> None:
