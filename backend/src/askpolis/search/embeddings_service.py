@@ -8,11 +8,13 @@ from FlagEmbedding import BGEM3FlagModel
 from FlagEmbedding.inference.embedder.encoder_only.m3 import M3Embedder
 
 from askpolis.core import Document, MarkdownSplitter, Page, PageRepository
-from askpolis.logging import get_logger
+from askpolis.logging import configure_logging, get_logger
 
 from .models import Embeddings, EmbeddingsCollection
 from .repositories import EmbeddingsRepository
 
+# TODO refactor this into the get_logger function, so that we don't have to import it here.
+configure_logging()
 logger = get_logger(__name__)
 
 
