@@ -96,3 +96,8 @@ class SearchResult(BaseModel):
     document_id: uuid.UUID
     page_id: uuid.UUID
     score: float
+
+
+class SearchResponse(BaseModel):
+    query: str
+    results: list[SearchResult]
