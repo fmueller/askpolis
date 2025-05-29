@@ -15,9 +15,7 @@ from testcontainers.core.container import DockerContainer
 from testcontainers.postgres import PostgresContainer
 from testcontainers.redis import RedisContainer
 
-from askpolis.logging import configure_logging, get_logger
-
-configure_logging()
+from askpolis.logging import get_logger
 
 containers_logger = get_logger("containers")
 

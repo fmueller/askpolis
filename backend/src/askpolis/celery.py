@@ -1,9 +1,7 @@
 import celery_typed_tasks
 from celery import Celery
 
-from askpolis.logging import configure_logging, get_logger
-
-configure_logging()
+from askpolis.logging import get_logger
 
 logger = get_logger(__name__)
 logger.info("Starting Celery worker...")

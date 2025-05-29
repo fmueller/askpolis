@@ -3,6 +3,8 @@ import os
 from logging import Logger
 from typing import Any, cast
 
+_configured = False
+
 
 class AttributesAwareLogger(Logger):
     def debug_with_attrs(self: Logger, message: str, attrs: dict[str, Any]) -> None:
@@ -18,11 +20,15 @@ class AttributesAwareLogger(Logger):
         return self.error(_expand_message(message, attrs))
 
 
-def configure_logging() -> None:
-    logging.setLoggerClass(AttributesAwareLogger)
+def _configure_logging() -> None:
+    global _configured
+    if not _configured:
+        logging.setLoggerClass(AttributesAwareLogger)
+        _configured = True
 
 
 def get_logger(name: str) -> AttributesAwareLogger:
+    _configure_logging()
     logger = cast(AttributesAwareLogger, logging.getLogger(name))
     logger.setLevel(_get_log_level_from_otel_default_env_var())
     return logger

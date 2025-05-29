@@ -7,11 +7,9 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from askpolis.core import Parliament, ParliamentRepository, get_parliament_repository
-from askpolis.logging import configure_logging, get_logger
+from askpolis.logging import get_logger
 from askpolis.qa import router as qa_router
 from askpolis.search import router as search_router
-
-configure_logging()
 
 logger = get_logger(__name__)
 logger.info("Starting AskPolis API...")
