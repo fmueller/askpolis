@@ -4,6 +4,7 @@ from typing import Any, Optional
 
 import uuid_utils.compat as uuid
 from langchain_core.documents import Document as LangchainDocument
+from pydantic import BaseModel, Field
 from sqlalchemy import UUID as DB_UUID
 from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, LargeBinary, PrimaryKeyConstraint, String
 from sqlalchemy.dialects import postgresql
@@ -178,3 +179,14 @@ class ElectionProgram(Base):
     updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
     __table_args__ = (PrimaryKeyConstraint("parliament_period_id", "party_id", "label"),)
+
+
+class ParliamentResponse(BaseModel):
+    id: uuid.UUID
+    name: str
+    short_name: str
+
+
+class CreateParliamentRequest(BaseModel):
+    name: str = Field()
+    short_name: str = Field()
