@@ -20,18 +20,18 @@ class AttributesAwareLogger(Logger):
         return self.error(_expand_message(message, attrs))
 
 
-def _configure_logging() -> None:
-    global _configured
-    if not _configured:
-        logging.setLoggerClass(AttributesAwareLogger)
-        _configured = True
-
-
 def get_logger(name: str) -> AttributesAwareLogger:
     _configure_logging()
     logger = cast(AttributesAwareLogger, logging.getLogger(name))
     logger.setLevel(_get_log_level_from_otel_default_env_var())
     return logger
+
+
+def _configure_logging() -> None:
+    global _configured
+    if not _configured:
+        logging.setLoggerClass(AttributesAwareLogger)
+        _configured = True
 
 
 def _get_log_level_from_otel_default_env_var() -> int:
