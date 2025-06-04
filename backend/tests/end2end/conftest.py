@@ -22,6 +22,9 @@ containers_logger = get_logger("containers")
 # Name of the very small LLM to use for tests
 ollama_model = "qwen2:0.5b"
 
+ollama_cache_dir = Path(__file__).parent / ".ollama_cache"
+ollama_cache_dir.mkdir(exist_ok=True)
+
 
 def _attach_log_stream(container: DockerContainer, prefix: str) -> None:
     """
@@ -80,7 +83,8 @@ def ollama_container(docker_network: Network) -> Generator[DockerContainer, None
         DockerContainer(f"ollama/ollama:{_get_ollama_version_from_dockerfile()}")
         .with_network(docker_network)
         .with_network_aliases("ollama")
-        .with_exposed_ports(11434) as container
+        .with_exposed_ports(11434)
+        .with_volume_mapping(str(ollama_cache_dir.absolute()), "/root/.ollama", "rw") as container
     ):
         _attach_log_stream(container, "[ollama] ")
 

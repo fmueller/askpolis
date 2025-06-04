@@ -104,6 +104,13 @@ jobs:
           cache: 'poetry'
       - name: Install dependencies
         run: poetry install --no-interaction
+      - name: Cache Ollama models
+        uses: actions/cache@v3
+        with:
+          path: backend/tests/end2end/.ollama_cache
+          key: ${{ runner.os }}-ollama-cache-${{ hashFiles('backend/tests/end2end/conftest.py') }}
+          restore-keys: |
+            ${{ runner.os }}-ollama-cache-
       - name: Run end-to-end tests
         run: poetry run pytest -v -m e2e
 
