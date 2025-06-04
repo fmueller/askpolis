@@ -135,7 +135,7 @@ jobs:
           mkdir -p /tmp/.docker-cache
 
           # Extract Redis version from compose.yaml
-          REDIS_VERSION=$(grep -A 5 'redis:' compose.yaml | grep 'image:' | sed 's/.*redis://' | tr -d ' ')
+          REDIS_VERSION=$(grep -A 2 '^\s*redis:$' compose.yaml | grep 'image:' | sed 's/.*redis://' | tr -d ' ')
 
           # Extract Postgres version from compose.yaml
           POSTGRES_VERSION=$(grep -A 5 'postgres:' compose.yaml | grep 'image:' | sed 's/.*pgvector://' | tr -d ' ')
