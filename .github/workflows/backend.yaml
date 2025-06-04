@@ -141,7 +141,7 @@ jobs:
           POSTGRES_VERSION=$(grep -A 5 'postgres:' compose.yaml | grep 'image:' | sed 's/.*pgvector://' | tr -d ' ')
 
           # Extract Ollama version from Dockerfile
-          OLLAMA_VERSION=$(grep 'FROM ollama/ollama:' ollama.Dockerfile | sed 's/.*ollama://' | tr -d ' ')
+          OLLAMA_VERSION=$(grep 'FROM ollama/ollama:' ollama.Dockerfile | head -1 | sed 's/.*ollama://' | sed 's/ .*//' | tr -d ' ')
 
           # Pull images if not already present and save to cache
           for IMAGE in "redis:${REDIS_VERSION}" "pgvector/pgvector:${POSTGRES_VERSION}" "ollama/ollama:${OLLAMA_VERSION}"; do
