@@ -164,6 +164,8 @@ jobs:
 
       - name: Run end-to-end tests
         run: poetry run pytest -v -m e2e
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: true
 
   build-and-push-image:
     name: Build and Push Docker Image
