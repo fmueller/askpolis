@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
 
 from askpolis.core import (
     Document,
@@ -15,83 +15,79 @@ from askpolis.core import (
 )
 
 
-def test_core_data_model(session_maker: sessionmaker[Session]) -> None:
-    with session_maker() as session:
-        parliament = Parliament(name="Parliament of Canada", short_name="Canada")
-        party = Party(name="Party of Canada", short_name="Canada")
-        parliament_period = ParliamentPeriod(
-            parliament=parliament,
-            label="2025 - 3025",
-            period_type="legislature",
-            start_date=datetime.date(2025, 1, 1),
-            end_date=datetime.date(3025, 1, 1),
-        )
+def test_core_data_model(db_session: Session) -> None:
+    parliament = Parliament(name="Parliament of Canada", short_name="Canada")
+    party = Party(name="Party of Canada", short_name="Canada")
+    parliament_period = ParliamentPeriod(
+        parliament=parliament,
+        label="2025 - 3025",
+        period_type="legislature",
+        start_date=datetime.date(2025, 1, 1),
+        end_date=datetime.date(3025, 1, 1),
+    )
 
-        session.add(parliament)
-        session.add(party)
-        session.add(parliament_period)
-        session.commit()
+    db_session.add(parliament)
+    db_session.add(party)
+    db_session.add(parliament_period)
 
-        election_program = ElectionProgram(
-            parliament_period=parliament_period,
-            party=party,
-            label="default-version",
-            file_name="election_program.pdf",
-            file_data=b"PDF data",
-        )
-        session.add(election_program)
-        session.commit()
+    db_session.flush()
 
-    with session_maker() as session:
-        parliament = session.query(Parliament).filter(Parliament.short_name == "Canada").one()
-        assert parliament.short_name == "Canada"
+    election_program = ElectionProgram(
+        parliament_period=parliament_period,
+        party=party,
+        label="default-version",
+        file_name="election_program.pdf",
+        file_data=b"PDF data",
+    )
+    db_session.add(election_program)
 
-        party = session.query(Party).filter(Party.short_name == "Canada").one()
-        assert party.short_name == "Canada"
+    parliament = db_session.query(Parliament).filter(Parliament.short_name == "Canada").one()
+    assert parliament.short_name == "Canada"
 
-        parliament_period = session.query(ParliamentPeriod).filter(ParliamentPeriod.label == "2025 - 3025").one()
-        assert parliament_period.label == "2025 - 3025"
+    party = db_session.query(Party).filter(Party.short_name == "Canada").one()
+    assert party.short_name == "Canada"
 
-        election_program = (
-            session.query(ElectionProgram).filter(ElectionProgram.parliament_period_id == parliament_period.id).one()
-        )
-        assert election_program.file_name == "election_program.pdf"
+    parliament_period = db_session.query(ParliamentPeriod).filter(ParliamentPeriod.label == "2025 - 3025").one()
+    assert parliament_period.label == "2025 - 3025"
+
+    election_program = (
+        db_session.query(ElectionProgram).filter(ElectionProgram.parliament_period_id == parliament_period.id).one()
+    )
+    assert election_program.file_name == "election_program.pdf"
 
 
-def test_updated_at_is_properly_updated(session_maker: sessionmaker[Session]) -> None:
+def test_updated_at_is_properly_updated(db_session: Session) -> None:
     first_last_updated_at = datetime.datetime.now(datetime.timezone.utc)
-    with session_maker() as session:
-        party = Party(name="Party of Canada", short_name="Canada")
-        party.updated_at = first_last_updated_at
-        session.add(party)
-        session.commit()
 
-    with session_maker() as session:
-        party = session.query(Party).filter(Party.short_name == "Canada").one()
-        party.updated_at = datetime.datetime.now(datetime.timezone.utc)
-        session.commit()
+    party = Party(name="Party of Canada", short_name="Canada")
+    party.updated_at = first_last_updated_at
+    db_session.add(party)
 
-    with session_maker() as session:
-        party = session.query(Party).filter(Party.short_name == "Canada").one()
-        assert party.updated_at is not None
-        assert party.updated_at > first_last_updated_at
+    db_session.flush()
+
+    party = db_session.query(Party).filter(Party.short_name == "Canada").one()
+    party.updated_at = datetime.datetime.now(datetime.timezone.utc)
+    db_session.flush()
+
+    party = db_session.query(Party).filter(Party.short_name == "Canada").one()
+    assert party.updated_at is not None
+    assert party.updated_at > first_last_updated_at
 
 
-def test_document_and_page_model(session_maker: sessionmaker[Session]) -> None:
-    with session_maker() as session:
-        document = Document(name="test", document_type=DocumentType.ELECTION_PROGRAM)
-        page = Page(document_id=document.id, page_number=123, content="some content", page_metadata={"header": "value"})
-        session.add(document)
-        session.add(page)
-        session.commit()
+def test_document_and_page_model(db_session: Session) -> None:
+    document = Document(name="test", document_type=DocumentType.ELECTION_PROGRAM)
+    page = Page(document_id=document.id, page_number=123, content="some content", page_metadata={"header": "value"})
+    db_session.add(document)
+    db_session.add(page)
 
-    with session_maker() as session:
-        document_repository = DocumentRepository(session)
-        document_from_db = document_repository.get_by_name("test")
-        assert document_from_db is not None
-        assert document_from_db.name == "test"
+    db_session.flush()
 
-        page_repository = PageRepository(session)
-        pages = page_repository.get_by_document_id(document_from_db.id)
-        assert len(pages) == 1
-        assert pages[0].content == "some content"
+    document_repository = DocumentRepository(db_session)
+    document_from_db = document_repository.get_by_name("test")
+    assert document_from_db is not None
+    assert document_from_db.name == "test"
+
+    page_repository = PageRepository(db_session)
+    pages = page_repository.get_by_document_id(document_from_db.id)
+    assert len(pages) == 1
+    assert pages[0].content == "some content"
