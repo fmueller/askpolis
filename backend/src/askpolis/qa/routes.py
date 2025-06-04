@@ -6,10 +6,11 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 from askpolis.core import DocumentRepository, get_document_repository
-from askpolis.qa import get_qa_service
-from askpolis.qa.models import AnswerResponse, CitationResponse, CreateQuestionRequest, Question, QuestionResponse
-from askpolis.qa.qa_service import QAService
 from askpolis.search import EmbeddingsRepository, get_embeddings_repository
+
+from .dependencies import get_qa_service
+from .models import AnswerResponse, CitationResponse, CreateQuestionRequest, Question, QuestionResponse
+from .qa_service import QAService
 
 router = APIRouter(prefix="/questions", responses={404: {"description": "Question not found"}}, tags=["questions"])
 

@@ -3,10 +3,11 @@ from typing import Optional
 
 from askpolis.core.repositories import ParliamentRepository
 from askpolis.logging import get_logger
-from askpolis.qa.agents import AnswerAgent
-from askpolis.qa.models import Question
-from askpolis.qa.repositories import QuestionRepository
-from askpolis.qa.schedulers import QuestionScheduler
+
+from .agents import AnswerAgent
+from .models import Question
+from .repositories import QuestionRepository
+from .schedulers import QuestionScheduler
 
 logger = get_logger(__name__)
 
