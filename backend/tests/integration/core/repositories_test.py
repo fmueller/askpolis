@@ -1,5 +1,8 @@
 import datetime
 
+import pytest
+import uuid_utils.compat as uuid
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from askpolis.core import (
@@ -91,3 +94,23 @@ def test_document_and_page_model(db_session: Session) -> None:
     pages = page_repository.get_by_document_id(document_from_db.id)
     assert len(pages) == 1
     assert pages[0].content == "some content"
+
+
+def test_document_unique_index_on_reference_ids(db_session: Session) -> None:
+    ref_id_1 = uuid.uuid7()
+    ref_id_2 = uuid.uuid7()
+
+    document1 = Document(
+        name="Document 1", document_type=DocumentType.ELECTION_PROGRAM, reference_id_1=ref_id_1, reference_id_2=ref_id_2
+    )
+    db_session.add(document1)
+    db_session.flush()
+
+    document2 = Document(
+        name="Document 2", document_type=DocumentType.ELECTION_PROGRAM, reference_id_1=ref_id_1, reference_id_2=ref_id_2
+    )
+    db_session.add(document2)
+
+    # Attempt to flush should raise IntegrityError due to a unique constraint violation
+    with pytest.raises(IntegrityError):
+        db_session.flush()
