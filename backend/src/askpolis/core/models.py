@@ -6,7 +6,7 @@ import uuid_utils.compat as uuid
 from langchain_core.documents import Document as LangchainDocument
 from pydantic import BaseModel, Field
 from sqlalchemy import UUID as DB_UUID
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, LargeBinary, PrimaryKeyConstraint, String
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Index, Integer, LargeBinary, PrimaryKeyConstraint, String
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column
@@ -79,6 +79,16 @@ class Document(Base):
     reference_id_1: Mapped[Optional[uuid.UUID]] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
     reference_id_2: Mapped[Optional[uuid.UUID]] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
     updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
+
+    __table_args__ = (
+        Index(
+            "idx_documents_ref1_ref2_unique",
+            "reference_id_1",
+            "reference_id_2",
+            unique=True,
+            postgresql_where=(Column("reference_id_1").isnot(None) & Column("reference_id_2").isnot(None)),
+        ),
+    )
 
 
 class Parliament(Base):
