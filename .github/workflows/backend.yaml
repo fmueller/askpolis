@@ -95,15 +95,64 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Install Poetry
         run: pipx install poetry==${{ env.POETRY_VERSION }}
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'poetry'
+
       - name: Install dependencies
         run: poetry install --no-interaction
+
+      - name: Cache Docker images
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.docker-cache
+          key: ${{ runner.os }}-docker-images-${{ hashFiles('backend/compose.yaml', 'backend/ollama.Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-docker-images-
+
+      - name: Load cached Docker images
+        run: |
+          if [ -d "/tmp/.docker-cache" ]; then
+            for image in /tmp/.docker-cache/*.tar; do
+              if [ -f "$image" ]; then
+                docker load -i "$image"
+              fi
+            done
+          fi
+
+      - name: Pull and cache Docker images
+        run: |
+          mkdir -p /tmp/.docker-cache
+
+          # Extract Redis version from compose.yaml
+          REDIS_VERSION=$(grep -A 5 'redis:' ../compose.yaml | grep 'image:' | sed 's/.*redis://' | tr -d ' ')
+
+          # Extract Postgres version from compose.yaml
+          POSTGRES_VERSION=$(grep -A 5 'postgres:' ../compose.yaml | grep 'image:' | sed 's/.*://' | tr -d ' ')
+
+          # Extract Ollama version from Dockerfile
+          OLLAMA_VERSION=$(grep 'FROM ollama/ollama:' ollama.Dockerfile | sed 's/.*ollama://' | tr -d ' ')
+
+          # Pull images if not already present and save to cache
+          for IMAGE in "redis:${REDIS_VERSION}" "pgvector/pgvector:${POSTGRES_VERSION}" "ollama/ollama:${OLLAMA_VERSION}"; do
+            if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+              docker pull "$IMAGE"
+            fi
+            SAFE_NAME=$(echo "$IMAGE" | tr '/:' '_')
+            if [ ! -f "/tmp/.docker-cache/${SAFE_NAME}.tar" ]; then
+              docker save "$IMAGE" -o "/tmp/.docker-cache/${SAFE_NAME}.tar"
+            fi
+          done
+
       - name: Cache Ollama models
         uses: actions/cache@v3
         with:
@@ -111,6 +160,7 @@ jobs:
           key: ${{ runner.os }}-ollama-cache-${{ hashFiles('backend/tests/end2end/conftest.py') }}
           restore-keys: |
             ${{ runner.os }}-ollama-cache-
+
       - name: Run end-to-end tests
         run: poetry run pytest -v -m e2e
 
