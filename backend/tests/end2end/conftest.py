@@ -7,7 +7,6 @@ from typing import Any
 
 import pytest
 import requests
-from conftest import PostgresTestBase, attach_log_stream, get_service_image_version_from_compose
 from docker import from_env
 from docker.models.networks import Network
 from testcontainers.core.container import DockerContainer
@@ -15,6 +14,8 @@ from testcontainers.postgres import PostgresContainer
 from testcontainers.redis import RedisContainer
 
 from askpolis.logging import get_logger
+
+from ..conftest import PostgresTestBase, attach_log_stream, get_service_image_version_from_compose
 
 containers_logger = get_logger("containers")
 
