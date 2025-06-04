@@ -96,7 +96,7 @@ jobs:
           path: /tmp/.docker-cache
           key: ${{ runner.os }}-docker-images-integration-${{ hashFiles('backend/compose.yaml', 'backend/ollama.Dockerfile') }}
           restore-keys: |
-            ${{ runner.os }}-docker-images-
+            ${{ runner.os }}-docker-images-integration-
 
       - name: Load cached Docker images
         run: |
@@ -163,7 +163,7 @@ jobs:
           path: /tmp/.docker-cache
           key: ${{ runner.os }}-docker-images-end2end-${{ hashFiles('backend/compose.yaml', 'backend/ollama.Dockerfile') }}
           restore-keys: |
-            ${{ runner.os }}-docker-images-
+            ${{ runner.os }}-docker-images-end2end-
 
       - name: Load cached Docker images
         run: |
