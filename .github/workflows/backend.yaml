@@ -135,10 +135,10 @@ jobs:
           mkdir -p /tmp/.docker-cache
 
           # Extract Redis version from compose.yaml
-          REDIS_VERSION=$(grep -A 5 'redis:' ../compose.yaml | grep 'image:' | sed 's/.*redis://' | tr -d ' ')
+          REDIS_VERSION=$(grep -A 5 'redis:' compose.yaml | grep 'image:' | sed 's/.*redis://' | tr -d ' ')
 
           # Extract Postgres version from compose.yaml
-          POSTGRES_VERSION=$(grep -A 5 'postgres:' ../compose.yaml | grep 'image:' | sed 's/.*://' | tr -d ' ')
+          POSTGRES_VERSION=$(grep -A 5 'postgres:' compose.yaml | grep 'image:' | sed 's/.*pgvector://' | tr -d ' ')
 
           # Extract Ollama version from Dockerfile
           OLLAMA_VERSION=$(grep 'FROM ollama/ollama:' ollama.Dockerfile | sed 's/.*ollama://' | tr -d ' ')
