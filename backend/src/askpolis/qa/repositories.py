@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import not_
 from sqlalchemy.orm import Session
 
-from askpolis.qa.models import Answer, Question
+from .models import Answer, Question
 
 
 class QuestionRepository:

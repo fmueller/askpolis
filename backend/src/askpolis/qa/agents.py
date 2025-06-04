@@ -7,8 +7,9 @@ from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.settings import ModelSettings
 
 from askpolis.logging import get_logger
-from askpolis.qa.models import Answer, AnswerContent, Citation, Question
 from askpolis.search import SearchServiceBase
+
+from .models import Answer, AnswerContent, Citation, Question
 
 logger = get_logger(__name__)
 
