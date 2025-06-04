@@ -1,6 +1,5 @@
 import re
 import subprocess
-import threading
 import time
 from collections.abc import Generator
 from pathlib import Path
@@ -8,7 +7,7 @@ from typing import Any
 
 import pytest
 import requests
-import yaml
+from conftest import PostgresTestBase, attach_log_stream, get_service_image_version_from_compose
 from docker import from_env
 from docker.models.networks import Network
 from testcontainers.core.container import DockerContainer
@@ -24,38 +23,6 @@ ollama_model = "qwen2:0.5b"
 
 ollama_cache_dir = Path(__file__).parent / ".ollama_cache"
 ollama_cache_dir.mkdir(exist_ok=True)
-
-
-def _attach_log_stream(container: DockerContainer, prefix: str) -> None:
-    """
-    Spins up a daemon thread that tails `container.logs(stream=True, follow=True)`
-    and emits each line to our `containers` logger.
-    """
-
-    def _stream() -> None:
-        for raw_line in container.get_wrapped_container().logs(stream=True, follow=True):
-            try:
-                text = raw_line.decode(encoding="utf-8", errors="ignore").rstrip()
-            except Exception:
-                text = repr(raw_line)
-            containers_logger.info(f"{prefix}{text}")
-
-    thread = threading.Thread(target=_stream, daemon=True, name=f"log-stream-{prefix}")
-    thread.start()
-
-
-def _get_service_image_version_from_compose(service_name: str) -> str:
-    compose_path = Path(__file__).parent.parent.parent / "compose.yaml"
-    with compose_path.open() as f:
-        data = yaml.safe_load(f)
-    services = data.get("services", {})
-    service = services.get(service_name)
-    if not service:
-        raise RuntimeError(f"Service '{service_name}' not found in compose.yaml")
-    image = service.get("image", "")
-    if ":" not in image:
-        raise RuntimeError(f"No version tag found for '{service_name}' in compose.yaml")
-    return str(image.split(":", 1)[1])
 
 
 def _get_ollama_version_from_dockerfile() -> str:
@@ -86,7 +53,7 @@ def ollama_container(docker_network: Network) -> Generator[DockerContainer, None
         .with_exposed_ports(11434)
         .with_volume_mapping(str(ollama_cache_dir.absolute()), "/root/.ollama", "rw") as container
     ):
-        _attach_log_stream(container, "[ollama] ")
+        attach_log_stream(container, "[ollama] ")
 
         host = container.get_container_host_ip()
         port = container.get_exposed_port(11434)
@@ -132,11 +99,11 @@ def ollama_url(ollama_container: DockerContainer) -> str:
 @pytest.fixture(scope="session")
 def redis_container(docker_network: Network) -> Generator[RedisContainer, None, None]:
     with (
-        RedisContainer(f"redis:{_get_service_image_version_from_compose('redis')}")
+        RedisContainer(f"redis:{get_service_image_version_from_compose('redis')}")
         .with_network(docker_network)
         .with_network_aliases("redis") as container
     ):
-        _attach_log_stream(container, "[redis] ")
+        attach_log_stream(container, "[redis] ")
         yield container
 
 
@@ -147,13 +114,7 @@ def celery_broker_url(redis_container: RedisContainer) -> str:
 
 @pytest.fixture(scope="session")
 def postgres_container(docker_network: Network) -> Generator[PostgresContainer, Any, None]:
-    postgres_version = _get_service_image_version_from_compose("postgres")
-    with (
-        PostgresContainer(image=f"pgvector/pgvector:{postgres_version}", driver="psycopg")
-        .with_network(docker_network)
-        .with_network_aliases("postgres") as container
-    ):
-        _attach_log_stream(container, "[postgres] ")
+    with PostgresTestBase.create_postgres_container(network=docker_network, with_logging=True) as container:
         yield container
 
 
@@ -205,7 +166,7 @@ def worker_container(
         .with_env("DISABLE_INFERENCE", "true")
         .with_command("./scripts/start-worker.sh") as container
     ):
-        _attach_log_stream(container, "[worker] ")
+        attach_log_stream(container, "[worker] ")
         yield container
 
 
@@ -229,7 +190,7 @@ def api_url(
         .with_exposed_ports(8000)
         .with_command("./scripts/start-api.sh") as container
     ):
-        _attach_log_stream(container, "[api] ")
+        attach_log_stream(container, "[api] ")
         host = container.get_container_host_ip()
         port = container.get_exposed_port(8000)
         base_url = f"http://{host}:{port}"
