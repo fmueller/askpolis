@@ -1,3 +1,4 @@
+import datetime
 import uuid
 from typing import Optional
 
@@ -22,7 +23,8 @@ class QuestionRepository:
         self.db.commit()
 
     def get_stale_questions(self) -> list[Question]:
-        return self.db.query(Question).filter(not_(Question.answers.any())).all()
+        two_hours_ago = datetime.datetime.now(datetime.UTC) - datetime.timedelta(hours=2)
+        return self.db.query(Question).filter(not_(Question.answers.any()), Question.created_at <= two_hours_ago).all()
 
 
 class AnswerRepository:
