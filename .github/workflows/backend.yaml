@@ -157,7 +157,7 @@ jobs:
       - name: Cache Ollama models
         uses: actions/cache@v3
         with:
-          path: backend/tests/end2end/.ollama_cache
+          path: backend/tests/end2end/.ollama_cache/models
           key: ${{ runner.os }}-ollama-cache-${{ hashFiles('backend/tests/end2end/conftest.py') }}
           restore-keys: |
             ${{ runner.os }}-ollama-cache-
