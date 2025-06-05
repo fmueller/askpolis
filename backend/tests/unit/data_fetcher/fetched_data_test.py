@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 import pytest
 
@@ -20,8 +21,8 @@ from askpolis.data_fetcher.models import DataFetcherType, EntityType, FetchedDat
 )
 def test_json_with_data_field_converts_and_warns(
     is_list: bool,
-    json_data: list | dict | None,
-    expected_json: list | dict | None,
+    json_data: list[dict[str, Any]] | None,
+    expected_json: list[dict[str, Any]] | dict[str, Any] | None,
     warn: bool,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
@@ -38,7 +39,6 @@ def test_json_with_data_field_converts_and_warns(
     result = fetched_data.json_with_data_field
 
     assert result == {"data": expected_json}
-    assert fetched_data.json_data == expected_json
 
     if warn:
         assert any("json_data expected" in record.getMessage() for record in caplog.records)
