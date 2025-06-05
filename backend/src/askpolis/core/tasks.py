@@ -1,12 +1,10 @@
-import os
 import re
 from datetime import date, datetime
 from typing import Any, Optional
 
 import uuid_utils.compat as uuid
 from celery import shared_task
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from askpolis.db import get_db
 
 from askpolis.core import Document, ElectionProgram, Parliament, ParliamentPeriod, Party
 from askpolis.core.models import DocumentType, Page
@@ -25,15 +23,12 @@ from askpolis.logging import get_logger
 
 logger = get_logger(__name__)
 
-engine = create_engine(os.getenv("DATABASE_URL") or "postgresql+psycopg://postgres@postgres:5432/askpolis-db")
-DbSession = sessionmaker(bind=engine)
-
 date_pattern = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
 
 @shared_task(name="transform_fetched_data_to_core_models")
 def transform_fetched_data_to_core_models() -> None:
-    session = DbSession()
+    session = next(get_db())
     try:
         fetched_data_repository = FetchedDataRepository(session)
         parliaments = fetched_data_repository.get_by_data_fetcher_and_entity(
@@ -184,7 +179,7 @@ def transform_fetched_data_to_core_models() -> None:
 
 @shared_task(name="read_and_parse_election_programs_to_documents")
 def read_and_parse_election_programs_to_documents() -> None:
-    session = DbSession()
+    session = next(get_db())
     try:
         election_program_repository = ElectionProgramRepository(session)
         document_repository = DocumentRepository(session)

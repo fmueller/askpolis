@@ -3,7 +3,8 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from askpolis.core import ParliamentRepository, get_db
+from askpolis.core import ParliamentRepository
+from askpolis.db import get_db
 from askpolis.search import EmbeddingsRepository, get_search_service
 
 from .agents import AnswerAgent
