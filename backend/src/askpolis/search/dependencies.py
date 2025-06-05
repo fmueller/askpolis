@@ -3,7 +3,8 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from askpolis.core import MarkdownSplitter, PageRepository, get_db
+from askpolis.core import MarkdownSplitter, PageRepository
+from askpolis.db import get_db
 
 from .embeddings_service import EmbeddingsService, get_embedding_model
 from .repositories import EmbeddingsCollectionRepository, EmbeddingsRepository

@@ -1,12 +1,10 @@
 import datetime
-import os
 import random
 
 from celery import shared_task
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from askpolis.core import Document, DocumentRepository, DocumentType, MarkdownSplitter, Page, PageRepository
+from askpolis.db import get_db
 from askpolis.logging import get_logger
 
 from .embeddings_service import EmbeddingsService, get_embedding_model
@@ -15,13 +13,11 @@ from .repositories import EmbeddingsCollectionRepository, EmbeddingsRepository
 
 logger = get_logger(__name__)
 
-engine = create_engine(os.getenv("DATABASE_URL") or "postgresql+psycopg://postgres@postgres:5432/askpolis-db")
-DbSession = sessionmaker(bind=engine)
-
 
 @shared_task(name="test_embeddings")
 def test_embeddings() -> None:
-    with DbSession() as session:
+    session = next(get_db())
+    try:
         collections_repository = EmbeddingsCollectionRepository(session)
         collection = collections_repository.get_most_recent_by_name("test")
         if collection is None:
@@ -54,13 +50,16 @@ def test_embeddings() -> None:
             "Computed embeddings for test document",
             {"document_id": document.id, "embeddings": len(computed_embeddings)},
         )
+    finally:
+        session.close()
 
 
 @shared_task(name="ingest_embeddings_for_one_document")
 def ingest_embeddings_for_one_document() -> None:
     splitter = MarkdownSplitter(chunk_size=2000, chunk_overlap=400)
 
-    with DbSession() as session:
+    session = next(get_db())
+    try:
         collections_repository = EmbeddingsCollectionRepository(session)
         collection = collections_repository.get_most_recent_by_name("default")
         if collection is None:
@@ -84,3 +83,5 @@ def ingest_embeddings_for_one_document() -> None:
         logger.info_with_attrs(
             "Computed embeddings for document", {"document_id": document.id, "embeddings": len(computed_embeddings)}
         )
+    finally:
+        session.close()
