@@ -6,7 +6,7 @@ from pgvector.sqlalchemy import SparseVector, Vector
 from pgvector.sqlalchemy.sparsevec import SPARSEVEC
 from pydantic import BaseModel
 from sqlalchemy import UUID as DB_UUID
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -60,6 +60,7 @@ class Embeddings(Base):
         collection: EmbeddingsCollection,
         document: Document,
         page: Page,
+        chunk_id: int,
         chunk: str,
         embedding: list[float],
         sparse_embedding: dict[str, float],
@@ -71,6 +72,7 @@ class Embeddings(Base):
         self.collection_id = collection.id
         self.document_id = document.id
         self.page_id = page.id
+        self.chunk_id = chunk_id
         self.chunk = chunk
         self.embedding = embedding
         self.sparse_embedding = convert_to_sparse_vector(sparse_embedding)
@@ -83,6 +85,7 @@ class Embeddings(Base):
     )
     document_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
     page_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("pages.id"), nullable=False)
+    chunk_id: Mapped[int] = mapped_column(Integer, nullable=False)
     chunk: Mapped[str] = mapped_column(String, nullable=False)
     embedding: Mapped[list[float]] = mapped_column(Vector(1024), nullable=False)
     sparse_embedding: Mapped[SparseVector] = mapped_column(SPARSEVEC(250002), nullable=False)
