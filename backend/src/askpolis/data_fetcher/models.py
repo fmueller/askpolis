@@ -8,7 +8,11 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import declarative_base
 
+from askpolis.logging import get_logger
+
 Base = declarative_base()
+
+logger = get_logger(__name__)
 
 
 class EntityType(str, enum.Enum):
@@ -49,6 +53,32 @@ class FetchedData(Base):
 
     @property
     def json_with_data_field(self) -> dict[str, Any]:
+        def is_actual_list() -> bool:
+            return isinstance(self.json_data, list)
+
+        def warn_if_json_mismatch() -> None:
+            if self.json_data is None:
+                return
+            if self.is_list and not is_actual_list():
+                logger.warning_with_attrs(
+                    "json_data expected to be list but found non-list",
+                    {"entity": self.entity},
+                )
+            elif not self.is_list and is_actual_list():
+                logger.warning_with_attrs(
+                    "json_data expected to be non-list but found list",
+                    {"entity": self.entity},
+                )
+
+        warn_if_json_mismatch()
+        if self.json_data is None:
+            return {"data": None}
+
+        if self.is_list and not is_actual_list():
+            return {"data": [self.json_data]}
+        elif not self.is_list and is_actual_list():
+            return {"data": self.json_data[0] if self.json_data else None}
+
         return {"data": self.json_data}
 
     def __repr__(self) -> str:
