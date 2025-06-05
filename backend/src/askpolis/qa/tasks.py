@@ -2,8 +2,8 @@ import uuid
 from typing import Optional
 
 from celery import shared_task
-from askpolis.db import get_db
 
+from askpolis.db import get_db
 from askpolis.logging import get_logger
 
 from .models import Question

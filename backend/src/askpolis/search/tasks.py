@@ -2,9 +2,9 @@ import datetime
 import random
 
 from celery import shared_task
-from askpolis.db import get_db
 
 from askpolis.core import Document, DocumentRepository, DocumentType, MarkdownSplitter, Page, PageRepository
+from askpolis.db import get_db
 from askpolis.logging import get_logger
 
 from .embeddings_service import EmbeddingsService, get_embedding_model

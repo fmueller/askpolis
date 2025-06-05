@@ -1,9 +1,8 @@
 from celery import shared_task
-from askpolis.db import get_db
 
 from askpolis.data_fetcher import FetchedDataRepository
 from askpolis.data_fetcher.abgeordnetenwatch import AbgeordnetenwatchDataFetcher
-
+from askpolis.db import get_db
 
 
 @shared_task(name="fetch_bundestag_from_abgeordnetenwatch")

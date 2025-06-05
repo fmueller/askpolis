@@ -4,6 +4,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from askpolis.db import get_db
+
 from .repositories import DocumentRepository, ParliamentRepository
 
 

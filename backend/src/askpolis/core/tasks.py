@@ -4,7 +4,6 @@ from typing import Any, Optional
 
 import uuid_utils.compat as uuid
 from celery import shared_task
-from askpolis.db import get_db
 
 from askpolis.core import Document, ElectionProgram, Parliament, ParliamentPeriod, Party
 from askpolis.core.models import DocumentType, Page
@@ -19,6 +18,7 @@ from askpolis.core.repositories import (
 )
 from askpolis.data_fetcher import FetchedData, FetchedDataRepository
 from askpolis.data_fetcher.abgeordnetenwatch import DATA_FETCHER_ID
+from askpolis.db import get_db
 from askpolis.logging import get_logger
 
 logger = get_logger(__name__)

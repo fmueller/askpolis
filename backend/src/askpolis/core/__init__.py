@@ -1,4 +1,5 @@
 from askpolis.db import get_db
+
 from .dependencies import get_document_repository, get_parliament_repository
 from .markdown_splitter import MarkdownSplitter
 from .models import Base, Document, DocumentType, ElectionProgram, Page, Parliament, ParliamentPeriod, Party
