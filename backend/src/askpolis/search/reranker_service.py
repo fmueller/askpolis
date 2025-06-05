@@ -1,6 +1,6 @@
-import os
+from __future__ import annotations
 
-from FlagEmbedding import FlagReranker
+import os
 
 from askpolis.logging import get_logger
 
@@ -14,6 +14,8 @@ class RerankerService:
         if os.getenv("DISABLE_INFERENCE") == "true":
             self._reranker = None
         else:
+            from FlagEmbedding import FlagReranker
+
             self._reranker = FlagReranker("BAAI/bge-reranker-v2-m3", use_fp16=False)
 
     def rerank(self, query: str, embeddings: list[Embeddings], limit: int = 10) -> list[tuple[Embeddings, float]]:

@@ -1,11 +1,14 @@
+from __future__ import annotations
+
 import os
 import uuid
-from typing import Any, TypedDict, cast
+from typing import TYPE_CHECKING, Any, TypedDict, cast
 
 import numpy as np
 import numpy.typing as npt
-from FlagEmbedding import BGEM3FlagModel
-from FlagEmbedding.inference.embedder.encoder_only.m3 import M3Embedder
+
+if TYPE_CHECKING:  # pragma: no cover - for type checking only
+    from FlagEmbedding.inference.embedder.encoder_only.m3 import M3Embedder
 
 from askpolis.core import Document, MarkdownSplitter, Page, PageRepository
 from askpolis.logging import get_logger
@@ -89,6 +92,8 @@ def get_embedding_model() -> FakeModel | M3Embedder:
     if os.getenv("DISABLE_INFERENCE") == "true":
         return FakeModel()
 
+    from FlagEmbedding import BGEM3FlagModel
+
     return BGEM3FlagModel(
         "BAAI/bge-m3",
         devices="cpu",
@@ -151,6 +156,7 @@ class EmbeddingsService:
                 collection=collection,
                 document=document,
                 page=_get_page(pages, chunk.metadata),
+                chunk_id=chunk.metadata["chunk_id"],
                 chunk=chunk.page_content,
                 embedding=cast(list[float], dense_vector.tolist()),
                 sparse_embedding=cast(dict[str, float], lexical_weights),
