@@ -1,4 +1,4 @@
-FROM python:3.12.9-slim AS base
+FROM python:3.12.11-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
@@ -13,7 +13,7 @@ ENV HF_HOME=/app/models
 
 FROM base AS builder
 
-RUN pip install --no-compile --no-cache-dir poetry==2.1.2
+RUN pip install --no-compile --no-cache-dir poetry==2.1.3
 
 ENV POETRY_NO_INTERACTION=1 \
     POETRY_VIRTUALENVS_IN_PROJECT=1 \
@@ -30,7 +30,7 @@ RUN poetry install --only main --no-root && \
 FROM base AS model
 
 ARG DISABLE_HUGGINGFACE_DOWNLOAD=false
-RUN pip install --no-cache-dir huggingface_hub[cli]==0.30.2
+RUN pip install --no-cache-dir huggingface_hub[cli]==0.32.4
 RUN if [ "$DISABLE_HUGGINGFACE_DOWNLOAD" != "true" ]; then \
         huggingface-cli download "BAAI/bge-m3" --exclude "onnx/*" --exclude "*.onnx" && \
         huggingface-cli download "BAAI/bge-reranker-v2-m3" --exclude "onnx/*" --exclude "*.onnx"; \
