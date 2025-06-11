@@ -53,7 +53,7 @@ def test_embed_document(
     mock_page_repository.get_by_document_id.return_value = [page]
     chunk = MagicMock()
     chunk.page_content = "Chunk content"
-    chunk.metadata = page.page_metadata
+    chunk.metadata = {"page": 1, "chunk_id": 0}
     mock_splitter.split.return_value = [chunk]
     mock_model.encode_corpus.return_value = {
         "dense_vecs": [np.array([0.1, 0.2, 0.3])],
@@ -81,7 +81,8 @@ def test_embed_document(
             "789": 0.789,
         }
     )
-    assert embeddings[0].chunk_metadata == {"page": 1}
+    assert embeddings[0].chunk_id == 0
+    assert embeddings[0].chunk_metadata == {"page": 1, "chunk_id": 0}
     mock_embeddings_repository.save_all.assert_called_once_with(embeddings)
 
 
@@ -101,11 +102,11 @@ def test_embed_document_sets_correct_page(
 
     chunk1 = MagicMock()
     chunk1.page_content = "Chunk content 1"
-    chunk1.metadata = page1.page_metadata
+    chunk1.metadata = {"page": 1, "chunk_id": 0}
 
     chunk2 = MagicMock()
     chunk2.page_content = "Chunk content 2"
-    chunk2.metadata = page2.page_metadata
+    chunk2.metadata = {"page": 2, "chunk_id": 1}
 
     mock_splitter.split.return_value = [chunk1, chunk2]
     mock_model.encode_corpus.return_value = {
@@ -136,6 +137,8 @@ def test_embed_document_sets_correct_page(
             "789": 0.789,
         }
     )
+    assert embeddings[0].chunk_id == 0
+    assert embeddings[0].chunk_metadata == {"page": 1, "chunk_id": 0}
     assert embeddings[1].page_id == page2.id
     assert embeddings[1].embedding == [0.4, 0.5, 0.6]
     assert embeddings[1].sparse_embedding == convert_to_sparse_vector(
@@ -145,4 +148,6 @@ def test_embed_document_sets_correct_page(
             "12122": 0.789,
         }
     )
+    assert embeddings[1].chunk_id == 1
+    assert embeddings[1].chunk_metadata == {"page": 2, "chunk_id": 1}
     mock_embeddings_repository.save_all.assert_called_once_with(embeddings)

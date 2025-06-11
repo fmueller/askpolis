@@ -152,6 +152,7 @@ class EmbeddingsService:
                 document=document,
                 page=_get_page(pages, chunk.metadata),
                 chunk=chunk.page_content,
+                chunk_id=chunk.metadata.get("chunk_id", 0),
                 embedding=cast(list[float], dense_vector.tolist()),
                 sparse_embedding=cast(dict[str, float], lexical_weights),
                 chunk_metadata=chunk.metadata,
