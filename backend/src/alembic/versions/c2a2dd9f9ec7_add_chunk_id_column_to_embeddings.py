@@ -2,7 +2,7 @@
 
 Revision ID: c2a2dd9f9ec7
 Revises: a1b2c3d4e5f6
-Create Date: 2025-05-18 00:00:00.000000
+Create Date: 2025-06-10 00:00:00.000000
 
 """
 
@@ -10,6 +10,7 @@ from collections.abc import Sequence
 from typing import Union
 
 import sqlalchemy as sa
+
 from alembic import op
 
 revision: str = "c2a2dd9f9ec7"
