@@ -1,30 +1,21 @@
-# Guidelines for Codex
+# Guidelines for AI Agents
 
 ## Project Structure
-- `backend/`: Python API, data processing, and tests using Poetry
-- `data/`, `docs/`, and `website/`: additional assets and documentation
 
-## Development Workflow
-1. Ensure Python **3.12** is used.
-2. Install dependencies with `poetry install` from within `backend/`.
-3. Run pre-commit on changed files:
-   ```bash
-   pre-commit run --files <paths>
-   ```
-   This will apply `ruff` formatting and linting.
-4. Type check with:
-   ```bash
-   poetry run mypy .
-   ```
-5. Run tests:
-   - Unit tests: `poetry run pytest -v -m unit`
-   - Integration tests: `poetry run pytest -v -m integration`
-   - End-to-end tests: `poetry run pytest -v -m e2e`
+- `backend/`: the backend consisting of an API and background processing jobs
+- `data/`: Datasets for backup and future use
+- `demo/`: demo webapp using the backend to generate a simple demo website
+- `docs/`: general project documentation, also technical notes
+- `infrastructure/`: Kubernetes infrastructure configurations and settings for supporting tools
+- `website/`: project website
 
-If tests fail due to missing containers or network limits, mention this in the PR summary.
+## Commit Messages and PRs
 
-## Contribution Notes
-- Keep line length under **120** characters and use double quotes for strings.
-- Update `pyproject.toml` and `poetry.lock` together when adding dependencies.
-- Document relevant changes in `README.md` or under `docs/` when applicable.
-- When creating the PR summary or answer, cite lines using the `F:<path>` format as instructed by the system.
+- Use concise commit messages describing what changed and why.
+- Use conventional commits and put the respective first-level directory in parentheses, e.g.:
+  - `feat(backend): add feature xyz`
+  - `refactor(backend): move files to domain folder xyz`
+  - `feat(website): add info page`
+  - `docs(data): improve docs about data from report xyz`
+  - `chore: cleanup files in mono repository`
+- Summarize important modifications in the PR description.
