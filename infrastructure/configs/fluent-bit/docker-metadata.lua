@@ -1,5 +1,6 @@
 -- base version from https://github.com/fluent/fluent-bit/issues/1499
-DOCKER_VAR_DIR = '/var/lib/docker/containers/'
+DOCKER_HOME = os.getenv('DOCKER_HOME') or '/var/lib/docker'
+DOCKER_VAR_DIR = DOCKER_HOME .. '/containers/'
 DOCKER_CONTAINER_CONFIG_FILE = '/config.v2.json'
 CACHE_TTL_SEC = 300
 

@@ -90,11 +90,13 @@ services:
     image: fluent/fluent-bit:3.2.4
     container_name: fluent-bit
     user: root # Run as root to access log files
+    environment:
+      - DOCKER_HOME=${DOCKER_HOME:-/var/lib/docker}
     volumes:
       - ../infrastructure/configs/fluent-bit/fluent-bit-compose.conf:/fluent-bit/etc/fluent-bit.conf
       - ../infrastructure/configs/fluent-bit/parser.conf:/fluent-bit/etc/parser.conf
       - ../infrastructure/configs/fluent-bit/docker-metadata.lua:/fluent-bit/etc/docker-metadata.lua
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ${DOCKER_HOME:-/var/lib/docker}/containers:${DOCKER_HOME:-/var/lib/docker}/containers:ro
       - /var/log:/var/log:ro
     depends_on:
       - otel-collector
