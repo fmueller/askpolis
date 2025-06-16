@@ -48,7 +48,7 @@ celery-types = "^0.23.0"
 types-requests = "^2.32.4.20250611"
 pre-commit = "^4.2.0"
 sqlalchemy = { extras = ["mypy"], version = "^2.0.41" }
-faker = "^37.3.0"
+faker = "^37.4.0"
 types-docker = "^7.1.0.20250523"
 types-pyyaml = "^6.0.12.20250516"
 
