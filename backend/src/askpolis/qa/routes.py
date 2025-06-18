@@ -134,7 +134,7 @@ def get_answer(
 
     return AnswerResponse(
         answer=answer.contents[0].content,
-        language=answer.contents[0].language,
+        language=answer.contents[0].language.strip(),
         status="completed",
         citations=citation_responses,
         created_at=answer.created_at.isoformat(),
