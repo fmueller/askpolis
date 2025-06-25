@@ -200,3 +200,17 @@ class ParliamentResponse(BaseModel):
 class CreateParliamentRequest(BaseModel):
     name: str = Field()
     short_name: str = Field()
+
+
+class DocumentResponse(BaseModel):
+    id: uuid.UUID
+    name: str | None
+    document_type: DocumentType | None
+
+
+class PageResponse(BaseModel):
+    id: uuid.UUID
+    document_id: uuid.UUID
+    page_number: int
+    content: str
+    page_metadata: dict[str, Any] | None = None

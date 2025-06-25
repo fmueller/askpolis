@@ -99,6 +99,8 @@ class SearchResult(BaseModel):
     document_id: uuid.UUID
     page_id: uuid.UUID
     score: float
+    document_url: str | None = None
+    page_url: str | None = None
 
 
 class SearchResponse(BaseModel):
