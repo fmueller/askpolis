@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, Request, status
 from fastapi.responses import JSONResponse
 
 from askpolis.celery import app as celery_app
@@ -26,6 +26,7 @@ def trigger_embeddings_test() -> JSONResponse:
 
 @router.get("/search", tags=["search"])
 def search(
+    request: Request,
     search_service: Annotated[SearchService, Depends(get_search_service)],
     query: str,
     limit: int = 5,
@@ -36,4 +37,14 @@ def search(
         index = ["default"]
     if limit < 1:
         limit = 5
-    return SearchResponse(query=query, results=search_service.find_matching_texts(query, limit, reranking, index))
+    results = search_service.find_matching_texts(query, limit, reranking, index)
+    for r in results:
+        r.document_url = str(request.url_for("get_document", document_id=r.document_id))
+        r.page_url = str(
+            request.url_for(
+                "get_document_page",
+                document_id=r.document_id,
+                page_id=r.page_id,
+            )
+        )
+    return SearchResponse(query=query, results=results)

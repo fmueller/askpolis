@@ -198,6 +198,7 @@ class Question(Base):
 class CitationResponse(BaseModel):
     title: str
     content: str
+    url: str | None = None
 
 
 class AnswerResponse(BaseModel):
