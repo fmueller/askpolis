@@ -28,6 +28,7 @@ def test_to_markdown_with_merging_words(mock_to_markdown: unittest.mock.Mock) ->
     assert result.path == "dummy_path.pdf"
     assert len(result.pages) == 1
     assert result.pages[0].content == "This is a testdocument."
+    assert result.pages[0].raw_content == "This is a test\ndocument."
     assert result.pages[0].page_number == 1
 
 
@@ -44,6 +45,7 @@ def test_to_markdown_with_default_fallback(mock_to_markdown: unittest.mock.Mock)
     assert result.path == "dummy_path.pdf"
     assert len(result.pages) == 1
     assert result.pages[0].content == "This is a test document without dehyphenation."
+    assert result.pages[0].raw_content == "This is a test document without dehyphenation."
     assert result.pages[0].page_number == 1
 
 
