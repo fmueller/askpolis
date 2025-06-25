@@ -14,6 +14,7 @@ logger = get_logger(__name__)
 class PdfPage(BaseModel):
     page_number: int
     content: str
+    raw_content: str
     metadata: dict[str, Any]
 
 
@@ -47,6 +48,7 @@ class PdfReader:
                     pages=[
                         PdfPage(
                             content=str(parsed_page["text"]),
+                            raw_content=str(parsed_page["text"]),
                             page_number=int(parsed_page["metadata"]["page"]),
                             metadata=dict[str, Any](parsed_page["metadata"]),
                         )
@@ -88,6 +90,7 @@ class PdfReader:
         page_idx = 0
         for page in parsed_markdown:
             page_idx += 1
+            page["raw_text"] = str(page["text"])
             cleaned_words = []
             words = page["words"]
             i = 0
@@ -136,6 +139,7 @@ class PdfReader:
             pages=[
                 PdfPage(
                     content=str(parsed_page["text"]),
+                    raw_content=str(parsed_page.get("raw_text", parsed_page["text"])),
                     page_number=int(parsed_page["metadata"]["page"]),
                     metadata=dict[str, Any](parsed_page["metadata"]),
                 )

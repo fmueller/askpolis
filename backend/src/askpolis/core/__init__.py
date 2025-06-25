@@ -2,9 +2,19 @@ from askpolis.db import get_db
 
 from .dependencies import get_document_repository, get_parliament_repository
 from .markdown_splitter import MarkdownSplitter
-from .models import Base, Document, DocumentType, ElectionProgram, Page, Parliament, ParliamentPeriod, Party
+from .models import (
+    Base,
+    Document,
+    DocumentType,
+    ElectionProgram,
+    Page,
+    PageVersion,
+    Parliament,
+    ParliamentPeriod,
+    Party,
+)
 from .pdf_reader import PdfDocument, PdfPage, PdfReader
-from .repositories import DocumentRepository, PageRepository, ParliamentRepository
+from .repositories import DocumentRepository, PageRepository, PageVersionRepository, ParliamentRepository
 from .routes import router
 
 __all__ = [
@@ -20,6 +30,8 @@ __all__ = [
     "router",
     "Page",
     "PageRepository",
+    "PageVersion",
+    "PageVersionRepository",
     "Parliament",
     "ParliamentRepository",
     "ParliamentPeriod",
