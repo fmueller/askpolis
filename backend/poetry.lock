@@ -973,14 +973,14 @@ tzdata = "*"
 
 [[package]]
 name = "fasta2a"
-version = "0.3.2"
+version = "0.3.4"
 description = "Convert an AI Agent into a A2A server! ✨"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "fasta2a-0.3.2-py3-none-any.whl", hash = "sha256:da5b442d2559b2f4bb44807c997139ba15e22ba74f5790181f568be9a75d833b"},
-    {file = "fasta2a-0.3.2.tar.gz", hash = "sha256:cfb8f6d4a7e72f4c23f57c08476563889efbd64218cdb0dbb051faeca53f5989"},
+    {file = "fasta2a-0.3.4-py3-none-any.whl", hash = "sha256:8c23ec0fa1e29f58031d32c3ff530e69da298af893f883c94ba973e2ba3ccaa9"},
+    {file = "fasta2a-0.3.4.tar.gz", hash = "sha256:1f749b5ea7a9e402c4684e07a2fb9e004d1ed14de4c3ea56c9dbc7a4691f4af0"},
 ]
 
 [package.dependencies]
@@ -4030,33 +4030,33 @@ timezone = ["tzdata ; python_version >= \"3.9\" and platform_system == \"Windows
 
 [[package]]
 name = "pydantic-ai"
-version = "0.3.2"
+version = "0.3.4"
 description = "Agent Framework / shim to use Pydantic with LLMs"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pydantic_ai-0.3.2-py3-none-any.whl", hash = "sha256:7d7b0695e5ba185bc4b6252f9eef724ddb89172565323b758f2a8faaa64ef513"},
-    {file = "pydantic_ai-0.3.2.tar.gz", hash = "sha256:7ce4afcc025afbc166631ccb2b221bc633249fea0e048091ef41db28243f3467"},
+    {file = "pydantic_ai-0.3.4-py3-none-any.whl", hash = "sha256:a4d391562f1ab61709e72a32ff2ffb22196b7d4476bf69c9d04b79924b296d08"},
+    {file = "pydantic_ai-0.3.4.tar.gz", hash = "sha256:74c868fb9bbb89f392d43b77dc3a6532ccc8f4a1717ccca0801797af7bc59c05"},
 ]
 
 [package.dependencies]
-pydantic-ai-slim = {version = "0.3.2", extras = ["a2a", "anthropic", "bedrock", "cli", "cohere", "evals", "google", "groq", "mcp", "mistral", "openai", "vertexai"]}
+pydantic-ai-slim = {version = "0.3.4", extras = ["a2a", "anthropic", "bedrock", "cli", "cohere", "evals", "google", "groq", "mcp", "mistral", "openai", "vertexai"]}
 
 [package.extras]
-examples = ["pydantic-ai-examples (==0.3.2)"]
+examples = ["pydantic-ai-examples (==0.3.4)"]
 logfire = ["logfire (>=3.11.0)"]
 
 [[package]]
 name = "pydantic-ai-slim"
-version = "0.3.2"
+version = "0.3.4"
 description = "Agent Framework / shim to use Pydantic with LLMs, slim package"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pydantic_ai_slim-0.3.2-py3-none-any.whl", hash = "sha256:c409f00de1921cb610cab46f07a7b55b0632be7b8b87e3609573b47c07cb5ef1"},
-    {file = "pydantic_ai_slim-0.3.2.tar.gz", hash = "sha256:90f1e6d95d0bbffbca118619b3b3e0f16c5c2c281e4c8c2ec66467b8e8615621"},
+    {file = "pydantic_ai_slim-0.3.4-py3-none-any.whl", hash = "sha256:e077e6735021534a6752f95ad35b21bd61c448b353ecb520e81a2428dcd58e88"},
+    {file = "pydantic_ai_slim-0.3.4.tar.gz", hash = "sha256:f25fd8798ecc9f928d251b2b38d777c22684aa2e89d459fd64cc2a0b5ecb0fed"},
 ]
 
 [package.dependencies]
@@ -4065,7 +4065,7 @@ argcomplete = {version = ">=3.5.0", optional = true, markers = "extra == \"cli\"
 boto3 = {version = ">=1.37.24", optional = true, markers = "extra == \"bedrock\""}
 cohere = {version = ">=5.13.11", optional = true, markers = "platform_system != \"Emscripten\" and extra == \"cohere\""}
 eval-type-backport = ">=0.2.0"
-fasta2a = {version = "0.3.2", optional = true, markers = "extra == \"a2a\""}
+fasta2a = {version = "0.3.4", optional = true, markers = "extra == \"a2a\""}
 google-auth = {version = ">=2.36.0", optional = true, markers = "extra == \"vertexai\""}
 google-genai = {version = ">=1.15.0", optional = true, markers = "extra == \"google\""}
 griffe = ">=1.3.2"
@@ -4077,20 +4077,20 @@ openai = {version = ">=1.76.0", optional = true, markers = "extra == \"openai\""
 opentelemetry-api = ">=1.28.0"
 prompt-toolkit = {version = ">=3", optional = true, markers = "extra == \"cli\""}
 pydantic = ">=2.10"
-pydantic-evals = {version = "0.3.2", optional = true, markers = "extra == \"evals\""}
-pydantic-graph = "0.3.2"
+pydantic-evals = {version = "0.3.4", optional = true, markers = "extra == \"evals\""}
+pydantic-graph = "0.3.4"
 requests = {version = ">=2.32.2", optional = true, markers = "extra == \"vertexai\""}
 rich = {version = ">=13", optional = true, markers = "extra == \"cli\""}
 typing-inspection = ">=0.4.0"
 
 [package.extras]
-a2a = ["fasta2a (==0.3.2)"]
+a2a = ["fasta2a (==0.3.4)"]
 anthropic = ["anthropic (>=0.52.0)"]
 bedrock = ["boto3 (>=1.37.24)"]
 cli = ["argcomplete (>=3.5.0)", "prompt-toolkit (>=3)", "rich (>=13)"]
 cohere = ["cohere (>=5.13.11) ; platform_system != \"Emscripten\""]
 duckduckgo = ["duckduckgo-search (>=7.0.0)"]
-evals = ["pydantic-evals (==0.3.2)"]
+evals = ["pydantic-evals (==0.3.4)"]
 google = ["google-genai (>=1.15.0)"]
 groq = ["groq (>=0.19.0)"]
 logfire = ["logfire (>=3.11.0)"]
@@ -4215,21 +4215,21 @@ typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
 name = "pydantic-evals"
-version = "0.3.2"
+version = "0.3.4"
 description = "Framework for evaluating stochastic code execution, especially code making use of LLMs"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pydantic_evals-0.3.2-py3-none-any.whl", hash = "sha256:d7c5b133ce8cb3dd56c748d62b1618ba743b91459c2bf64e835d650cd0752a0b"},
-    {file = "pydantic_evals-0.3.2.tar.gz", hash = "sha256:9034e2b51425ea125ebff347542362d70d92c8be73a4af58282fc5b58f09f6b0"},
+    {file = "pydantic_evals-0.3.4-py3-none-any.whl", hash = "sha256:94319362499c2ea52461e4e0a530d82a9df804547eac9f93945ef1796c112ebb"},
+    {file = "pydantic_evals-0.3.4.tar.gz", hash = "sha256:51c1f2992c2b9b07d981df0e44450cf79b84ef7c5b8645395c7126c617e4f915"},
 ]
 
 [package.dependencies]
 anyio = ">=0"
 logfire-api = ">=1.2.0"
 pydantic = ">=2.10"
-pydantic-ai-slim = "0.3.2"
+pydantic-ai-slim = "0.3.4"
 pyyaml = ">=6.0.2"
 rich = ">=13.9.4"
 
@@ -4238,14 +4238,14 @@ logfire = ["logfire (>=2.3)"]
 
 [[package]]
 name = "pydantic-graph"
-version = "0.3.2"
+version = "0.3.4"
 description = "Graph and state machine library"
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "pydantic_graph-0.3.2-py3-none-any.whl", hash = "sha256:efab29d7f201ad7a199acd94bb4d8accd70cc756e4030c069ac0d1048cb543a2"},
-    {file = "pydantic_graph-0.3.2.tar.gz", hash = "sha256:874b06d6484499e391a2f799bb3b5399420e5d786087012a8716a398bfc3aeec"},
+    {file = "pydantic_graph-0.3.4-py3-none-any.whl", hash = "sha256:885cb157975647e3c7aa7be49603fda9d072607c08dce2f0ba3f16f9a2069bfc"},
+    {file = "pydantic_graph-0.3.4.tar.gz", hash = "sha256:1172dccd8bfcc742f4eb52aa4199daa3cdb6446e726fb6960667d49a02c4df02"},
 ]
 
 [package.dependencies]
@@ -6414,4 +6414,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "18a4a602bced8feeabc745eec76317d7877eb35a49d3aec1244fdcf4fa09e245"
+content-hash = "57f96b5e1be2b0c5cc613fe53256ed8b3f15c3d3efd08b35f4f89724a2599ac0"
