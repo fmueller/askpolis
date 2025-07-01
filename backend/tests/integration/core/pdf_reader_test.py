@@ -9,6 +9,7 @@ def test_pdf_to_markdown_conversion(resources_dir: Path) -> None:
 
     assert parsed_document is not None
     assert len(parsed_document.pages) == 5
+    assert parsed_document.pages[0].raw_content
 
 
 def test_text_formatting_is_preserved(resources_dir: Path) -> None:
@@ -32,3 +33,4 @@ def test_dehyphenation(resources_dir: Path) -> None:
     assert len(parsed_document.pages) == 5
     assert "hyphenation" in parsed_document.pages[1].content
     assert "example" in parsed_document.pages[1].content
+    assert parsed_document.pages[1].raw_content
