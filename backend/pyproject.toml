@@ -42,7 +42,7 @@ pydantic-ai = "^0.3.2"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
 testcontainers = { extras = ["postgres"], version = "^4.10.0" }
-ruff = "^0.12.1"
+ruff = "^0.12.2"
 mypy = "^1.16.1"
 celery-types = "^0.23.0"
 types-requests = "^2.32.4.20250611"
