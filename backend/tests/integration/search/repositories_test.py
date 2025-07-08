@@ -12,7 +12,13 @@ def test_embeddings_data_model(db_session: Session) -> None:
     EmbeddingsCollectionRepository(db_session).save(collection)
 
     document = Document(name="Test Document", document_type=DocumentType.ELECTION_PROGRAM)
-    page = Page(document_id=document.id, page_number=1, content="Test Content", page_metadata={"page": 1})
+    page = Page(
+        document_id=document.id,
+        page_number=1,
+        content="Test Content",
+        raw_content="Raw Content",
+        page_metadata={"page": 1},
+    )
     db_session.add(document)
     db_session.add(page)
 
@@ -42,7 +48,13 @@ def test_get_all_similar_to(db_session: Session) -> None:
     EmbeddingsCollectionRepository(db_session).save(collection)
 
     document = Document(name="Test Document", document_type=DocumentType.ELECTION_PROGRAM)
-    page = Page(document_id=document.id, page_number=1, content="Test Content", page_metadata={"page": 1})
+    page = Page(
+        document_id=document.id,
+        page_number=1,
+        content="Test Content",
+        raw_content="Raw Content",
+        page_metadata={"page": 1},
+    )
     db_session.add(document)
     db_session.add(page)
 

@@ -49,7 +49,13 @@ def test_embed_document(
 ) -> None:
     document = Document(name="Test Document", document_type=DocumentType.ELECTION_PROGRAM)
     collection = EmbeddingsCollection(name="Test Collection", version="v1", description="Test Collection Description")
-    page = Page(document_id=document.id, page_number=1, content="Test Content", page_metadata={"page": 1})
+    page = Page(
+        document_id=document.id,
+        page_number=1,
+        content="Test Content",
+        raw_content="Raw Content",
+        page_metadata={"page": 1},
+    )
     mock_page_repository.get_by_document_id.return_value = [page]
     chunk = MagicMock()
     chunk.page_content = "Chunk content"
@@ -96,8 +102,12 @@ def test_embed_document_sets_correct_page(
     document = Document(name="Test Document", document_type=DocumentType.ELECTION_PROGRAM)
     collection = EmbeddingsCollection(name="Test Collection", version="v1", description="Test Collection Description")
 
-    page1 = Page(document_id=document.id, page_number=1, content="Test Content 1", page_metadata={"page": 1})
-    page2 = Page(document_id=document.id, page_number=2, content="Test Content 2", page_metadata={"page": 2})
+    page1 = Page(
+        document_id=document.id, page_number=1, content="Test Content 1", raw_content="Raw 1", page_metadata={"page": 1}
+    )
+    page2 = Page(
+        document_id=document.id, page_number=2, content="Test Content 2", raw_content="Raw 2", page_metadata={"page": 2}
+    )
     mock_page_repository.get_by_document_id.return_value = [page1, page2]
 
     chunk1 = MagicMock()
