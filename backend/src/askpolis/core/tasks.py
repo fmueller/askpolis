@@ -6,13 +6,12 @@ import uuid_utils.compat as uuid
 from celery import shared_task
 
 from askpolis.core import Document, ElectionProgram, Parliament, ParliamentPeriod, Party
-from askpolis.core.models import DocumentType, Page, PageVersion
+from askpolis.core.models import DocumentType, Page
 from askpolis.core.pdf_reader import PdfReader
 from askpolis.core.repositories import (
     DocumentRepository,
     ElectionProgramRepository,
     PageRepository,
-    PageVersionRepository,
     ParliamentPeriodRepository,
     ParliamentRepository,
     PartyRepository,
@@ -185,7 +184,6 @@ def read_and_parse_election_programs_to_documents() -> None:
         election_program_repository = ElectionProgramRepository(session)
         document_repository = DocumentRepository(session)
         page_repository = PageRepository(session)
-        page_version_repository = PageVersionRepository(session)
 
         election_programs = election_program_repository.get_all_without_referenced_document()
         for election_program in election_programs:
@@ -245,20 +243,12 @@ def read_and_parse_election_programs_to_documents() -> None:
                         document_id=document.id,
                         page_number=pdf_page.page_number,
                         content=pdf_page.content,
+                        raw_content=pdf_page.raw_content,
                         page_metadata=pdf_page.metadata,
                     )
                     for pdf_page in pdf_document.pages
                 ]
                 page_repository.save_all(pages)
-                page_versions = [
-                    PageVersion(
-                        page_id=page.id,
-                        version="raw",
-                        content=pdf_page.raw_content,
-                    )
-                    for page, pdf_page in zip(pages, pdf_document.pages)
-                ]
-                page_version_repository.save_all(page_versions)
     finally:
         session.close()
 

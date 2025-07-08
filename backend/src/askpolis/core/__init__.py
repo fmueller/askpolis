@@ -8,13 +8,12 @@ from .models import (
     DocumentType,
     ElectionProgram,
     Page,
-    PageVersion,
     Parliament,
     ParliamentPeriod,
     Party,
 )
 from .pdf_reader import PdfDocument, PdfPage, PdfReader
-from .repositories import DocumentRepository, PageRepository, PageVersionRepository, ParliamentRepository
+from .repositories import DocumentRepository, PageRepository, ParliamentRepository
 from .routes import router
 
 __all__ = [
@@ -30,8 +29,6 @@ __all__ = [
     "router",
     "Page",
     "PageRepository",
-    "PageVersion",
-    "PageVersionRepository",
     "Parliament",
     "ParliamentRepository",
     "ParliamentPeriod",

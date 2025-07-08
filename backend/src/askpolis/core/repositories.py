@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from .models import Document, ElectionProgram, Page, PageVersion, Parliament, ParliamentPeriod, Party
+from .models import Document, ElectionProgram, Page, Parliament, ParliamentPeriod, Party
 
 
 class PageRepository:
@@ -20,15 +20,6 @@ class PageRepository:
 
     def save_all(self, pages: list[Page]) -> None:
         self.db.add_all(pages)
-        self.db.commit()
-
-
-class PageVersionRepository:
-    def __init__(self, db: Session):
-        self.db = db
-
-    def save_all(self, versions: list[PageVersion]) -> None:
-        self.db.add_all(versions)
         self.db.commit()
 
 

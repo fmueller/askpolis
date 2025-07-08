@@ -16,11 +16,10 @@ from sqlalchemy import (
     LargeBinary,
     PrimaryKeyConstraint,
     String,
-    UniqueConstraint,
 )
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column
 
 Base = declarative_base()
 
@@ -33,6 +32,7 @@ class Page(Base):
         document_id: uuid.UUID,
         page_number: int,
         content: str,
+        raw_content: str,
         page_metadata: Optional[dict[str, Any]] = None,
         **kw: Any,
     ) -> None:
@@ -41,6 +41,7 @@ class Page(Base):
         self.document_id = document_id
         self.page_number = page_number
         self.content = content
+        self.raw_content = raw_content
         self.page_metadata = page_metadata
         self.updated_at = datetime.datetime.now(datetime.UTC)
 
@@ -48,34 +49,12 @@ class Page(Base):
     document_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
     page_number: int = Column(Integer, nullable=False)
     content: str = Column(String, nullable=False)
+    raw_content: str = Column(String, nullable=False)
     page_metadata = Column(JSONB, nullable=True)
     updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
-    versions: Mapped[list["PageVersion"]] = relationship("PageVersion", cascade="all, delete-orphan")
 
     def to_langchain_document(self) -> LangchainDocument:
         return LangchainDocument(page_content=self.content, metadata=self.page_metadata)
-
-
-class PageVersion(Base):
-    __tablename__ = "page_versions"
-
-    def __init__(self, page_id: uuid.UUID, version: str, content: str, **kw: Any) -> None:
-        super().__init__(**kw)
-        self.id = uuid.uuid7()
-        self.page_id = page_id
-        self.version = version
-        self.content = content
-        self.created_at = datetime.datetime.now(datetime.UTC)
-
-    id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), primary_key=True)
-    page_id: Mapped[uuid.UUID] = mapped_column(
-        DB_UUID(as_uuid=True), ForeignKey("pages.id", ondelete="CASCADE"), nullable=False
-    )
-    version: Mapped[str] = mapped_column(String, nullable=False)
-    content: Mapped[str] = mapped_column(String, nullable=False)
-    created_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
-
-    __table_args__ = (UniqueConstraint("page_id", "version", name="uq_page_versions_page_id_version"),)
 
 
 class DocumentType(str, enum.Enum):

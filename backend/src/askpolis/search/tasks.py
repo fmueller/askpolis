@@ -40,7 +40,13 @@ def test_embeddings() -> None:
         document_repository.save(document)
         page_repository.save_all(
             [
-                Page(document_id=document.id, page_number=i, content=f"Page {i}", page_metadata={"page": i})
+                Page(
+                    document_id=document.id,
+                    page_number=i,
+                    content=f"Page {i}",
+                    raw_content=f"Page Raw {i}",
+                    page_metadata={"page": i},
+                )
                 for i in range(10)
             ]
         )
