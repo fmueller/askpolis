@@ -1,8 +1,8 @@
 """add_page_versions_table
 
 Revision ID: 123456789abc
-Revises: ff9b556679a6
-Create Date: 2025-06-01 00:00:00.000000
+Revises: c2a2dd9f9ec7
+Create Date: 2025-07-08 00:00:00.000000
 
 """
 
@@ -10,11 +10,12 @@ from collections.abc import Sequence
 from typing import Union
 
 import sqlalchemy as sa
+
 from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "123456789abc"
-down_revision: Union[str, None] = "ff9b556679a6"
+down_revision: Union[str, None] = "c2a2dd9f9ec7"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
