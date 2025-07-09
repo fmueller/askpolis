@@ -79,7 +79,13 @@ def test_updated_at_is_properly_updated(db_session: Session) -> None:
 
 def test_document_and_page_model(db_session: Session) -> None:
     document = Document(name="test", document_type=DocumentType.ELECTION_PROGRAM)
-    page = Page(document_id=document.id, page_number=123, content="some content", page_metadata={"header": "value"})
+    page = Page(
+        document_id=document.id,
+        page_number=123,
+        content="some content",
+        raw_content="raw Content",
+        page_metadata={"header": "value"},
+    )
     db_session.add(document)
     db_session.add(page)
 

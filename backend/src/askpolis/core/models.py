@@ -6,7 +6,17 @@ import uuid_utils.compat as uuid
 from langchain_core.documents import Document as LangchainDocument
 from pydantic import BaseModel, Field
 from sqlalchemy import UUID as DB_UUID
-from sqlalchemy import Column, Date, DateTime, ForeignKey, Index, Integer, LargeBinary, PrimaryKeyConstraint, String
+from sqlalchemy import (
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    LargeBinary,
+    PrimaryKeyConstraint,
+    String,
+)
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, declarative_base, mapped_column
@@ -22,6 +32,7 @@ class Page(Base):
         document_id: uuid.UUID,
         page_number: int,
         content: str,
+        raw_content: str,
         page_metadata: Optional[dict[str, Any]] = None,
         **kw: Any,
     ) -> None:
@@ -30,6 +41,7 @@ class Page(Base):
         self.document_id = document_id
         self.page_number = page_number
         self.content = content
+        self.raw_content = raw_content
         self.page_metadata = page_metadata
         self.updated_at = datetime.datetime.now(datetime.UTC)
 
@@ -37,6 +49,7 @@ class Page(Base):
     document_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
     page_number: int = Column(Integer, nullable=False)
     content: str = Column(String, nullable=False)
+    raw_content: str = Column(String, nullable=False)
     page_metadata = Column(JSONB, nullable=True)
     updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 

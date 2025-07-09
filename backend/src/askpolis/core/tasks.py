@@ -238,19 +238,17 @@ def read_and_parse_election_programs_to_documents() -> None:
                     reference_id_2=election_program.parliament_period_id,
                 )
                 document_repository.save(document)
-                page_repository.save_all(
-                    list(
-                        map(
-                            lambda pdf_page: Page(
-                                document_id=document.id,
-                                page_number=pdf_page.page_number,
-                                content=pdf_page.content,
-                                page_metadata=pdf_page.metadata,
-                            ),
-                            pdf_document.pages,
-                        )
+                pages = [
+                    Page(
+                        document_id=document.id,
+                        page_number=pdf_page.page_number,
+                        content=pdf_page.content,
+                        raw_content=pdf_page.raw_content,
+                        page_metadata=pdf_page.metadata,
                     )
-                )
+                    for pdf_page in pdf_document.pages
+                ]
+                page_repository.save_all(pages)
     finally:
         session.close()
 
