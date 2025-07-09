@@ -50,7 +50,7 @@ def teardown_client() -> None:
 
 def test_document_and_page_endpoints_and_search_urls() -> None:
     document = Document(name="Doc", document_type=DocumentType.ELECTION_PROGRAM)
-    page = Page(document_id=document.id, page_number=1, content="content")
+    page = Page(document_id=document.id, page_number=1, content="content", raw_content="raw content")
     client = setup_client(document, page)
 
     resp = client.get(f"/v0/documents/{document.id}")
