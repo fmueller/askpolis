@@ -217,8 +217,8 @@ class CreateParliamentRequest(BaseModel):
 
 class DocumentResponse(BaseModel):
     id: uuid.UUID
-    name: str | None
-    document_type: DocumentType | None
+    name: Optional[str] = None
+    document_type: Optional[DocumentType] = None
 
 
 class PageResponse(BaseModel):
@@ -226,4 +226,4 @@ class PageResponse(BaseModel):
     document_id: uuid.UUID
     page_number: int
     content: str
-    page_metadata: dict[str, Any] | None = None
+    page_metadata: Optional[dict[str, Any]] = None
