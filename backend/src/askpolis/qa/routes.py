@@ -67,11 +67,19 @@ def get_question(
 
             title = doc.name if doc and doc.name else "Unknown"
             content = emb.chunk if emb and emb.chunk else "Unknown"
+            url = str(
+                request.url_for(
+                    "get_document_page",
+                    document_id=cit.document_id,
+                    page_id=cit.page_id,
+                )
+            )
 
             citation_responses.append(
                 CitationResponse(
                     title=title,
                     content=content,
+                    url=url,
                 )
             )
 
@@ -103,6 +111,7 @@ def get_question(
     },
 )
 def get_answer(
+    request: Request,
     question: Annotated[Question, Depends(get_question_from_path)],
     document_repository: Annotated[DocumentRepository, Depends(get_document_repository)],
     embeddings_repository: Annotated[EmbeddingsRepository, Depends(get_embeddings_repository)],
@@ -121,14 +130,20 @@ def get_answer(
     for cit in answer.citations:
         doc = document_repository.get(cit.document_id)
         emb = embeddings_repository.get(cit.embeddings_id)
-
         title = doc.name if doc and doc.name else "Unknown"
         content = emb.chunk if emb and emb.chunk else "Unknown"
-
+        url = str(
+            request.url_for(
+                "get_document_page",
+                document_id=cit.document_id,
+                page_id=cit.page_id,
+            )
+        )
         citation_responses.append(
             CitationResponse(
                 title=title,
                 content=content,
+                url=url,
             )
         )
 
