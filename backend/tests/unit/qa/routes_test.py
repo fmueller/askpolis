@@ -7,7 +7,6 @@ from askpolis.core import get_document_repository
 from askpolis.main import app
 from askpolis.qa.dependencies import get_qa_service
 from askpolis.qa.models import Answer, AnswerContent, Question
-from askpolis.qa.routes import get_answer
 from askpolis.search import get_embeddings_repository
 
 
@@ -44,12 +43,19 @@ def test_get_question_returns_answer() -> None:
 def test_get_answer_trims_language_code() -> None:
     question = Question(content="test")
     answer = Answer(contents=[AnswerContent(language="de   ", content="hi")], citations=[])
+    answer.question_id = question.id
     question.answers.append(answer)
 
-    response = get_answer(
-        question=question,
-        document_repository=MagicMock(),
-        embeddings_repository=MagicMock(),
-    )
+    app.dependency_overrides[get_qa_service] = lambda: DummyQAService(question)
+    app.dependency_overrides[get_document_repository] = lambda: MagicMock()
+    app.dependency_overrides[get_embeddings_repository] = lambda: MagicMock()
 
-    assert response.language == "de"
+    client = TestClient(app)
+    response = client.get(f"/v0/questions/{question.id}/answer")
+    assert response.status_code == 200
+
+    data = response.json()
+    # language must have been stripped
+    assert data["language"] == "de"
+
+    app.dependency_overrides.clear()

@@ -1,7 +1,6 @@
 import uuid_utils.compat as uuid
 from fastapi.testclient import TestClient
 
-from askpolis.main import app
 from askpolis.core import (
     Document,
     DocumentType,
@@ -9,9 +8,10 @@ from askpolis.core import (
     get_document_repository,
     get_page_repository,
 )
+from askpolis.main import app
+from askpolis.search.dependencies import get_search_service
 from askpolis.search.models import SearchResult
 from askpolis.search.search_service import SearchServiceBase
-from askpolis.search.dependencies import get_search_service
 
 
 def setup_client(doc: Document, page: Page) -> TestClient:
