@@ -8,21 +8,6 @@ from sqlalchemy.orm import Session
 from .models import Document, ElectionProgram, Page, Parliament, ParliamentPeriod, Party
 
 
-class PageRepository:
-    def __init__(self, db: Session):
-        self.db = db
-
-    def get(self, page_id: uuid.UUID) -> Optional[Page]:
-        return self.db.query(Page).filter(Page.id == page_id).first()
-
-    def get_by_document_id(self, document_id: uuid.UUID) -> list[Page]:
-        return self.db.query(Page).filter(Page.document_id == document_id).all()
-
-    def save_all(self, pages: list[Page]) -> None:
-        self.db.add_all(pages)
-        self.db.commit()
-
-
 class DocumentRepository:
     def __init__(self, db: Session):
         self.db = db
@@ -46,6 +31,22 @@ class DocumentRepository:
     def save(self, document: Document) -> None:
         self.db.add(document)
         self.db.commit()
+
+    def add_pages(self, document: Document, pages: list[Page]) -> None:
+        document.pages.extend(pages)
+        self.db.commit()
+
+    def get_pages(self, document_id: uuid.UUID) -> list[Page]:
+        document = self.get(document_id)
+        if document is None:
+            return []
+        return list(document.pages)
+
+    def get_page(self, document_id: uuid.UUID, page_id: uuid.UUID) -> Optional[Page]:
+        document = self.get(document_id)
+        if document is None:
+            return None
+        return next((p for p in document.pages if p.id == page_id), None)
 
 
 class ParliamentRepository:

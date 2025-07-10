@@ -19,7 +19,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, declarative_base, mapped_column
+from sqlalchemy.orm import Mapped, declarative_base, mapped_column, relationship
 
 Base = declarative_base()
 
@@ -52,6 +52,8 @@ class Page(Base):
     raw_content: str = Column(String, nullable=False)
     page_metadata = Column(JSONB, nullable=True)
     updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
+
+    document: Mapped["Document"] = relationship("Document", back_populates="pages")
 
     def to_langchain_document(self) -> LangchainDocument:
         return LangchainDocument(page_content=self.content, metadata=self.page_metadata)
@@ -92,6 +94,8 @@ class Document(Base):
     reference_id_1: Mapped[Optional[uuid.UUID]] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
     reference_id_2: Mapped[Optional[uuid.UUID]] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
     updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
+
+    pages: Mapped[list[Page]] = relationship("Page", back_populates="document", cascade="all, delete-orphan")
 
     __table_args__ = (
         Index(

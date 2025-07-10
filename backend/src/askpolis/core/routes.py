@@ -7,7 +7,6 @@ from fastapi.responses import JSONResponse
 
 from .dependencies import (
     get_document_repository,
-    get_page_repository,
     get_parliament_repository,
 )
 from .models import (
@@ -17,7 +16,7 @@ from .models import (
     Parliament,
     ParliamentResponse,
 )
-from .repositories import DocumentRepository, PageRepository, ParliamentRepository
+from .repositories import DocumentRepository, ParliamentRepository
 
 router = APIRouter()
 
@@ -70,13 +69,12 @@ def get_document_page(
     document_id: Annotated[uuid.UUID, Path()],
     page_id: Annotated[uuid.UUID, Path()],
     document_repository: Annotated[DocumentRepository, Depends(get_document_repository)],
-    page_repository: Annotated[PageRepository, Depends(get_page_repository)],
 ) -> PageResponse:
     document = document_repository.get(document_id)
     if document is None:
         raise HTTPException(status_code=404, detail="Document not found")
-    page = page_repository.get(page_id)
-    if page is None or page.document_id != document_id:
+    page = document_repository.get_page(document_id, page_id)
+    if page is None:
         raise HTTPException(status_code=404, detail="Page not found")
     return PageResponse(
         id=page.id,
