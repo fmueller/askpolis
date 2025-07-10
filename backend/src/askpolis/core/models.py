@@ -106,6 +106,7 @@ class Document(Base):
 
 class Parliament(Base):
     __tablename__ = "parliaments"
+    __table_args__ = (Index("uq_parliaments_name", "name", unique=True),)
 
     def __init__(self, name: str, short_name: str, **kw: Any) -> None:
         super().__init__(**kw)
@@ -122,6 +123,7 @@ class Parliament(Base):
 
 class Party(Base):
     __tablename__ = "parties"
+    __table_args__ = (Index("uq_parties_name", "name", unique=True),)
 
     def __init__(self, name: str, short_name: str, **kw: Any) -> None:
         super().__init__(**kw)
