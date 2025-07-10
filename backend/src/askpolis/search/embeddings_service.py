@@ -7,7 +7,7 @@ import numpy.typing as npt
 from FlagEmbedding import BGEM3FlagModel
 from FlagEmbedding.inference.embedder.encoder_only.m3 import M3Embedder
 
-from askpolis.core import Document, MarkdownSplitter, Page, PageRepository
+from askpolis.core import Document, DocumentRepository, MarkdownSplitter, Page
 from askpolis.logging import get_logger
 
 from .models import Embeddings, EmbeddingsCollection
@@ -104,12 +104,12 @@ def get_embedding_model() -> FakeModel | M3Embedder:
 class EmbeddingsService:
     def __init__(
         self,
-        page_repository: PageRepository,
+        document_repository: DocumentRepository,
         embeddings_repository: EmbeddingsRepository,
         model: FakeModel | M3Embedder,
         splitter: MarkdownSplitter,
     ):
-        self._page_repository = page_repository
+        self._document_repository = document_repository
         self._embeddings_repository = embeddings_repository
         self._splitter = splitter
         self._model = model
@@ -132,7 +132,7 @@ class EmbeddingsService:
         return _rrf_merge(dense_results, sparse_results)[:limit]
 
     def embed_document(self, collection: EmbeddingsCollection, document: Document) -> list[Embeddings]:
-        pages = self._page_repository.get_by_document_id(document.id)
+        pages = self._document_repository.get_pages(document.id)
         if len(pages) == 0:
             logger.warning_with_attrs("No pages found for document", {"document_id": document.id})
             return []

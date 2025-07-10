@@ -6,7 +6,6 @@ from askpolis.core import (
     DocumentType,
     Page,
     get_document_repository,
-    get_page_repository,
 )
 from askpolis.main import app
 from askpolis.search.dependencies import get_search_service
@@ -19,9 +18,10 @@ def setup_client(doc: Document, page: Page) -> TestClient:
         def get(self, doc_id: uuid.UUID) -> Document | None:
             return doc if doc_id == doc.id else None
 
-    class PageRepo:
-        def get(self, page_id: uuid.UUID) -> Page | None:
-            return page if page_id == page.id else None
+        def get_page(self, doc_id: uuid.UUID, page_id: uuid.UUID) -> Page | None:
+            if doc_id == doc.id and page_id == page.id:
+                return page
+            return None
 
     class DummySearch(SearchServiceBase):
         def find_matching_texts(
@@ -38,7 +38,6 @@ def setup_client(doc: Document, page: Page) -> TestClient:
             ]
 
     app.dependency_overrides[get_document_repository] = lambda: DocRepo()
-    app.dependency_overrides[get_page_repository] = lambda: PageRepo()
     app.dependency_overrides[get_search_service] = lambda: DummySearch()
 
     return TestClient(app)

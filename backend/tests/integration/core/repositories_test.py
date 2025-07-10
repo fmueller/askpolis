@@ -11,7 +11,6 @@ from askpolis.core import (
     DocumentType,
     ElectionProgram,
     Page,
-    PageRepository,
     Parliament,
     ParliamentPeriod,
     Party,
@@ -96,8 +95,7 @@ def test_document_and_page_model(db_session: Session) -> None:
     assert document_from_db is not None
     assert document_from_db.name == "test"
 
-    page_repository = PageRepository(db_session)
-    pages = page_repository.get_by_document_id(document_from_db.id)
+    pages = document_repository.get_pages(document_from_db.id)
     assert len(pages) == 1
     assert pages[0].content == "some content"
 

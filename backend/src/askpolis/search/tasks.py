@@ -3,7 +3,7 @@ import random
 
 from celery import shared_task
 
-from askpolis.core import Document, DocumentRepository, DocumentType, MarkdownSplitter, Page, PageRepository
+from askpolis.core import Document, DocumentRepository, DocumentType, MarkdownSplitter, Page
 from askpolis.db import get_db
 from askpolis.logging import get_logger
 
@@ -28,17 +28,17 @@ def test_embeddings() -> None:
         embeddings_repository = EmbeddingsRepository(session)
         splitter = MarkdownSplitter(chunk_size=20, chunk_overlap=0)
         embeddings_service = EmbeddingsService(
-            PageRepository(session), embeddings_repository, get_embedding_model(), splitter
+            DocumentRepository(session), embeddings_repository, get_embedding_model(), splitter
         )
 
         document_repository = DocumentRepository(session)
-        page_repository = PageRepository(session)
         document = Document(
             name=f"Test Document{datetime.datetime.now(datetime.UTC).isoformat()}",
             document_type=DocumentType.ELECTION_PROGRAM,
         )
         document_repository.save(document)
-        page_repository.save_all(
+        document_repository.add_pages(
+            document,
             [
                 Page(
                     document_id=document.id,
@@ -48,7 +48,7 @@ def test_embeddings() -> None:
                     page_metadata={"page": i},
                 )
                 for i in range(10)
-            ]
+            ],
         )
         logger.info_with_attrs("Ingesting embeddings for test document...", {"document_id": document.id})
         computed_embeddings = embeddings_service.embed_document(collection, document)
@@ -80,7 +80,7 @@ def ingest_embeddings_for_one_document() -> None:
             return
 
         embeddings_service = EmbeddingsService(
-            PageRepository(session), embeddings_repository, get_embedding_model(), splitter
+            DocumentRepository(session), embeddings_repository, get_embedding_model(), splitter
         )
         document = documents[random.randint(0, len(documents) - 1)]
         logger.info_with_attrs("Ingesting embeddings for document...", {"document_id": document.id})

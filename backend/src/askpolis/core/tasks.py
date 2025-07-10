@@ -11,7 +11,6 @@ from askpolis.core.pdf_reader import PdfReader
 from askpolis.core.repositories import (
     DocumentRepository,
     ElectionProgramRepository,
-    PageRepository,
     ParliamentPeriodRepository,
     ParliamentRepository,
     PartyRepository,
@@ -183,7 +182,6 @@ def read_and_parse_election_programs_to_documents() -> None:
     try:
         election_program_repository = ElectionProgramRepository(session)
         document_repository = DocumentRepository(session)
-        page_repository = PageRepository(session)
 
         election_programs = election_program_repository.get_all_without_referenced_document()
         for election_program in election_programs:
@@ -248,7 +246,7 @@ def read_and_parse_election_programs_to_documents() -> None:
                     )
                     for pdf_page in pdf_document.pages
                 ]
-                page_repository.save_all(pages)
+                document_repository.add_pages(document, pages)
     finally:
         session.close()
 
