@@ -1,9 +1,15 @@
 import enum
 import json
+import os
 import re
+from typing import Callable
 
 from langchain_core.documents import Document
-from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
+from langchain_text_splitters import (
+    MarkdownHeaderTextSplitter,
+    RecursiveCharacterTextSplitter,
+)
+from transformers import AutoTokenizer  # type: ignore
 
 from askpolis.core.pdf_reader import PdfReader
 from askpolis.logging import get_logger
@@ -26,10 +32,36 @@ PAGE_MARKER_REGEX = r"<!-- ASKPOLIS_PAGE_MARKER: (.*?) -->"
 class MarkdownSplitter:
     def __init__(self, chunk_size: int, chunk_overlap: int):
         self._header_splitter = MarkdownHeaderTextSplitter(
-            headers_to_split_on=[(header.value, header.name) for header in HeaderLevel], strip_headers=False
+            headers_to_split_on=[(header.value, header.name) for header in HeaderLevel],
+            strip_headers=False,
         )
+
+        token_length_fn: Callable[[str], int]
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(
+                "BAAI/bge-m3",
+                cache_dir=os.getenv("HF_HUB_CACHE"),
+                trust_remote_code=True,
+                local_files_only=True,
+            )
+
+            def token_length_fn(text: str) -> int:
+                return len(tokenizer.tokenize(text))
+
+        except Exception as e:  # pragma: no cover - optional dependency
+            logger.warning_with_attrs(
+                "Failed to load BGE tokenizer, falling back to character length",
+                {"error": e},
+            )
+
+            def token_length_fn(text: str) -> int:
+                return len(text)
+
         self._splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size, chunk_overlap=chunk_overlap, separators=["\n\n", "\n", ".", "?", "!", " ", ""]
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            separators=["\n\n", "\n", ".", "?", "!", " ", ""],
+            length_function=token_length_fn,
         )
 
     def split(self, markdown_documents: list[Document]) -> list[Document]:
