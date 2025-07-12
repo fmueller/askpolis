@@ -62,7 +62,8 @@ def test_embeddings() -> None:
 
 @shared_task(name="ingest_embeddings_for_one_document")
 def ingest_embeddings_for_one_document() -> None:
-    splitter = MarkdownSplitter(chunk_size=2000, chunk_overlap=400)
+    # TODO change to parameters of the installation, overridable in tenant configuration
+    splitter = MarkdownSplitter(chunk_size=500, chunk_overlap=100)
 
     session = next(get_db())
     try:
