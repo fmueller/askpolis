@@ -42,7 +42,7 @@ pydantic-ai-slim = {extras = ["openai"], version = "^0.3.7"}
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.1"
 testcontainers = { extras = ["postgres"], version = "^4.10.0" }
-ruff = "^0.12.3"
+ruff = "^0.12.4"
 mypy = "^1.16.1"
 celery-types = "^0.23.0"
 types-requests = "^2.32.4.20250611"
