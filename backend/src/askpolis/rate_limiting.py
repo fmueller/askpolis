@@ -11,6 +11,9 @@ from starlette.responses import Response
 from starlette.status import HTTP_429_TOO_MANY_REQUESTS
 from starlette.types import ASGIApp
 
+# paths that are not rate limited
+EXCLUDED_PATHS = {"/", "/healthz", "/readyz"}
+
 
 class RedisLike(Protocol):
     async def incr(self, key: str) -> int: ...
@@ -38,6 +41,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.period = period
 
     async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+        if request.url.path in EXCLUDED_PATHS:
+            return await call_next(request)
+
         client_ip = request.client.host if request.client else "unknown"
         key = f"rate-limit:{client_ip}"
         try:
