@@ -44,7 +44,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if request.url.path in EXCLUDED_PATHS:
             return await call_next(request)
 
-        client_ip = request.client.host if request.client else "unknown"
+        client_ip = self._get_client_ip(request)
         key = f"rate-limit:{client_ip}"
         try:
             count = await self.redis.incr(key)
@@ -56,3 +56,20 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             # fail open on Redis errors
             pass
         return await call_next(request)
+
+    def _get_client_ip(self, request: Request) -> str:
+        """Determine the client IP from headers or connection info."""
+        forwarded_for = request.headers.get("x-forwarded-for")
+        if forwarded_for:
+            return forwarded_for.split(",")[0].strip()
+        real_ip = request.headers.get("x-real-ip")
+        if real_ip:
+            return real_ip.strip()
+        forwarded = request.headers.get("forwarded")
+        if forwarded:
+            forwarded_value = forwarded.split(",")[0].strip()
+            for part in forwarded_value.split(";"):
+                clean = part.strip()
+                if clean.lower().startswith("for="):
+                    return clean.split("=", 1)[1].strip('"')
+        return request.client.host if request.client else "unknown"
