@@ -49,6 +49,16 @@ def test_rate_limit_blocks_after_five_requests() -> None:
     assert resp.status_code == 429
 
 
+def test_rate_limit_uses_forwarded_header() -> None:
+    client = TestClient(create_app())
+    headers = {"X-Forwarded-For": "1.2.3.4"}
+    for _ in range(5):
+        resp = client.get("/foo", headers=headers)
+        assert resp.status_code == 200
+    resp = client.get("/foo", headers=headers)
+    assert resp.status_code == 429
+
+
 def test_root_not_rate_limited() -> None:
     client = TestClient(create_app())
     for _ in range(10):
