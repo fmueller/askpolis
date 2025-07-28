@@ -13,7 +13,7 @@ logger.info("Starting AskPolis API...")
 api_version = "v0"
 api_base_path = f"/{api_version}"
 
-app = FastAPI()
+app = FastAPI(docs_url="/")
 app.add_middleware(RateLimitMiddleware)
 app.include_router(core_router, prefix=api_base_path)
 app.include_router(qa_router, prefix=api_base_path)
@@ -24,8 +24,8 @@ class HealthResponse(BaseModel):
     healthy: bool
 
 
-@app.get("/")
-def read_root() -> HealthResponse:
+@app.get("/health")
+def read_health() -> HealthResponse:
     return HealthResponse(healthy=True)
 
 
