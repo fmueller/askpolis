@@ -24,11 +24,6 @@ class HealthResponse(BaseModel):
     healthy: bool
 
 
-@app.get("/health")
-def read_health() -> HealthResponse:
-    return HealthResponse(healthy=True)
-
-
 @app.get("/healthz", include_in_schema=False)
 def liveness_probe() -> HealthResponse:
     """Endpoint used by Kubernetes liveness probe."""
