@@ -4,16 +4,12 @@ import os
 from collections.abc import Awaitable
 from typing import Any, Callable, Protocol, cast
 
+import redis.asyncio as redis_asyncio
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 from starlette.status import HTTP_429_TOO_MANY_REQUESTS
 from starlette.types import ASGIApp
-
-try:
-    import redis.asyncio as redis_asyncio
-except Exception:  # pragma: no cover - redis not installed
-    redis_asyncio = None  # type: ignore[assignment]
 
 
 class RedisLike(Protocol):
@@ -23,7 +19,7 @@ class RedisLike(Protocol):
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """Simple IP based rate limiting middleware."""
+    """Simple IP-based rate limiting middleware."""
 
     def __init__(
         self,
@@ -35,8 +31,6 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     ) -> None:
         super().__init__(app)
         if redis_client is None:
-            if redis_asyncio is None:
-                raise RuntimeError("redis package not available")
             url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
             redis_client = cast(RedisLike, cast(Any, redis_asyncio).from_url(url))
         self.redis = redis_client
