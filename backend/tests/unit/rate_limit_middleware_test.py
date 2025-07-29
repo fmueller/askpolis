@@ -1,3 +1,4 @@
+import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -74,3 +75,13 @@ def test_probes_not_rate_limited() -> None:
     for _ in range(10):
         resp = client.get("/readyz")
         assert resp.status_code == 200
+
+
+def test_env_var_overrides_limit(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("RATE_LIMIT_REQUESTS_PER_MINUTE", "2")
+    client = TestClient(create_app())
+    for _ in range(2):
+        resp = client.get("/foo")
+        assert resp.status_code == 200
+    resp = client.get("/foo")
+    assert resp.status_code == 429
