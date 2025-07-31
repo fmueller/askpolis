@@ -14,6 +14,9 @@ services:
       - OTEL_SERVICE_NAME=askpolis-api
       - OTEL_RESOURCE_ATTRIBUTES=environment=local
       - RATE_LIMIT_REQUESTS_PER_MINUTE=10
+      - ASKPOLIS_DEV=true
+    volumes:
+      - ./src:/app/src
     depends_on:
       - postgres
       - redis
@@ -31,6 +34,9 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=askpolis-worker
       - OTEL_RESOURCE_ATTRIBUTES=environment=local
+      - ASKPOLIS_DEV=true
+    volumes:
+      - ./src:/app/src
     depends_on:
       - postgres
       - redis
@@ -44,6 +50,9 @@ services:
     command: ./scripts/start-scheduler.sh
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
+      - ASKPOLIS_DEV=true
+    volumes:
+      - ./src:/app/src
     depends_on:
       - worker
 

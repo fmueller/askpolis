@@ -10,6 +10,8 @@ ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH"
 
 ENV HF_HOME=/app/models
+ENV ASKPOLIS_DEV=false
+ENV PYTHONPATH=/app/src
 
 FROM base AS builder
 
