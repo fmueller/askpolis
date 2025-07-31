@@ -11,12 +11,24 @@ export OTEL_RESOURCE_ATTRIBUTES="container.id=${container_id},${OTEL_RESOURCE_AT
 
 alembic upgrade head
 
-opentelemetry-instrument \
-    --traces_exporter otlp_proto_grpc \
-    --metrics_exporter otlp_proto_grpc \
-    --logs_exporter otlp_proto_grpc \
-    uvicorn askpolis.main:app \
-    --host 0.0.0.0 \
-    --port 8000 \
-    --no-access-log \
-    ${ASKPOLIS_DEV:+--reload --reload-dir /app/src}
+if [ "${ASKPOLIS_DEV:-false}" = "true" ]; then
+  opentelemetry-instrument \
+      --traces_exporter otlp_proto_grpc \
+      --metrics_exporter otlp_proto_grpc \
+      --logs_exporter otlp_proto_grpc \
+      uvicorn askpolis.main:app \
+      --host 0.0.0.0 \
+      --port 8000 \
+      --no-access-log \
+      --reload \
+      --reload-dir /app/src
+else
+  opentelemetry-instrument \
+      --traces_exporter otlp_proto_grpc \
+      --metrics_exporter otlp_proto_grpc \
+      --logs_exporter otlp_proto_grpc \
+      uvicorn askpolis.main:app \
+      --host 0.0.0.0 \
+      --port 8000 \
+      --no-access-log
+fi
