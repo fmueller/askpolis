@@ -67,13 +67,23 @@ def test_root_not_rate_limited() -> None:
         assert resp.status_code == 200
 
 
-def test_probes_not_rate_limited() -> None:
+def test_health_probes_not_rate_limited() -> None:
     client = TestClient(create_app())
     for _ in range(10):
         resp = client.get("/healthz")
         assert resp.status_code == 200
     for _ in range(10):
         resp = client.get("/readyz")
+        assert resp.status_code == 200
+
+
+def test_docs_not_rate_limited() -> None:
+    client = TestClient(create_app())
+    for _ in range(10):
+        resp = client.get("/")
+        assert resp.status_code == 200
+    for _ in range(10):
+        resp = client.get("/openapi.json")
         assert resp.status_code == 200
 
 

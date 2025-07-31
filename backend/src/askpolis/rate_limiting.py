@@ -12,7 +12,7 @@ from starlette.status import HTTP_429_TOO_MANY_REQUESTS
 from starlette.types import ASGIApp
 
 # paths that are not rate limited
-EXCLUDED_PATHS = {"/", "/healthz", "/readyz"}
+EXCLUDED_PATHS = {"/", "/openapi.json", "/healthz", "/readyz"}
 
 
 class RedisLike(Protocol):
