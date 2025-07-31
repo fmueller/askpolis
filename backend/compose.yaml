@@ -13,6 +13,7 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
       - OTEL_SERVICE_NAME=askpolis-api
       - OTEL_RESOURCE_ATTRIBUTES=environment=local
+      - RATE_LIMIT_REQUESTS_PER_MINUTE=10
       - ASKPOLIS_DEV=true
     volumes:
       - ./src:/app/src

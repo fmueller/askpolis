@@ -37,6 +37,14 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
             redis_client = cast(RedisLike, cast(Any, redis_asyncio).from_url(url))
         self.redis = redis_client
+        env_limit = os.getenv("RATE_LIMIT_REQUESTS_PER_MINUTE")
+        if env_limit:
+            try:
+                env_value = int(env_limit)
+                if env_value >= 1:
+                    limit = env_value
+            except ValueError:
+                pass
         self.limit = limit
         self.period = period
 
