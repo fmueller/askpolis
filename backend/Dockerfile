@@ -52,5 +52,9 @@ COPY --from=model ${HF_HOME} ${HF_HOME}
 
 WORKDIR /app
 
+RUN addgroup --system app && adduser --system --ingroup app app
+
 COPY src/ ./
-RUN chmod +x ./scripts/*.sh
+RUN chmod +x ./scripts/*.sh && chown -R app:app /app
+
+USER app
