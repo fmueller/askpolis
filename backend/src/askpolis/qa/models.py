@@ -99,8 +99,8 @@ class Answer(Base):
     document_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         DB_UUID(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), nullable=True
     )
-    contents: Mapped[list[AnswerContent]] = relationship("AnswerContent", cascade="all, delete-orphan")
-    citations: Mapped[list[Citation]] = relationship("Citation", cascade="all, delete-orphan")
+    contents: Mapped[list[AnswerContent]] = relationship("AnswerContent", cascade="all, delete-orphan", lazy="selectin")
+    citations: Mapped[list[Citation]] = relationship("Citation", cascade="all, delete-orphan", lazy="selectin")
     created_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
     updated_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
