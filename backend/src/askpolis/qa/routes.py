@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
-from askpolis.core import DocumentRepository, get_document_repository
-from askpolis.search import EmbeddingsRepository, get_embeddings_repository
+from askpolis.core import Document, DocumentRepository, get_document_repository
+from askpolis.search import Embeddings, EmbeddingsRepository, get_embeddings_repository
 
 from .dependencies import get_qa_service
 from .models import AnswerResponse, CitationResponse, CreateQuestionRequest, Question, QuestionResponse
@@ -60,10 +60,21 @@ def get_question(
         if len(answer.contents) == 0:
             raise HTTPException(status_code=500, detail="Answer without content pieces should not exist")
 
+        document_ids = [cit.document_id for cit in answer.citations]
+        embedding_ids = [cit.embeddings_id for cit in answer.citations]
+
+        documents = {
+            doc.id: doc for doc in document_repository.db.query(Document).filter(Document.id.in_(document_ids)).all()
+        }
+        embeddings = {
+            emb.id: emb
+            for emb in embeddings_repository.db.query(Embeddings).filter(Embeddings.id.in_(embedding_ids)).all()
+        }
+
         citation_responses: list[CitationResponse] = []
         for cit in answer.citations:
-            doc = document_repository.get(cit.document_id)
-            emb = embeddings_repository.get(cit.embeddings_id)
+            doc = documents.get(cit.document_id)
+            emb = embeddings.get(cit.embeddings_id)
 
             title = doc.name if doc and doc.name else "Unknown"
             content = emb.chunk if emb and emb.chunk else "Unknown"
@@ -126,10 +137,20 @@ def get_answer(
     if len(answer.contents) == 0:
         raise HTTPException(status_code=500, detail="Answer without content pieces should not exist")
 
+    document_ids = [cit.document_id for cit in answer.citations]
+    embedding_ids = [cit.embeddings_id for cit in answer.citations]
+
+    documents = {
+        doc.id: doc for doc in document_repository.db.query(Document).filter(Document.id.in_(document_ids)).all()
+    }
+    embeddings = {
+        emb.id: emb for emb in embeddings_repository.db.query(Embeddings).filter(Embeddings.id.in_(embedding_ids)).all()
+    }
+
     citation_responses: list[CitationResponse] = []
     for cit in answer.citations:
-        doc = document_repository.get(cit.document_id)
-        emb = embeddings_repository.get(cit.embeddings_id)
+        doc = documents.get(cit.document_id)
+        emb = embeddings.get(cit.embeddings_id)
         title = doc.name if doc and doc.name else "Unknown"
         content = emb.chunk if emb and emb.chunk else "Unknown"
         url = str(
