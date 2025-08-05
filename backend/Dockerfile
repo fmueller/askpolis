@@ -15,6 +15,13 @@ ENV PYTHONPATH=/app/src
 
 FROM base AS builder
 
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    g++ \
+    zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-compile --no-cache-dir poetry==2.1.3
 
 ENV POETRY_NO_INTERACTION=1 \
