@@ -19,7 +19,6 @@ if [ "${ASKPOLIS_DEV:-false}" = "true" ]; then
       uvicorn askpolis.main:app \
       --host 0.0.0.0 \
       --port 8000 \
-      --no-access-log \
       --reload \
       --reload-dir /app/src
 else
