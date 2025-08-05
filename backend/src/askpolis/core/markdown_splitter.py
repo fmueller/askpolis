@@ -9,7 +9,7 @@ from langchain_text_splitters import (
     MarkdownHeaderTextSplitter,
     RecursiveCharacterTextSplitter,
 )
-from transformers import AutoTokenizer  # type: ignore
+from transformers import AutoTokenizer
 
 from askpolis.core.pdf_reader import PdfReader
 from askpolis.logging import get_logger
