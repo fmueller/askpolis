@@ -61,7 +61,7 @@ WORKDIR /app
 
 RUN addgroup --system app && adduser --system --ingroup app app
 
-COPY src/ ./
-RUN chmod +x ./scripts/*.sh && chown -R app:app /app
+COPY --chown=app:app src/ ./
+RUN chmod +x ./scripts/*.sh
 
 USER app
