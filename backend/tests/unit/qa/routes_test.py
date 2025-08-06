@@ -5,16 +5,16 @@ from fastapi.testclient import TestClient
 
 from askpolis.core import get_document_repository
 from askpolis.main import app
-from askpolis.qa.dependencies import get_qa_service
+from askpolis.qa.dependencies import get_question_repository
 from askpolis.qa.models import Answer, AnswerContent, Question
 from askpolis.search import get_embeddings_repository
 
 
-class DummyQAService:
+class DummyQuestionRepository:
     def __init__(self, question: Question) -> None:
         self.question = question
 
-    def get_question(self, question_id: uuid.UUID) -> Question | None:
+    def get(self, question_id: uuid.UUID) -> Question | None:
         if question_id == self.question.id:
             return self.question
         return None
@@ -26,7 +26,7 @@ def test_get_question_returns_answer() -> None:
     answer.question_id = question.id
     question.answers.append(answer)
 
-    app.dependency_overrides[get_qa_service] = lambda: DummyQAService(question)
+    app.dependency_overrides[get_question_repository] = lambda: DummyQuestionRepository(question)
     app.dependency_overrides[get_document_repository] = lambda: MagicMock()
     app.dependency_overrides[get_embeddings_repository] = lambda: MagicMock()
 
@@ -46,7 +46,7 @@ def test_get_answer_trims_language_code() -> None:
     answer.question_id = question.id
     question.answers.append(answer)
 
-    app.dependency_overrides[get_qa_service] = lambda: DummyQAService(question)
+    app.dependency_overrides[get_question_repository] = lambda: DummyQuestionRepository(question)
     app.dependency_overrides[get_document_repository] = lambda: MagicMock()
     app.dependency_overrides[get_embeddings_repository] = lambda: MagicMock()
 

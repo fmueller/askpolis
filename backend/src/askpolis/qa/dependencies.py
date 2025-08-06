@@ -13,6 +13,12 @@ from .repositories import QuestionRepository
 from .tasks import CeleryQuestionScheduler
 
 
+def get_question_repository(
+    db: Annotated[Session, Depends(get_db)],
+) -> QuestionRepository:
+    return QuestionRepository(db)
+
+
 def get_qa_service(
     db: Annotated[Session, Depends(get_db)],
 ) -> QAService:
