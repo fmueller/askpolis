@@ -1,11 +1,13 @@
 import datetime
 import random
+from typing import Any
 
 from celery import shared_task
 
 from askpolis.core import Document, DocumentRepository, DocumentType, MarkdownSplitter, Page
 from askpolis.db import get_db
 from askpolis.logging import get_logger
+from askpolis.task_utils import build_task_result
 
 from .embeddings_service import EmbeddingsService, get_embedding_model
 from .models import EmbeddingsCollection
@@ -15,7 +17,7 @@ logger = get_logger(__name__)
 
 
 @shared_task(name="test_embeddings")
-def test_embeddings() -> None:
+def test_embeddings() -> dict[str, Any]:
     session = next(get_db())
     try:
         collections_repository = EmbeddingsCollectionRepository(session)
@@ -56,12 +58,13 @@ def test_embeddings() -> None:
             "Computed embeddings for test document",
             {"document_id": document.id, "embeddings": len(computed_embeddings)},
         )
+        return build_task_result("success", str(document.id), {"embeddings": len(computed_embeddings)})
     finally:
         session.close()
 
 
 @shared_task(name="ingest_embeddings_for_one_document")
-def ingest_embeddings_for_one_document() -> None:
+def ingest_embeddings_for_one_document() -> dict[str, Any]:
     # TODO change to parameters of the installation, overridable in tenant configuration
     splitter = MarkdownSplitter(chunk_size=500, chunk_overlap=100)
 
@@ -78,7 +81,7 @@ def ingest_embeddings_for_one_document() -> None:
         documents = embeddings_repository.get_documents_without_embeddings()
         if len(documents) == 0:
             logger.info("No documents without embeddings found")
-            return
+            return build_task_result("no_documents", None, {"documents": 0})
 
         embeddings_service = EmbeddingsService(
             DocumentRepository(session), embeddings_repository, get_embedding_model(), splitter
@@ -90,5 +93,6 @@ def ingest_embeddings_for_one_document() -> None:
         logger.info_with_attrs(
             "Computed embeddings for document", {"document_id": document.id, "embeddings": len(computed_embeddings)}
         )
+        return build_task_result("success", str(document.id), {"embeddings": len(computed_embeddings)})
     finally:
         session.close()
