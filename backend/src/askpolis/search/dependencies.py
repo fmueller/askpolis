@@ -8,7 +8,7 @@ from askpolis.db import get_db
 
 from .embeddings_service import EmbeddingsService, get_embedding_model
 from .repositories import EmbeddingsCollectionRepository, EmbeddingsRepository
-from .reranker_service import RerankerService
+from .reranker_service import get_reranker_service
 from .search_service import SearchService, SearchServiceBase
 
 
@@ -23,5 +23,5 @@ def get_search_service(
     document_repository = DocumentRepository(db)
     splitter = MarkdownSplitter(chunk_size=2000, chunk_overlap=400)
     embeddings_service = EmbeddingsService(document_repository, embeddings_repository, get_embedding_model(), splitter)
-    reranker_service = RerankerService()
+    reranker_service = get_reranker_service()
     return SearchService(EmbeddingsCollectionRepository(db), embeddings_service, reranker_service)

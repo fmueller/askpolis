@@ -2,7 +2,7 @@ from .dependencies import get_embeddings_repository, get_search_service
 from .embeddings_service import EmbeddingsService, get_embedding_model
 from .models import Embeddings, EmbeddingsCollection, SearchResponse, SearchResult
 from .repositories import EmbeddingsCollectionRepository, EmbeddingsRepository
-from .reranker_service import RerankerService
+from .reranker_service import RerankerService, get_reranker_service
 from .routes import router
 from .search_service import SearchService, SearchServiceBase
 
@@ -16,6 +16,7 @@ __all__ = [
     "get_embeddings_repository",
     "get_search_service",
     "RerankerService",
+    "get_reranker_service",
     "router",
     "SearchResponse",
     "SearchResult",

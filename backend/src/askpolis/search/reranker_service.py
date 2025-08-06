@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 
 from FlagEmbedding import FlagReranker
 
@@ -30,3 +31,8 @@ class RerankerService:
         logger.info("Reranking...")
         reranked_scores = self._reranker.compute_score([(query, doc.chunk) for doc in embeddings], normalize=True)
         return [(doc, float(score)) for score, doc in sorted(zip(reranked_scores, embeddings), reverse=True)][:limit]
+
+
+@lru_cache(maxsize=1)
+def get_reranker_service() -> RerankerService:
+    return RerankerService()
