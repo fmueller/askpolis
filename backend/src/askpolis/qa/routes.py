@@ -8,18 +8,19 @@ from fastapi.responses import JSONResponse
 from askpolis.core import Document, DocumentRepository, get_document_repository
 from askpolis.search import Embeddings, EmbeddingsRepository, get_embeddings_repository
 
-from .dependencies import get_qa_service
+from .dependencies import get_qa_service, get_question_repository
 from .models import AnswerResponse, CitationResponse, CreateQuestionRequest, Question, QuestionResponse
 from .qa_service import QAService
+from .repositories import QuestionRepository
 
 router = APIRouter(prefix="/questions", responses={404: {"description": "Question not found"}}, tags=["questions"])
 
 
 def get_question_from_path(
     question_id: Annotated[uuid.UUID, Path()],
-    qa_service: Annotated[QAService, Depends(get_qa_service)],
+    question_repository: Annotated[QuestionRepository, Depends(get_question_repository)],
 ) -> Question:
-    question = qa_service.get_question(question_id)
+    question = question_repository.get(question_id)
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
     return question
