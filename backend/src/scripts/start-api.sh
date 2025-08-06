@@ -12,6 +12,7 @@ export OTEL_RESOURCE_ATTRIBUTES="container.id=${container_id},${OTEL_RESOURCE_AT
 alembic upgrade head
 
 if [ "${ASKPOLIS_DEV:-false}" = "true" ]; then
+  cd live-reload
   opentelemetry-instrument \
       --traces_exporter otlp_proto_grpc \
       --metrics_exporter otlp_proto_grpc \
@@ -19,8 +20,7 @@ if [ "${ASKPOLIS_DEV:-false}" = "true" ]; then
       uvicorn askpolis.main:app \
       --host 0.0.0.0 \
       --port 8000 \
-      --reload \
-      --reload-dir /app/src
+      --reload
 else
   opentelemetry-instrument \
       --traces_exporter otlp_proto_grpc \

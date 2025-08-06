@@ -10,20 +10,23 @@ container_id=$(cat /proc/self/cgroup | grep docker | cut -d'/' -f3 | head -n 1)
 export OTEL_RESOURCE_ATTRIBUTES="container.id=${container_id},${OTEL_RESOURCE_ATTRIBUTES:-}"
 
 if [ "${ASKPOLIS_DEV:-false}" = "true" ]; then
-    watchfiles --filter python "\
-        opentelemetry-instrument \
-            --traces_exporter otlp_proto_grpc \
-            --metrics_exporter otlp_proto_grpc \
-            --logs_exporter otlp_proto_grpc \
-            celery -A askpolis.celery:app worker \
-            --loglevel=info \
-            --concurrency=1" /app/src
-else
+  cd live-reload
+  watchfiles --filter python "\
     opentelemetry-instrument \
-        --traces_exporter otlp_proto_grpc \
-        --metrics_exporter otlp_proto_grpc \
-        --logs_exporter otlp_proto_grpc \
-        celery -A askpolis.celery:app worker \
-        --loglevel=info \
-        --concurrency=1
+      --traces_exporter otlp_proto_grpc \
+      --metrics_exporter otlp_proto_grpc \
+      --logs_exporter otlp_proto_grpc \
+      celery -A askpolis.celery:app worker \
+      --loglevel=info \
+      --concurrency=1 \
+      --events" ./
+else
+  opentelemetry-instrument \
+    --traces_exporter otlp_proto_grpc \
+    --metrics_exporter otlp_proto_grpc \
+    --logs_exporter otlp_proto_grpc \
+    celery -A askpolis.celery:app worker \
+    --loglevel=info \
+    --concurrency=1 \
+    --events
 fi

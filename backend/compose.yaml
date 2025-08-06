@@ -16,7 +16,7 @@ services:
       - RATE_LIMIT_REQUESTS_PER_MINUTE=10
       - ASKPOLIS_DEV=true
     volumes:
-      - ./src:/app/src
+      - ./src:/app/live-reload
     depends_on:
       - postgres
       - redis
@@ -36,7 +36,7 @@ services:
       - OTEL_RESOURCE_ATTRIBUTES=environment=local
       - ASKPOLIS_DEV=true
     volumes:
-      - ./src:/app/src
+      - ./src:/app/live-reload
     depends_on:
       - postgres
       - redis
@@ -52,7 +52,7 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - ASKPOLIS_DEV=true
     volumes:
-      - ./src:/app/src
+      - ./src:/app/live-reload
     depends_on:
       - worker
 
