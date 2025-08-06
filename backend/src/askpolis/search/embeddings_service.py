@@ -1,5 +1,6 @@
 import os
 import uuid
+from functools import lru_cache
 from typing import Any, TypedDict, cast
 
 import numpy as np
@@ -85,6 +86,7 @@ class FakeModel:
         return result
 
 
+@lru_cache(maxsize=1)
 def get_embedding_model() -> FakeModel | M3Embedder:
     if os.getenv("DISABLE_INFERENCE") == "true":
         return FakeModel()
