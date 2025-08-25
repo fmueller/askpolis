@@ -50,6 +50,9 @@ services:
     command: ./scripts/start-scheduler.sh
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=askpolis-scheduler
+      - OTEL_RESOURCE_ATTRIBUTES=environment=local
       - ASKPOLIS_DEV=true
     volumes:
       - ./src:/app/live-reload
@@ -72,11 +75,11 @@ services:
     container_name: ollama
 
   redis:
-    image: redis:7.4.2-bookworm
+    image: redis:7.4.5-bookworm
     container_name: redis
 
   postgres:
-    image: pgvector/pgvector:pg17
+    image: pgvector/pgvector:0.8.0-pg17-bookworm
     container_name: postgres
     ports:
       - "5432:5432"
@@ -87,7 +90,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   fluent-bit:
-    image: fluent/fluent-bit:3.2.4
+    image: fluent/fluent-bit:3.2.10
     container_name: fluent-bit
     user: root # Run as root to access log files
     environment:
@@ -103,7 +106,7 @@ services:
       - loki
 
   otel-collector:
-    image: otel/opentelemetry-collector:0.118.0
+    image: otel/opentelemetry-collector:0.132.4
     container_name: otel-collector
     volumes:
       - ../infrastructure/configs/otel-collector.yaml:/etc/otel-collector-config.yaml
@@ -133,7 +136,7 @@ services:
       - tempo
 
   prometheus:
-    image: prom/prometheus:v3.1.0
+    image: prom/prometheus:v3.5.0
     container_name: prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yaml"
@@ -152,7 +155,7 @@ services:
   # Tempo runs as user 10001, and docker compose creates the volume as root.
   # As such, we need to chown the volume in order for Tempo to start correctly.
   tempo-init:
-    image: &tempoImage grafana/tempo:2.7.0
+    image: &tempoImage grafana/tempo:2.8.2
     user: root
     entrypoint:
       - "chown"
@@ -172,7 +175,7 @@ services:
       - tempo-init
 
   loki:
-    image: grafana/loki:3.3.2
+    image: grafana/loki:3.5.3
     container_name: loki
     command: [ "-config.file=/etc/loki/loki-config.yaml" ]
     volumes:
