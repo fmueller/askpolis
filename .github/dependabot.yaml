@@ -17,3 +17,4 @@ updates:
     directory: "/backend"
     schedule:
       interval: "weekly"
+    versioning-strategy: "increase"
