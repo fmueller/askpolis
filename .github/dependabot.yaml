@@ -21,3 +21,4 @@ updates:
       - dependency-type: "all"
     ignore:
       - dependency-name: "torch"
+      - dependency-name: "opentelemetry-*"
