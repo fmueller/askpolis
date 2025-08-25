@@ -17,4 +17,7 @@ updates:
     directory: "/backend"
     schedule:
       interval: "weekly"
-    versioning-strategy: "increase"
+    allow:
+      - dependency-type: "all"
+    ignore:
+      - dependency-name: "torch"
