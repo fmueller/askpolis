@@ -17,8 +17,6 @@ updates:
     directory: "/backend"
     schedule:
       interval: "weekly"
-    allow:
-      - dependency-type: "all"
     ignore:
       - dependency-name: "torch"
       - dependency-name: "opentelemetry-*"
