@@ -247,3 +247,5 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha, mode=max
+          build-args: |
+            DISABLE_HUGGINGFACE_DOWNLOAD=true
