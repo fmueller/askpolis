@@ -36,7 +36,10 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'poetry'
       - name: Install dependencies
-        run: poetry install --no-interaction
+        run: |
+          poetry install --no-interaction
+          python -m pip uninstall -y torch
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=2.7.1
       - name: Run Ruff checks
         run: poetry run ruff check .
       - name: Run mypy for type checking
@@ -60,7 +63,10 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'poetry'
       - name: Install dependencies
-        run: poetry install --no-interaction
+        run: |
+          poetry install --no-interaction
+          python -m pip uninstall -y torch
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=2.7.1
       - name: Run unit tests
         run: poetry run pytest -v -m unit
 
@@ -88,7 +94,10 @@ jobs:
           cache: 'poetry'
 
       - name: Install dependencies
-        run: poetry install --no-interaction
+        run: |
+          poetry install --no-interaction
+          python -m pip uninstall -y torch
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=2.7.1
 
       - name: Cache Docker images
         uses: actions/cache@v4
@@ -155,7 +164,10 @@ jobs:
           cache: 'poetry'
 
       - name: Install dependencies
-        run: poetry install --no-interaction
+        run: |
+          poetry install --no-interaction
+          python -m pip uninstall -y torch
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=2.7.1
 
       - name: Cache Docker images
         uses: actions/cache@v4
