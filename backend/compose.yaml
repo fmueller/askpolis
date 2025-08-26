@@ -58,6 +58,8 @@ services:
       - ./src:/app/live-reload
     depends_on:
       - worker
+      - redis
+      - otel-collector
 
   flower:
     image: mher/flower:2.0.1
