@@ -9,15 +9,12 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
-uvicorn = { extras = ["standard"], version = "^0.35.0" }
+uvicorn = { extras = ["standard"], version = "~0.35.0" }
 fastapi = "^0.116.1"
 langchain = "^0.3.26"
-sentence-transformers = "^5.0.0"
-torch = [
-    { version = "^2.7.1", source = "pypi", platform = "darwin" },
-    { version = "^2.7.1+cpu", source = "pytorch", platform = "!darwin" }
-]
-einops = "^0.8.1"
+sentence-transformers = "^5.1.0"
+torch = "~2.7.1"
+einops = "~0.8.1"
 celery = "^5.5.3"
 redis = "^6.2.0"
 pymupdf = "^1.26.3"
@@ -54,15 +51,6 @@ sqlalchemy = { extras = ["mypy"], version = "^2.0.42" }
 faker = "^37.5.3"
 types-docker = "^7.1.0.20250705"
 types-pyyaml = "^6.0.12.20250516"
-
-[[tool.poetry.source]]
-name = "pypi"
-priority = "primary"
-
-[[tool.poetry.source]]
-name = "pytorch"
-url = "https://download.pytorch.org/whl/cpu"
-priority = "explicit"
 
 [tool.ruff]
 line-length = 120

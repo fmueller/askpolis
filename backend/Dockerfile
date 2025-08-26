@@ -34,6 +34,7 @@ WORKDIR /app
 COPY pyproject.toml poetry.lock ./
 
 RUN poetry install --only main --no-root && \
+    pip install --no-cache-dir torch==2.7.1+cpu --index-url https://download.pytorch.org/whl/cpu --force-reinstall && \
     rm -rf $POETRY_CACHE_DIR
 
 FROM base AS model
