@@ -33,7 +33,9 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
 
-RUN PIP_INDEX_URL=https://download.pytorch.org/whl/cpu poetry install --only main --no-root && \
+RUN poetry install --only main --no-root && \
+    python -m pip uninstall -y torch && \
+    python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=2.7.1 && \
     rm -rf $POETRY_CACHE_DIR
 
 FROM base AS model
