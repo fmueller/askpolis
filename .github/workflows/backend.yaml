@@ -17,6 +17,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   WORKING_DIRECTORY: backend
+  PIP_INDEX_URL: https://download.pytorch.org/whl/cpu
 
 jobs:
   lint-and-typecheck:
