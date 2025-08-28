@@ -34,7 +34,7 @@ WORKDIR /app
 COPY pyproject.toml poetry.lock ./
 
 RUN poetry install --only main --no-root && \
-    python -m pip uninstall -y torch && \
+    python -m pip freeze | grep -E "(torch|nvidia-|triton)" | xargs -r python -m pip uninstall -y && \
     python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=2.8.0 && \
     rm -rf $POETRY_CACHE_DIR
 
