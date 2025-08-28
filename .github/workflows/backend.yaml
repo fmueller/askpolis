@@ -270,6 +270,7 @@ jobs:
 
       # Promote by adding "latest" tag to the same digest that passed tests
       - name: Tag prerelease digest as latest
+        working-directory: ${{ github.workspace }}
         run: |
           PRERELEASE_TAG="${{ needs.build-test-image.outputs.prerelease_tag }}"
           PRERELEASE_DIGEST="${{ needs.build-test-image.outputs.prerelease_digest }}"
