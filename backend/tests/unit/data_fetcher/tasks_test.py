@@ -1,6 +1,7 @@
 """Tests for data_fetcher Celery tasks."""
 
-from typing import Any, Iterator
+from collections.abc import Iterator
+from typing import Any
 
 from askpolis.data_fetcher import tasks as df_tasks
 

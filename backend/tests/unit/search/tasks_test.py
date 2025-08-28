@@ -1,6 +1,7 @@
 """Tests for search Celery tasks."""
 
-from typing import Any, Iterator
+from collections.abc import Iterator
+from typing import Any
 
 from askpolis.core.models import Document, DocumentType
 from askpolis.search import tasks as search_tasks
