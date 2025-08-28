@@ -130,7 +130,6 @@ def docker_test_image() -> str:
     Build the Docker image with a build argument to disable Hugging Face downloads
     """
     import platform
-    import subprocess
     from pathlib import Path
 
     # Decide whether to use a prebuilt venv (Linux only, and .venv.tgz present or creatable)
