@@ -14,6 +14,7 @@ on:
 env:
   PYTHON_VERSION: "3.12.11"
   POETRY_VERSION: "2.1.3"
+  TORCH_VERSION: "2.8.0"
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   WORKING_DIRECTORY: backend
@@ -39,7 +40,6 @@ jobs:
         run: |
           poetry install --no-interaction
           python -m pip uninstall -y torch
-          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=2.7.1
       - name: Run Ruff checks
         run: poetry run ruff check .
       - name: Run mypy for type checking
@@ -66,7 +66,7 @@ jobs:
         run: |
           poetry install --no-interaction
           python -m pip uninstall -y torch
-          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=2.7.1
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=${{ env.TORCH_VERSION }}
       - name: Run unit tests
         run: poetry run pytest -v -m unit
 
@@ -97,7 +97,7 @@ jobs:
         run: |
           poetry install --no-interaction
           python -m pip uninstall -y torch
-          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=2.7.1
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=${{ env.TORCH_VERSION }}
 
       - name: Cache Docker images
         uses: actions/cache@v4
@@ -167,7 +167,7 @@ jobs:
         run: |
           poetry install --no-interaction
           python -m pip uninstall -y torch
-          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=2.7.1
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=${{ env.TORCH_VERSION }}
 
       - name: Cache Docker images
         uses: actions/cache@v4
