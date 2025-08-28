@@ -33,10 +33,22 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
 
-RUN poetry install --only main --no-root && \
-    python -m pip freeze | grep -E "(torch|nvidia-|triton)" | xargs -r python -m pip uninstall -y && \
-    python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=2.8.0 && \
-    rm -rf $POETRY_CACHE_DIR
+# Try to reuse a prebuilt venv provided as a BuildKit secret (id=prebuilt_venv).
+# If the secret is not provided, we fall back to building the venv with Poetry.
+RUN --mount=type=secret,id=prebuilt_venv,required=false \
+    if [ -f /run/secrets/prebuilt_venv ]; then \
+        echo "Using prebuilt virtualenv from secret 'prebuilt_venv'"; \
+        mkdir -p /app/.venv && tar -xzf /run/secrets/prebuilt_venv -C /app/.venv; \
+    else \
+        echo "No prebuilt virtualenv provided; installing with Poetry"; \
+        apt-get update && apt-get install -y build-essential gcc g++ zlib1g-dev && rm -rf /var/lib/apt/lists/*; \
+        pip install --no-compile --no-cache-dir poetry==2.1.3; \
+        export POETRY_NO_INTERACTION=1 POETRY_VIRTUALENVS_IN_PROJECT=1 POETRY_VIRTUALENVS_CREATE=1 POETRY_CACHE_DIR=/tmp/poetry_cache; \
+        poetry install --only main --no-root && \
+        python -m pip freeze | grep -E "(torch|nvidia-|triton)" | xargs -r python -m pip uninstall -y && \
+        python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=2.8.0 && \
+        rm -rf /tmp/poetry_cache; \
+    fi
 
 FROM base AS model
 

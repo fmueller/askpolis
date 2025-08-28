@@ -169,6 +169,13 @@ jobs:
           python -m pip freeze | grep -E "(torch|nvidia-|triton)" | xargs -r python -m pip uninstall -y
           python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=${{ env.TORCH_VERSION }}
 
+      - name: Package current virtualenv for Docker build
+        run: |
+          VENV_PATH="$(poetry env info -p)"
+          echo "Packaging venv from: $VENV_PATH"
+          # Create a tar.gz containing the venv contents. It will extract into /app/.venv in the image.
+          tar -czf .venv.tgz -C "$VENV_PATH" .
+
       - name: Cache Docker images
         uses: actions/cache@v4
         with:
@@ -223,6 +230,7 @@ jobs:
         run: poetry run pytest -v -m e2e
         env:
           TESTCONTAINERS_RYUK_DISABLED: true
+          USE_PREBUILT_VENV: "true"
 
   build-and-push-image:
     name: Build and Push Docker Image

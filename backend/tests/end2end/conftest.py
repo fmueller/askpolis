@@ -129,22 +129,31 @@ def docker_test_image() -> str:
     """
     Build the Docker image with a build argument to disable Hugging Face downloads
     """
-    result = subprocess.run(
-        [
-            "docker",
-            "build",
-            "--build-arg",
-            "DISABLE_HUGGINGFACE_DOWNLOAD=true",
-            "--target",
-            "runtime",
-            "-t",
-            "askpolis-e2e-test",
-            "-f",
-            "Dockerfile",
-            ".",
-        ],
-        check=True,
-    )
+    import os
+
+    cmd = [
+        "docker",
+        "build",
+        "--build-arg",
+        "DISABLE_HUGGINGFACE_DOWNLOAD=true",
+        "--target",
+        "runtime",
+    ]
+
+    # Toggle secret usage via env var (e.g., set USE_PREBUILT_VENV=true in GHA)
+    use_prebuilt = os.getenv("USE_PREBUILT_VENV", "").lower() == "true"
+    if use_prebuilt and os.path.exists(".venv.tgz"):
+        cmd += ["--secret", "id=prebuilt_venv,src=.venv.tgz"]
+
+    cmd += [
+        "-t",
+        "askpolis-e2e-test",
+        "-f",
+        "Dockerfile",
+        ".",
+    ]
+
+    result = subprocess.run(cmd, check=True)
     assert result.returncode == 0
     return "askpolis-e2e-test:latest"
 
