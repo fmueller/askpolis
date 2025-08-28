@@ -13,31 +13,7 @@ ENV HF_HOME=/app/models
 ENV ASKPOLIS_DEV=false
 ENV PYTHONPATH=/app/src
 
-FROM base AS builder_prebuilt
-
-WORKDIR /app
-
-COPY pyproject.toml poetry.lock ./
-# Expect a prebuilt venv tarball in the build context
-COPY .venv.tgz /tmp/prebuilt_venv.tgz
-
-# Extract, re-home to image Python, and normalize console scripts
-RUN set -euo pipefail; \
-    mkdir -p /app/.venv && tar -xzf /tmp/prebuilt_venv.tgz -C /app/.venv; \
-    python3 -m venv --upgrade /app/.venv; \
-    VENV_BIN="/app/.venv/bin"; \
-    if [ -x "${VENV_BIN}/python3" ] && [ ! -e "${VENV_BIN}/python" ]; then ln -s python3 "${VENV_BIN}/python"; fi; \
-    PY="$( [ -x "${VENV_BIN}/python" ] && echo "${VENV_BIN}/python" || echo "${VENV_BIN}/python3" )"; \
-    for f in "${VENV_BIN}"/*; do \
-      [ -f "$f" ] || continue; \
-      if head -c 2 "$f" 2>/dev/null | grep -q '^#!'; then \
-        sed -i '1s@^#!.*$@#!'"$PY"'@' "$f"; \
-        sed -i 's/\r$//' "$f"; \
-        chmod +x "$f"; \
-      fi; \
-    done
-
-FROM base AS builder_poetry
+FROM base AS builder
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -74,43 +50,20 @@ RUN if [ "$DISABLE_HUGGINGFACE_DOWNLOAD" != "true" ]; then \
         mkdir -p /app/models; \
     fi
 
-# Runtime stage using the prebuilt venv
-FROM base AS runtime_prebuilt
+FROM base AS runtime
 
 ENV HF_HUB_CACHE=${HF_HOME}/hub
 ENV HF_HUB_OFFLINE=1
 ENV TRANSFORMERS_OFFLINE=1
 
-RUN addgroup --system app && adduser --system --ingroup app app
-
-COPY --from=builder_prebuilt --chown=app:app ${VIRTUAL_ENV} ${VIRTUAL_ENV}
-COPY --from=model --chown=app:app ${HF_HOME} ${HF_HOME}
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+COPY --from=model ${HF_HOME} ${HF_HOME}
 
 WORKDIR /app
+
+RUN addgroup --system app && adduser --system --ingroup app app
 
 COPY --chown=app:app src/ ./
 RUN chmod +x ./scripts/*.sh
 
 USER app
-
-# Runtime stage building deps with Poetry inside image
-FROM base AS runtime_poetry
-
-ENV HF_HUB_CACHE=${HF_HOME}/hub
-ENV HF_HUB_OFFLINE=1
-ENV TRANSFORMERS_OFFLINE=1
-
-RUN addgroup --system app && adduser --system --ingroup app app
-
-COPY --from=builder_poetry --chown=app:app ${VIRTUAL_ENV} ${VIRTUAL_ENV}
-COPY --from=model --chown=app:app ${HF_HOME} ${HF_HOME}
-
-WORKDIR /app
-
-COPY --chown=app:app src/ ./
-RUN chmod +x ./scripts/*.sh
-
-USER app
-
-# Default final image (keeps compatibility with builds that target "runtime" or no target)
-FROM runtime_poetry AS runtime

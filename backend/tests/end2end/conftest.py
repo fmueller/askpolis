@@ -127,25 +127,20 @@ def test_db_connection_url(postgres_container: PostgresContainer) -> str:
 @pytest.fixture(scope="session")
 def docker_test_image() -> str:
     """
-    Build the Docker image with a build argument to disable Hugging Face downloads
+    Return the prebuilt Docker image reference for E2E tests.
+    CI sets DOCKER_TEST_IMAGE to an immutable reference (tag@digest).
     """
-    import platform
-    from pathlib import Path
+    import os
 
-    # Decide whether to use a prebuilt venv (Linux only, and .venv.tgz present or creatable)
-    is_linux = platform.system().lower() == "linux"
-    venv_tgz = Path(".venv.tgz")
-    use_prebuilt = is_linux and venv_tgz.exists()
-
-    target_stage = "runtime_prebuilt" if use_prebuilt else "runtime_poetry"
+    ref = os.getenv("DOCKER_TEST_IMAGE")
+    if ref:
+        return ref
 
     cmd = [
         "docker",
         "build",
         "--build-arg",
         "DISABLE_HUGGINGFACE_DOWNLOAD=true",
-        "--target",
-        target_stage,
         "-t",
         "askpolis-e2e-test",
         "-f",

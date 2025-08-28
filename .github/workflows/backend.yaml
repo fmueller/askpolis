@@ -140,9 +140,61 @@ jobs:
         env:
           TESTCONTAINERS_RYUK_DISABLED: true
 
+  # Build the candidate/prerelease image once, push to GHCR, and share its digest.
+  build-test-image:
+    name: Build Test Docker Image (Prerelease)
+    needs: lint-and-typecheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIRECTORY }}
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      prerelease_tag: ${{ steps.meta.outputs.prerelease_tag }}
+      prerelease_digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Log in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Compute prerelease tag
+        id: meta
+        run: |
+          echo "prerelease_tag=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:prerelease-${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push prerelease image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.prerelease_tag }}
+          labels: |
+            org.opencontainers.image.title=askpolis-backend
+            org.opencontainers.image.source=${{ github.repositoryUrl }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.version=0.0.0-prerelease
+            io.askpolis.prerelease=true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            DISABLE_HUGGINGFACE_DOWNLOAD=true
+
   e2e-tests:
     name: End-to-End Tests
-    needs: lint-and-typecheck
+    needs: [ lint-and-typecheck, build-test-image ]
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -169,71 +221,33 @@ jobs:
           python -m pip freeze | grep -E "(torch|nvidia-|triton)" | xargs -r python -m pip uninstall -y
           python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=${{ env.TORCH_VERSION }}
 
-      - name: Package current virtualenv for Docker build
-        run: |
-          VENV_PATH="$(poetry env info -p)"
-          echo "Packaging venv from: $VENV_PATH"
-          # Create a tar.gz containing the venv contents. It will extract into /app/.venv in the image.
-          tar -czf .venv.tgz -C "$VENV_PATH" .
-
-      - name: Cache Docker images
-        uses: actions/cache@v4
+      - name: Log in to registry
+        uses: docker/login-action@v3
         with:
-          path: /tmp/.docker-cache
-          key: ${{ runner.os }}-docker-images-end2end-${{ hashFiles('backend/compose.yaml', 'backend/ollama.Dockerfile') }}
-          restore-keys: |
-            ${{ runner.os }}-docker-images-end2end-
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Load cached Docker images
+      - name: Pull prerelease image by digest and tag locally for tests
         run: |
-          if [ -d "/tmp/.docker-cache" ]; then
-            for image in /tmp/.docker-cache/*.tar; do
-              if [ -f "$image" ]; then
-                docker load -i "$image"
-              fi
-            done
-          fi
-
-      - name: Pull and cache Docker images
-        run: |
-          mkdir -p /tmp/.docker-cache
-
-          # Extract Redis version from compose.yaml
-          REDIS_VERSION=$(grep -A 2 '^\s*redis:$' compose.yaml | grep 'image:' | sed 's/.*redis://' | tr -d ' ')
-
-          # Extract Postgres version from compose.yaml
-          POSTGRES_VERSION=$(grep -A 5 'postgres:' compose.yaml | grep 'image:' | sed 's/.*pgvector://' | tr -d ' ')
-
-          # Extract Ollama version from Dockerfile
-          OLLAMA_VERSION=$(grep 'FROM ollama/ollama:' ollama.Dockerfile | head -1 | sed 's/.*ollama://' | sed 's/ .*//' | tr -d ' ')
-
-          # Pull images if not already present and save to cache
-          for IMAGE in "redis:${REDIS_VERSION}" "pgvector/pgvector:${POSTGRES_VERSION}" "ollama/ollama:${OLLAMA_VERSION}"; do
-            if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
-              docker pull "$IMAGE"
-            fi
-            SAFE_NAME=$(echo "$IMAGE" | tr '/:' '_')
-            if [ ! -f "/tmp/.docker-cache/${SAFE_NAME}.tar" ]; then
-              docker save "$IMAGE" -o "/tmp/.docker-cache/${SAFE_NAME}.tar"
-            fi
-          done
-
-      - name: Cache Ollama models
-        uses: actions/cache@v4
-        with:
-          path: backend/tests/end2end/.ollama_cache/models
-          key: ${{ runner.os }}-ollama-cache-${{ hashFiles('backend/tests/end2end/conftest.py') }}
-          restore-keys: |
-            ${{ runner.os }}-ollama-cache-
+          PRERELEASE_TAG="${{ needs.build-test-image.outputs.prerelease_tag }}"
+          PRERELEASE_DIGEST="${{ needs.build-test-image.outputs.prerelease_digest }}"
+          # Pull by digest for immutability
+          docker pull "${PRERELEASE_TAG}@${PRERELEASE_DIGEST}"
+          # Provide a conventional local tag for the test harness, if needed
+          docker tag "${PRERELEASE_TAG}@${PRERELEASE_DIGEST}" "askpolis-e2e-test:latest"
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: true
 
       - name: Run end-to-end tests
         run: poetry run pytest -v -m e2e
         env:
           TESTCONTAINERS_RYUK_DISABLED: true
+          DOCKER_TEST_IMAGE: ${{ needs.build-test-image.outputs.prerelease_tag }}@${{ needs.build-test-image.outputs.prerelease_digest }}
 
-  build-and-push-image:
-    name: Build and Push Docker Image
-    needs: [ unit-tests, integration-tests, e2e-tests ]
+  promote-docker-image:
+    name: Promote Docker Image
+    needs: [ unit-tests, integration-tests, e2e-tests, build-test-image ]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     defaults:
@@ -244,9 +258,6 @@ jobs:
       packages: write
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v5
-
       - name: Log in to registry
         uses: docker/login-action@v3
         with:
@@ -257,14 +268,22 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          cache-from: type=gha
-          cache-to: type=gha, mode=max
-          build-args: |
-            DISABLE_HUGGINGFACE_DOWNLOAD=true
+      # Promote by adding "latest" tag to the same digest that passed tests
+      - name: Tag prerelease digest as latest
+        run: |
+          PRERELEASE_TAG="${{ needs.build-test-image.outputs.prerelease_tag }}"
+          PRERELEASE_DIGEST="${{ needs.build-test-image.outputs.prerelease_digest }}"
+          LATEST_TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          docker buildx imagetools create -t "${LATEST_TAG}" "${PRERELEASE_TAG}@${PRERELEASE_DIGEST}"
+
+      # Optionally remove the prerelease tag for cleanliness
+      - name: Remove prerelease tag
+        run: |
+          PRERELEASE_TAG="${{ needs.build-test-image.outputs.prerelease_tag }}"
+          # Delete the tag reference (does not delete the manifest referenced by other tags)
+          gh api -X DELETE \
+            "https://api.github.com/orgs/${GITHUB_REPOSITORY_OWNER}/packages/container/${{ env.IMAGE_NAME##*/ }}/versions" \
+            -H "Accept: application/vnd.github+json" \
+            | true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
