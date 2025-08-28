@@ -129,7 +129,16 @@ def docker_test_image() -> str:
     """
     Build the Docker image with a build argument to disable Hugging Face downloads
     """
-    import os
+    import platform
+    import subprocess
+    from pathlib import Path
+
+    # Decide whether to use a prebuilt venv (Linux only, and .venv.tgz present or creatable)
+    is_linux = platform.system().lower() == "linux"
+    venv_tgz = Path(".venv.tgz")
+    use_prebuilt = is_linux and venv_tgz.exists()
+
+    target_stage = "runtime_prebuilt" if use_prebuilt else "runtime_poetry"
 
     cmd = [
         "docker",
@@ -137,15 +146,7 @@ def docker_test_image() -> str:
         "--build-arg",
         "DISABLE_HUGGINGFACE_DOWNLOAD=true",
         "--target",
-        "runtime",
-    ]
-
-    # Toggle secret usage via env var (e.g., set USE_PREBUILT_VENV=true in GHA)
-    use_prebuilt = os.getenv("USE_PREBUILT_VENV", "").lower() == "true"
-    if use_prebuilt and os.path.exists(".venv.tgz"):
-        cmd += ["--secret", "id=prebuilt_venv,src=.venv.tgz"]
-
-    cmd += [
+        target_stage,
         "-t",
         "askpolis-e2e-test",
         "-f",

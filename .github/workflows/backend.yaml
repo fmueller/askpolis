@@ -230,7 +230,6 @@ jobs:
         run: poetry run pytest -v -m e2e
         env:
           TESTCONTAINERS_RYUK_DISABLED: true
-          USE_PREBUILT_VENV: "true"
 
   build-and-push-image:
     name: Build and Push Docker Image
