@@ -2,14 +2,20 @@ from typing import Annotated
 
 import uuid_utils.compat as uuid
 from fastapi import APIRouter, Depends, HTTPException, Path, Request, status
-from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 from askpolis.core import Document, DocumentRepository, get_document_repository
+from askpolis.jsonapi import JsonApiRequest, JsonApiResponse, jsonapi_response
 from askpolis.search import Embeddings, EmbeddingsRepository, get_embeddings_repository
 
 from .dependencies import get_qa_service, get_question_repository
-from .models import AnswerResponse, CitationResponse, CreateQuestionRequest, Question, QuestionResponse
+from .models import (
+    AnswerResponse,
+    CitationResponse,
+    Question,
+    QuestionAttributes,
+    QuestionCreateAttributes,
+)
 from .qa_service import QAService
 from .repositories import QuestionRepository
 
@@ -26,34 +32,40 @@ def get_question_from_path(
     return question
 
 
-@router.post(path="/", status_code=status.HTTP_201_CREATED, response_model=QuestionResponse)
+@router.post(
+    path="/",
+    status_code=status.HTTP_201_CREATED,
+    response_model=JsonApiResponse[QuestionAttributes],
+)
 def create_question(
-    request: Request, payload: CreateQuestionRequest, qa_service: Annotated[QAService, Depends(get_qa_service)]
+    request: Request,
+    payload: JsonApiRequest[QuestionCreateAttributes],
+    qa_service: Annotated[QAService, Depends(get_qa_service)],
 ) -> JSONResponse:
-    question = qa_service.add_question(payload.question)
-    return JSONResponse(
-        content=jsonable_encoder(
-            QuestionResponse(
-                id=question.id,
-                content=payload.question,
-                status="pending",
-                answer_url=str(request.url_for("get_answer", question_id=question.id)),
-                created_at=question.created_at.isoformat(),
-                updated_at=question.updated_at.isoformat(),
-            )
-        ),
+    question = qa_service.add_question(payload.data.attributes.question)
+    attrs = QuestionAttributes(
+        content=payload.data.attributes.question,
+        status="pending",
+        answer_url=str(request.url_for("get_answer", question_id=question.id)),
+        created_at=question.created_at.isoformat(),
+        updated_at=question.updated_at.isoformat(),
+    )
+    return jsonapi_response(
+        "questions",
+        question.id,
+        attrs,
         status_code=status.HTTP_201_CREATED,
         headers={"Location": str(request.url_for("get_question", question_id=question.id))},
     )
 
 
-@router.get(path="/{question_id}", response_model=QuestionResponse)
+@router.get(path="/{question_id}", response_model=JsonApiResponse[QuestionAttributes])
 def get_question(
     request: Request,
     question: Annotated[Question, Depends(get_question_from_path)],
     document_repository: Annotated[DocumentRepository, Depends(get_document_repository)],
     embeddings_repository: Annotated[EmbeddingsRepository, Depends(get_embeddings_repository)],
-) -> QuestionResponse:
+) -> JSONResponse:
     if len(question.answers) == 0:
         answer_response = AnswerResponse(status="in_progress", citations=[])
     else:
@@ -104,8 +116,7 @@ def get_question(
             updated_at=answer.updated_at.isoformat(),
         )
 
-    return QuestionResponse(
-        id=question.id,
+    attrs = QuestionAttributes(
         content=question.content,
         status="pending" if len(question.answers) == 0 else "answered",
         answer_url=str(request.url_for("get_answer", question_id=question.id)),
@@ -113,11 +124,12 @@ def get_question(
         updated_at=question.updated_at.isoformat(),
         answer=answer_response,
     )
+    return jsonapi_response("questions", question.id, attrs)
 
 
 @router.get(
     path="/{question_id}/answer",
-    response_model=AnswerResponse,
+    response_model=JsonApiResponse[AnswerResponse],
     responses={
         500: {"description": "Answer without content pieces should not exist"},
     },
@@ -127,11 +139,15 @@ def get_answer(
     question: Annotated[Question, Depends(get_question_from_path)],
     document_repository: Annotated[DocumentRepository, Depends(get_document_repository)],
     embeddings_repository: Annotated[EmbeddingsRepository, Depends(get_embeddings_repository)],
-) -> AnswerResponse:
+) -> JSONResponse:
     if len(question.answers) == 0:
-        return AnswerResponse(
-            status="in_progress",
-            citations=[],
+        return jsonapi_response(
+            "answers",
+            None,
+            AnswerResponse(
+                status="in_progress",
+                citations=[],
+            ),
         )
 
     answer = question.answers[0]
@@ -169,11 +185,15 @@ def get_answer(
             )
         )
 
-    return AnswerResponse(
-        answer=answer.contents[0].content,
-        language=answer.contents[0].language.strip(),
-        status="completed",
-        citations=citation_responses,
-        created_at=answer.created_at.isoformat(),
-        updated_at=answer.updated_at.isoformat(),
+    return jsonapi_response(
+        "answers",
+        answer.id,
+        AnswerResponse(
+            answer=answer.contents[0].content,
+            language=answer.contents[0].language.strip(),
+            status="completed",
+            citations=citation_responses,
+            created_at=answer.created_at.isoformat(),
+            updated_at=answer.updated_at.isoformat(),
+        ),
     )

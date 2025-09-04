@@ -54,15 +54,15 @@ def test_document_and_page_endpoints_and_search_urls() -> None:
 
     resp = client.get(f"/v0/documents/{document.id}")
     assert resp.status_code == 200
-    assert resp.json()["id"] == str(document.id)
+    assert resp.json()["data"]["id"] == str(document.id)
 
     resp = client.get(f"/v0/documents/{document.id}/pages/{page.id}")
     assert resp.status_code == 200
-    assert resp.json()["id"] == str(page.id)
+    assert resp.json()["data"]["id"] == str(page.id)
 
     resp = client.get("/v0/search", params={"query": "foo"})
     assert resp.status_code == 200
-    data = resp.json()
+    data = resp.json()["data"]["attributes"]
     result = data["results"][0]
     assert result["document_url"].endswith(f"/v0/documents/{document.id}")
     assert result["page_url"].endswith(f"/v0/documents/{document.id}/pages/{page.id}")

@@ -33,7 +33,7 @@ def test_get_question_returns_answer() -> None:
     client = TestClient(app)
     response = client.get(f"/v0/questions/{question.id}")
     assert response.status_code == 200
-    data = response.json()
+    data = response.json()["data"]["attributes"]
     assert data["answer"]["answer"] == "42"
     assert data["status"] == "answered"
 
@@ -54,7 +54,7 @@ def test_get_answer_trims_language_code() -> None:
     response = client.get(f"/v0/questions/{question.id}/answer")
     assert response.status_code == 200
 
-    data = response.json()
+    data = response.json()["data"]["attributes"]
     # language must have been stripped
     assert data["language"] == "de"
 
