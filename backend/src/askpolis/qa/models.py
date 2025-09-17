@@ -210,8 +210,7 @@ class AnswerResponse(BaseModel):
     updated_at: str | None = None
 
 
-class QuestionResponse(BaseModel):
-    id: uuid.UUID
+class QuestionAttributes(BaseModel):
     content: str
     status: str
     created_at: str
@@ -220,5 +219,5 @@ class QuestionResponse(BaseModel):
     answer: AnswerResponse | None = None
 
 
-class CreateQuestionRequest(BaseModel):
+class QuestionCreateAttributes(BaseModel):
     question: str = Field()
