@@ -718,21 +718,6 @@ files = [
 ]
 
 [[package]]
-name = "eval-type-backport"
-version = "0.2.2"
-description = "Like `typing._eval_type`, but lets older Python versions use newer typing features."
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "eval_type_backport-0.2.2-py3-none-any.whl", hash = "sha256:cb6ad7c393517f476f96d456d0412ea80f0a8cf96f6892834cd9340149111b0a"},
-    {file = "eval_type_backport-0.2.2.tar.gz", hash = "sha256:f0576b4cf01ebb5bd358d02314d31846af5e07678387486e2c798af0e7d849c1"},
-]
-
-[package.extras]
-tests = ["pytest"]
-
-[[package]]
 name = "faker"
 version = "37.6.0"
 description = "Faker is a Python package that generates fake data for you."
@@ -2667,14 +2652,14 @@ files = [
 
 [[package]]
 name = "openai"
-version = "1.102.0"
+version = "1.108.1"
 description = "The official Python library for the openai API"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "openai-1.102.0-py3-none-any.whl", hash = "sha256:d751a7e95e222b5325306362ad02a7aa96e1fab3ed05b5888ce1c7ca63451345"},
-    {file = "openai-1.102.0.tar.gz", hash = "sha256:2e0153bcd64a6523071e90211cbfca1f2bbc5ceedd0993ba932a5869f93b7fc9"},
+    {file = "openai-1.108.1-py3-none-any.whl", hash = "sha256:952fc027e300b2ac23be92b064eac136a2bc58274cec16f5d2906c361340d59b"},
+    {file = "openai-1.108.1.tar.gz", hash = "sha256:6648468c1aec4eacfa554001e933a9fa075f57bacfc27588c2e34456cee9fef9"},
 ]
 
 [package.dependencies]
@@ -3827,25 +3812,24 @@ timezone = ["tzdata ; python_version >= \"3.9\" and platform_system == \"Windows
 
 [[package]]
 name = "pydantic-ai-slim"
-version = "0.8.1"
+version = "1.0.10"
 description = "Agent Framework / shim to use Pydantic with LLMs, slim package"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pydantic_ai_slim-0.8.1-py3-none-any.whl", hash = "sha256:fc7edc141b21fe42bc54a2d92c1127f8a75160c5e57a168dba154d3f4adb963f"},
-    {file = "pydantic_ai_slim-0.8.1.tar.gz", hash = "sha256:12ef3dcbe5e1dad195d5e256746ef960f6e59aeddda1a55bdd553ee375ff53ae"},
+    {file = "pydantic_ai_slim-1.0.10-py3-none-any.whl", hash = "sha256:f2c4fc7d653c4f6d75f4dd10e6ab4f1b5c139bf93664f1c0b6220c331c305091"},
+    {file = "pydantic_ai_slim-1.0.10.tar.gz", hash = "sha256:5922d9444718ad0d5d814e352844a93a28b9fcaa18d027a097760b0fb69a3d82"},
 ]
 
 [package.dependencies]
-eval-type-backport = ">=0.2.0"
-genai-prices = ">=0.0.22"
+genai-prices = ">=0.0.23"
 griffe = ">=1.3.2"
 httpx = ">=0.27"
-openai = {version = ">=1.99.9", optional = true, markers = "extra == \"openai\""}
+openai = {version = ">=1.107.2", optional = true, markers = "extra == \"openai\""}
 opentelemetry-api = ">=1.28.0"
 pydantic = ">=2.10"
-pydantic-graph = "0.8.1"
+pydantic-graph = "1.0.10"
 typing-inspection = ">=0.4.0"
 
 [package.extras]
@@ -3854,19 +3838,20 @@ ag-ui = ["ag-ui-protocol (>=0.1.8)", "starlette (>=0.45.3)"]
 anthropic = ["anthropic (>=0.61.0)"]
 bedrock = ["boto3 (>=1.39.0)"]
 cli = ["argcomplete (>=3.5.0)", "prompt-toolkit (>=3)", "pyperclip (>=1.9.0)", "rich (>=13)"]
-cohere = ["cohere (>=5.16.0) ; platform_system != \"Emscripten\""]
+cohere = ["cohere (>=5.18.0) ; platform_system != \"Emscripten\""]
+dbos = ["dbos (>=1.14.0)"]
 duckduckgo = ["ddgs (>=9.0.0)"]
-evals = ["pydantic-evals (==0.8.1)"]
+evals = ["pydantic-evals (==1.0.10)"]
 google = ["google-genai (>=1.31.0)"]
 groq = ["groq (>=0.25.0)"]
 huggingface = ["huggingface-hub[inference] (>=0.33.5)"]
-logfire = ["logfire (>=3.14.1)"]
-mcp = ["mcp (>=1.12.3) ; python_version >= \"3.10\""]
-mistral = ["mistralai (>=1.9.2)"]
-openai = ["openai (>=1.99.9)"]
+logfire = ["logfire[httpx] (>=3.14.1)"]
+mcp = ["mcp (>=1.12.3)"]
+mistral = ["mistralai (>=1.9.10)"]
+openai = ["openai (>=1.107.2)"]
 retries = ["tenacity (>=8.2.3)"]
 tavily = ["tavily-python (>=0.5.0)"]
-temporal = ["temporalio (==1.16.0)"]
+temporal = ["temporalio (==1.17.0)"]
 vertexai = ["google-auth (>=2.36.0)", "requests (>=2.32.2)"]
 
 [[package]]
@@ -3983,14 +3968,14 @@ typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
 name = "pydantic-graph"
-version = "0.8.1"
+version = "1.0.10"
 description = "Graph and state machine library"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pydantic_graph-0.8.1-py3-none-any.whl", hash = "sha256:f1dd5db0fe22f4e3323c04c65e2f0013846decc312b3efc3196666764556b765"},
-    {file = "pydantic_graph-0.8.1.tar.gz", hash = "sha256:c61675a05c74f661d4ff38d04b74bd652c1e0959467801986f2f85dc7585410d"},
+    {file = "pydantic_graph-1.0.10-py3-none-any.whl", hash = "sha256:8b47db36228303e4b91a1311eba068750057c0aafcbf476e14b600a80d4627d5"},
+    {file = "pydantic_graph-1.0.10.tar.gz", hash = "sha256:fc465ea8f29994098c43d44c69545d5917e2240d1e74b71d4ef1e06e86dea223"},
 ]
 
 [package.dependencies]
@@ -6179,4 +6164,4 @@ cffi = ["cffi (>=1.17) ; python_version >= \"3.13\" and platform_python_implemen
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "b0df48b1600a5b66f2874b7fbb7ffc31f1f1489ccaa131c52af3faa3dab8ebe0"
+content-hash = "0cebc0e224a73dc5a850c6d7d7c3bfec13ae22cea6f1f38c88c1ba0c13883cbe"
