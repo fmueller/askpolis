@@ -106,3 +106,7 @@ class SearchResult(BaseModel):
 class SearchResponse(BaseModel):
     query: str
     results: list[SearchResult]
+
+
+class StatusAttributes(BaseModel):
+    status: str
