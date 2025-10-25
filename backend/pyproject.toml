@@ -13,7 +13,7 @@ uvicorn = { extras = ["standard"], version = "~0.37.0" }
 fastapi = "^0.119.0"
 langchain = "^0.3.26"
 sentence-transformers = "^5.1.1"
-torch = "~2.8.0"
+torch = "~2.9.0"
 einops = "~0.8.1"
 celery = "^5.5.3"
 redis = "^6.2.0"
