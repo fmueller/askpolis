@@ -210,25 +210,17 @@ class ElectionProgram(Base):
     __table_args__ = (PrimaryKeyConstraint("parliament_period_id", "party_id", "label"),)
 
 
-class ParliamentResponse(BaseModel):
-    id: uuid.UUID
-    name: str
-    short_name: str
-
-
-class CreateParliamentRequest(BaseModel):
+class ParliamentAttributes(BaseModel):
     name: str = Field()
     short_name: str = Field()
 
 
-class DocumentResponse(BaseModel):
-    id: uuid.UUID
+class DocumentAttributes(BaseModel):
     name: Optional[str] = None
     document_type: Optional[DocumentType] = None
 
 
-class PageResponse(BaseModel):
-    id: uuid.UUID
+class PageAttributes(BaseModel):
     document_id: uuid.UUID
     page_number: int
     content: str
