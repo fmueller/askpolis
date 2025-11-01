@@ -160,7 +160,7 @@ class EmbeddingsService:
                 chunk_metadata=chunk.metadata,
             )
             for chunk, dense_vector, lexical_weights in zip(
-                chunks, computed_embeddings["dense_vecs"], computed_embeddings["lexical_weights"]
+                chunks, computed_embeddings["dense_vecs"], computed_embeddings["lexical_weights"], strict=False
             )
         ]
         self._embeddings_repository.save_all(embeddings)

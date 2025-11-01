@@ -3,11 +3,10 @@ from pathlib import Path
 from typing import cast
 
 import pytest
+from alembic.config import Config
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session, sessionmaker
 from testcontainers.core.generic import DbContainer
-
-from alembic.config import Config
 
 from ..conftest import PostgresTestBase, create_transactional_session
 

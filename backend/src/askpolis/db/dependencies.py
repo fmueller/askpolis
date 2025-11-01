@@ -1,12 +1,12 @@
 import os
 from collections.abc import Generator
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-engine: Optional[Engine] = None
-DbSession: Optional[sessionmaker[Session]] = None
+engine: Engine | None = None
+DbSession: sessionmaker[Session] | None = None
 
 
 def get_db() -> Generator[Session, Any, None]:

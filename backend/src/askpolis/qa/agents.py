@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIModel
@@ -36,7 +35,7 @@ class AnswerAgent:
     def __init__(self, search_service: SearchServiceBase) -> None:
         self._search_service = search_service
 
-    def answer(self, question: Question) -> Optional[Answer]:
+    def answer(self, question: Question) -> Answer | None:
         logger.info_with_attrs("Querying...", {"question": question.content})
         results = self._search_service.find_matching_texts(question.content, limit=5, use_reranker=True)
 

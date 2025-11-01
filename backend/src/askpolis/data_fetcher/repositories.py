@@ -1,4 +1,3 @@
-from typing import Optional
 
 from sqlalchemy.orm import Session
 
@@ -19,7 +18,7 @@ class FetchedDataRepository:
     def get_all(self) -> list[FetchedData]:
         return self.session.query(FetchedData).all()
 
-    def get_by_data_fetcher_and_entity(self, data_fetcher: str, entity: str) -> Optional[FetchedData]:
+    def get_by_data_fetcher_and_entity(self, data_fetcher: str, entity: str) -> FetchedData | None:
         return (
             self.session.query(FetchedData)
             .filter_by(data_fetcher=data_fetcher, entity=entity)

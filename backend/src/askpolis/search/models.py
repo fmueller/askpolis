@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Optional
+from typing import Any
 
 import uuid_utils.compat as uuid
 from pgvector.sqlalchemy import SparseVector, Vector
@@ -89,7 +89,7 @@ class Embeddings(Base):
     chunk_id: Mapped[int] = mapped_column(Integer, nullable=False)
     embedding: Mapped[list[float]] = mapped_column(Vector(1024), nullable=False)
     sparse_embedding: Mapped[SparseVector] = mapped_column(SPARSEVEC(250002), nullable=False)
-    chunk_metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    chunk_metadata: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
     created_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
 

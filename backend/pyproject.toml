@@ -9,19 +9,19 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
-uvicorn = { extras = ["standard"], version = "~0.35.0" }
-fastapi = "^0.116.1"
+uvicorn = { extras = ["standard"], version = "~0.37.0" }
+fastapi = "^0.119.0"
 langchain = "^0.3.26"
-sentence-transformers = "^5.1.0"
-torch = "~2.8.0"
+sentence-transformers = "^5.1.1"
+torch = "~2.9.0"
 einops = "~0.8.1"
 celery = "^5.5.3"
 redis = "^6.2.0"
 pymupdf = "^1.26.3"
 pymupdf4llm = "^0.0.27"
-sqlalchemy = "^2.0.42"
+sqlalchemy = "^2.0.44"
 alembic = "^1.16.5"
-psycopg-binary = "^3.2.9"
+psycopg-binary = "^3.2.10"
 celery-typed-tasks = "^0.1.25"
 opentelemetry-distro = "^0.56b0"
 opentelemetry-instrumentation-fastapi = "^0.56b0"
@@ -40,17 +40,17 @@ pgvector = "^0.4.1"
 pydantic-ai-slim = {extras = ["openai"], version = "^0.8.1"}
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.4.1"
-testcontainers = { extras = ["postgres"], version = "^4.12.0" }
-ruff = "^0.12.11"
-mypy = "^1.17.1"
+pytest = "^8.4.2"
+testcontainers = { extras = ["postgres"], version = "^4.13.0" }
+ruff = "^0.14.2"
+mypy = "^1.18.2"
 celery-types = "^0.23.0"
-types-requests = "^2.32.4.20250611"
+types-requests = "^2.32.4.20250913"
 pre-commit = "^4.2.0"
-sqlalchemy = { extras = ["mypy"], version = "^2.0.42" }
-faker = "^37.5.3"
-types-docker = "^7.1.0.20250705"
-types-pyyaml = "^6.0.12.20250516"
+sqlalchemy = { extras = ["mypy"], version = "^2.0.44" }
+faker = "^37.11.0"
+types-docker = "^7.1.0.20250916"
+types-pyyaml = "^6.0.12.20250915"
 
 [tool.ruff]
 line-length = 120

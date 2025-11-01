@@ -1,5 +1,4 @@
 import uuid
-from typing import Optional
 
 from askpolis.core import Parliament, ParliamentRepository, Tenant
 from askpolis.logging import get_logger
@@ -25,7 +24,7 @@ class QAService:
         self._question_scheduler = question_scheduler
         self._answer_agent = answer_agent
 
-    def get_question(self, question_id: uuid.UUID) -> Optional[Question]:
+    def get_question(self, question_id: uuid.UUID) -> Question | None:
         return self._question_repository.get(question_id)
 
     def add_question(self, tenant: Tenant, parliament: Parliament, user_question: str) -> Question:
@@ -38,7 +37,7 @@ class QAService:
         self._question_scheduler.schedule_answer_question(question.id)
         return question
 
-    def answer_question(self, question_id: uuid.UUID) -> Optional[Question]:
+    def answer_question(self, question_id: uuid.UUID) -> Question | None:
         question = self._question_repository.get(question_id)
         if question is None:
             logger.warning_with_attrs("Question not found", {"question_id": question_id})

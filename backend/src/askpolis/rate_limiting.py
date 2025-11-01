@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import os
-from collections.abc import Awaitable
-from typing import Any, Callable, Protocol, cast
+from collections.abc import Awaitable, Callable
+from typing import Any, Protocol, cast
 
 import redis.asyncio as redis_asyncio
 from fastapi import Request

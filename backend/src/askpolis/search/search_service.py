@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from .embeddings_service import EmbeddingsService
 from .models import SearchResult
@@ -26,7 +25,7 @@ class SearchService(SearchServiceBase):
         self._reranker_service = reranker_service
 
     def find_matching_texts(
-        self, query: str, limit: int = 10, use_reranker: bool = False, indexes: Optional[list[str]] = None
+        self, query: str, limit: int = 10, use_reranker: bool = False, indexes: list[str] | None = None
     ) -> list[SearchResult]:
         if indexes is None:
             indexes = ["default"]

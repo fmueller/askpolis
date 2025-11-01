@@ -30,7 +30,9 @@ class RerankerService:
 
         logger.info("Reranking...")
         reranked_scores = self._reranker.compute_score([(query, doc.chunk) for doc in embeddings], normalize=True)
-        return [(doc, float(score)) for score, doc in sorted(zip(reranked_scores, embeddings), reverse=True)][:limit]
+        return [
+            (doc, float(score)) for score, doc in sorted(zip(reranked_scores, embeddings, strict=False), reverse=True)
+        ][:limit]
 
 
 @lru_cache(maxsize=1)

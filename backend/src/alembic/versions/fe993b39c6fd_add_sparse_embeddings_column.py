@@ -7,7 +7,6 @@ Create Date: 2025-03-20 12:25:21.733492
 """
 
 from collections.abc import Sequence
-from typing import Union
 
 import sqlalchemy as sa
 from pgvector.sqlalchemy.sparsevec import SPARSEVEC
@@ -19,9 +18,9 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "fe993b39c6fd"
-down_revision: Union[str, None] = "4ee6341a2884"
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = "4ee6341a2884"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:

@@ -1,6 +1,6 @@
 import re
 from datetime import date, datetime
-from typing import Any, Optional
+from typing import Any
 
 import uuid_utils.compat as uuid
 from celery import shared_task
@@ -251,7 +251,7 @@ def read_and_parse_election_programs_to_documents() -> None:
         session.close()
 
 
-def _try_parse_parliament_period(parliament: Parliament, json: dict[str, Any]) -> Optional[ParliamentPeriod]:
+def _try_parse_parliament_period(parliament: Parliament, json: dict[str, Any]) -> ParliamentPeriod | None:
     if _validate_parliament_period_json(json) is False:
         return None
 
@@ -298,7 +298,7 @@ def _parse_date(value: str) -> date:
     return parsed_date
 
 
-def _try_parse_date(value: Optional[str]) -> Optional[date]:
+def _try_parse_date(value: str | None) -> date | None:
     if value is None:
         return None
     try:

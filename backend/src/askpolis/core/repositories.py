@@ -1,6 +1,5 @@
 import uuid
 from datetime import date
-from typing import Optional
 
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
@@ -15,13 +14,13 @@ class DocumentRepository:
     def get_all(self) -> list[Document]:
         return self.db.query(Document).all()
 
-    def get(self, document_id: uuid.UUID) -> Optional[Document]:
+    def get(self, document_id: uuid.UUID) -> Document | None:
         return self.db.query(Document).filter(Document.id == document_id).first()
 
-    def get_by_name(self, name: str) -> Optional[Document]:
+    def get_by_name(self, name: str) -> Document | None:
         return self.db.query(Document).filter(Document.name == name).first()
 
-    def get_by_references(self, reference_id_1: uuid.UUID, reference_id_2: uuid.UUID) -> Optional[Document]:
+    def get_by_references(self, reference_id_1: uuid.UUID, reference_id_2: uuid.UUID) -> Document | None:
         return (
             self.db.query(Document)
             .filter(Document.reference_id_1 == reference_id_1, Document.reference_id_2 == reference_id_2)
@@ -42,7 +41,7 @@ class DocumentRepository:
             return []
         return list(document.pages)
 
-    def get_page(self, document_id: uuid.UUID, page_id: uuid.UUID) -> Optional[Page]:
+    def get_page(self, document_id: uuid.UUID, page_id: uuid.UUID) -> Page | None:
         document = self.get(document_id)
         if document is None:
             return None
@@ -56,7 +55,7 @@ class ParliamentRepository:
     def get_all(self) -> list[Parliament]:
         return self.db.query(Parliament).all()
 
-    def get_by_name(self, name: str) -> Optional[Parliament]:
+    def get_by_name(self, name: str) -> Parliament | None:
         return self.db.query(Parliament).filter(Parliament.name == name).first()
 
     def save(self, parliament: Parliament) -> None:
@@ -71,7 +70,7 @@ class PartyRepository:
     def get_all(self) -> list[Party]:
         return self.db.query(Party).all()
 
-    def get_by_name(self, name: str) -> Optional[Party]:
+    def get_by_name(self, name: str) -> Party | None:
         return self.db.query(Party).filter(Party.name == name).first()
 
     def save(self, party: Party) -> None:
@@ -88,7 +87,7 @@ class ParliamentPeriodRepository:
 
     def get_by_type_and_date_period(
         self, parliament: Parliament, period_type: str, start_date: date, end_date: date
-    ) -> Optional[ParliamentPeriod]:
+    ) -> ParliamentPeriod | None:
         return (
             self.db.query(ParliamentPeriod)
             .filter(
@@ -111,7 +110,7 @@ class ElectionProgramRepository:
 
     def get(
         self, party: Party, parliament_period: ParliamentPeriod, label: str = "default"
-    ) -> Optional[ElectionProgram]:
+    ) -> ElectionProgram | None:
         return (
             self.db.query(ElectionProgram)
             .filter(
