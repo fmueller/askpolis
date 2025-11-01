@@ -32,6 +32,7 @@ def create_question(
 ) -> JSONResponse:
     question = qa_service.add_question(payload.question)
     return JSONResponse(
+        # TODO can we remove this encoder call?
         content=jsonable_encoder(
             QuestionResponse(
                 id=question.id,

@@ -1,7 +1,7 @@
 import uuid
 from typing import Optional
 
-from askpolis.core.repositories import ParliamentRepository
+from askpolis.core import Parliament, ParliamentRepository, Tenant
 from askpolis.logging import get_logger
 
 from .agents import AnswerAgent
@@ -28,13 +28,12 @@ class QAService:
     def get_question(self, question_id: uuid.UUID) -> Optional[Question]:
         return self._question_repository.get(question_id)
 
-    def add_question(self, user_question: str) -> Question:
-        # for now, this is ok - later this will come from the tenant configuration and the api
-        bundestag = self._parliament_repository.get_by_name("Bundestag")
-        if bundestag is None:
-            raise Exception("Parliament 'Bundestag' not found")
-        question = Question(content=user_question)
-        question.parliaments.append(bundestag)
+    def add_question(self, tenant: Tenant, parliament: Parliament, user_question: str) -> Question:
+        if parliament.id not in tenant.supported_parliaments:
+            raise Exception(f"Parliament '{parliament.name}' not supported by tenant '{tenant.name}'")
+
+        question = Question(tenant, user_question)
+        question.parliaments.append(parliament)
         self._question_repository.save(question)
         self._question_scheduler.schedule_answer_question(question.id)
         return question
