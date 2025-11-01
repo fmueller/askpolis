@@ -16,6 +16,7 @@ from .models import (
     Parliament,
     ParliamentPeriod,
     Party,
+    Tenant,
 )
 from .pdf_reader import PdfDocument, PdfPage, PdfReader
 from .repositories import DocumentRepository, ParliamentRepository
@@ -42,4 +43,5 @@ __all__ = [
     "PdfDocument",
     "PdfReader",
     "PdfPage",
+    "Tenant",
 ]
