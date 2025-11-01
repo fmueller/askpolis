@@ -1,5 +1,4 @@
 import uuid
-from typing import Optional, Union
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -19,7 +18,7 @@ class EmbeddingsCollectionRepository:
     def get_all(self) -> list[EmbeddingsCollection]:
         return self.db.query(EmbeddingsCollection).all()
 
-    def get_most_recent_by_name(self, name: str) -> Optional[EmbeddingsCollection]:
+    def get_most_recent_by_name(self, name: str) -> EmbeddingsCollection | None:
         return (
             self.db.query(EmbeddingsCollection)
             .filter(EmbeddingsCollection.name == name)
@@ -36,14 +35,14 @@ class EmbeddingsRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get(self, embeddings_id: uuid.UUID) -> Optional[Embeddings]:
+    def get(self, embeddings_id: uuid.UUID) -> Embeddings | None:
         return self.db.query(Embeddings).filter(Embeddings.id == embeddings_id).first()
 
     def get_all_by_document(self, document: Document) -> list[Embeddings]:
         return self.db.query(Embeddings).filter(Embeddings.document_id == document.id).all()
 
     def get_all_similar_to(
-        self, collection: EmbeddingsCollection, query_vector: Union[list[float], dict[str, float]], limit: int = 10
+        self, collection: EmbeddingsCollection, query_vector: list[float] | dict[str, float], limit: int = 10
     ) -> list[tuple[Embeddings, float]]:
         if limit <= 0:
             return []

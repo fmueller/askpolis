@@ -1,6 +1,6 @@
 import re
 import tempfile
-from typing import Any, Optional, Union
+from typing import Any
 
 import pymupdf4llm
 from langchain_core.documents import Document as LangchainDocument
@@ -27,11 +27,11 @@ class PdfDocument(BaseModel):
 
 
 class PdfReader:
-    def __init__(self, pdf_source: Union[str, bytes]):
+    def __init__(self, pdf_source: str | bytes):
         self.pdf_source = pdf_source
         self.temp_file: Any = None
 
-    def to_markdown(self) -> Optional[PdfDocument]:
+    def to_markdown(self) -> PdfDocument | None:
         try:
             return self._to_markdown_with_merging_concatenated_words()
         except Exception as e:
@@ -75,7 +75,7 @@ class PdfReader:
             return str(self.temp_file.name)
         return self.pdf_source
 
-    def _to_markdown_with_merging_concatenated_words(self) -> Optional[PdfDocument]:
+    def _to_markdown_with_merging_concatenated_words(self) -> PdfDocument | None:
         def is_hyphenated(w: str) -> bool:
             hyphen_chars = {"-", "‐", "‑", "‒", "–", "—", "―"}
             return any(w.endswith(h) for h in hyphen_chars)

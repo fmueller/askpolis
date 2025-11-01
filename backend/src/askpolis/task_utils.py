@@ -1,10 +1,10 @@
-from typing import Any, Optional
+from typing import Any
 
 
 def build_task_result(
     status: str,
-    entity_id: Optional[str] = None,
-    data: Optional[dict[str, Any]] = None,
+    entity_id: str | None = None,
+    data: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Create a serializable task result for Celery tasks.
 
