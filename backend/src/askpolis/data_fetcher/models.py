@@ -1,6 +1,6 @@
 import datetime
 import enum
-from typing import Any, Optional
+from typing import Any
 
 import uuid_utils.compat as uuid
 from sqlalchemy import UUID, Boolean, Column, DateTime, LargeBinary, String
@@ -48,7 +48,7 @@ class FetchedData(Base):
     entity_type = Column(postgresql.ENUM(*EntityType.values(), name="entitytypetype", create_type=False), nullable=True)
     is_list = Column(Boolean, nullable=False, default=False)
     text_data = Column(String, nullable=True)
-    json_data: Optional[list[dict[str, Any]]] = Column(JSONB, nullable=True)
+    json_data: list[dict[str, Any]] | None = Column(JSONB, nullable=True)
     file_data = Column(LargeBinary, nullable=True)
 
     @property
@@ -93,9 +93,9 @@ class FetchedData(Base):
         cls,
         data_fetcher_type: DataFetcherType,
         source: str,
-        text_data: Optional[str] = None,
-        json_data: Optional[list[dict[str, Any]]] = None,
-        file_data: Optional[bytes] = None,
+        text_data: str | None = None,
+        json_data: list[dict[str, Any]] | None = None,
+        file_data: bytes | None = None,
     ) -> "FetchedData":
         return FetchedData(
             data_fetcher_type=data_fetcher_type,
@@ -114,9 +114,9 @@ class FetchedData(Base):
         data_fetcher_type: DataFetcherType,
         parliament_id: int,
         source: str,
-        text_data: Optional[str] = None,
-        json_data: Optional[list[dict[str, Any]]] = None,
-        file_data: Optional[bytes] = None,
+        text_data: str | None = None,
+        json_data: list[dict[str, Any]] | None = None,
+        file_data: bytes | None = None,
     ) -> "FetchedData":
         return FetchedData(
             data_fetcher_type=data_fetcher_type,
@@ -135,9 +135,9 @@ class FetchedData(Base):
         data_fetcher_type: DataFetcherType,
         parliament_period_id: int,
         source: str,
-        text_data: Optional[str] = None,
-        json_data: Optional[list[dict[str, Any]]] = None,
-        file_data: Optional[bytes] = None,
+        text_data: str | None = None,
+        json_data: list[dict[str, Any]] | None = None,
+        file_data: bytes | None = None,
     ) -> "FetchedData":
         return FetchedData(
             data_fetcher_type=data_fetcher_type,
@@ -158,9 +158,9 @@ class FetchedData(Base):
         parliament_period_id: int,
         label: str,
         source: str,
-        text_data: Optional[str] = None,
-        json_data: Optional[list[dict[str, Any]]] = None,
-        file_data: Optional[bytes] = None,
+        text_data: str | None = None,
+        json_data: list[dict[str, Any]] | None = None,
+        file_data: bytes | None = None,
     ) -> "FetchedData":
         return FetchedData(
             data_fetcher_type=data_fetcher_type,
@@ -178,9 +178,9 @@ class FetchedData(Base):
         data_fetcher_type: DataFetcherType,
         party_id: int,
         source: str,
-        text_data: Optional[str] = None,
-        json_data: Optional[list[dict[str, Any]]] = None,
-        file_data: Optional[bytes] = None,
+        text_data: str | None = None,
+        json_data: list[dict[str, Any]] | None = None,
+        file_data: bytes | None = None,
     ) -> "FetchedData":
         return FetchedData(
             data_fetcher_type=data_fetcher_type,

@@ -1,4 +1,3 @@
-from typing import Optional
 
 from askpolis.data_fetcher import FetchedData, FetchedDataRepository
 from askpolis.data_fetcher.abgeordnetenwatch.client import AbgeordnetenwatchClient
@@ -10,7 +9,7 @@ DATA_FETCHER_ID = "abgeordnetenwatch/election_programs/v1"
 
 
 class AbgeordnetenwatchDataFetcher:
-    def __init__(self, repository: FetchedDataRepository, client: Optional[AbgeordnetenwatchClient] = None) -> None:
+    def __init__(self, repository: FetchedDataRepository, client: AbgeordnetenwatchClient | None = None) -> None:
         self._client = client or AbgeordnetenwatchClient()
         self._repository = repository
 

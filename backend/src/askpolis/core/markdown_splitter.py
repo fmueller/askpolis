@@ -2,7 +2,7 @@ import enum
 import json
 import os
 import re
-from typing import Callable
+from collections.abc import Callable
 
 from langchain_core.documents import Document
 from langchain_text_splitters import (

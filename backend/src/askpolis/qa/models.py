@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Optional
+from typing import Any
 
 import uuid_utils.compat as uuid
 from pydantic import BaseModel, Field
@@ -28,7 +28,7 @@ class AnswerContent(Base):
     )
     language: Mapped[str] = mapped_column(CHAR(5), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    translated_from: Mapped[Optional[uuid.UUID]] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
+    translated_from: Mapped[uuid.UUID | None] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
     created_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
     updated_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
@@ -58,7 +58,7 @@ class Citation(Base):
     )
     embeddings_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("embeddings.id"), nullable=False)
     document_id: Mapped[uuid.UUID] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
-    page_id: Mapped[Optional[uuid.UUID]] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("pages.id"), nullable=True)
+    page_id: Mapped[uuid.UUID | None] = mapped_column(DB_UUID(as_uuid=True), ForeignKey("pages.id"), nullable=True)
     created_at = mapped_column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
     __table_args__ = (
@@ -87,16 +87,16 @@ class Answer(Base):
     question_id: Mapped[uuid.UUID] = mapped_column(
         DB_UUID(as_uuid=True), ForeignKey("questions.id", ondelete="CASCADE"), nullable=False
     )
-    parliament_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+    parliament_id: Mapped[uuid.UUID | None] = mapped_column(
         DB_UUID(as_uuid=True), ForeignKey("parliaments.id", ondelete="CASCADE"), nullable=True
     )
-    parliament_period_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+    parliament_period_id: Mapped[uuid.UUID | None] = mapped_column(
         DB_UUID(as_uuid=True), ForeignKey("parliament_periods.id", ondelete="CASCADE"), nullable=True
     )
-    party_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+    party_id: Mapped[uuid.UUID | None] = mapped_column(
         DB_UUID(as_uuid=True), ForeignKey("parties.id", ondelete="CASCADE"), nullable=True
     )
-    document_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+    document_id: Mapped[uuid.UUID | None] = mapped_column(
         DB_UUID(as_uuid=True), ForeignKey("documents.id", ondelete="CASCADE"), nullable=True
     )
     contents: Mapped[list[AnswerContent]] = relationship("AnswerContent", cascade="all, delete-orphan", lazy="selectin")

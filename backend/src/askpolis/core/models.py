@@ -1,6 +1,6 @@
 import datetime
 import enum
-from typing import Any, Optional
+from typing import Any
 
 import uuid_utils.compat as uuid
 from langchain_core.documents import Document as LangchainDocument
@@ -33,7 +33,7 @@ class Page(Base):
         page_number: int,
         content: str,
         raw_content: str,
-        page_metadata: Optional[dict[str, Any]] = None,
+        page_metadata: dict[str, Any] | None = None,
         **kw: Any,
     ) -> None:
         super().__init__(**kw)
@@ -74,8 +74,8 @@ class Document(Base):
         self,
         name: str,
         document_type: DocumentType,
-        reference_id_1: Optional[uuid.UUID] = None,
-        reference_id_2: Optional[uuid.UUID] = None,
+        reference_id_1: uuid.UUID | None = None,
+        reference_id_2: uuid.UUID | None = None,
         **kw: Any,
     ) -> None:
         super().__init__(**kw)
@@ -91,8 +91,8 @@ class Document(Base):
     document_type = Column(
         postgresql.ENUM(*DocumentType.values(), name="documenttypetype", create_type=False), nullable=False
     )
-    reference_id_1: Mapped[Optional[uuid.UUID]] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
-    reference_id_2: Mapped[Optional[uuid.UUID]] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
+    reference_id_1: Mapped[uuid.UUID | None] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
+    reference_id_2: Mapped[uuid.UUID | None] = mapped_column(DB_UUID(as_uuid=True), nullable=True)
     updated_at = Column(DateTime, nullable=False, default=lambda: datetime.datetime.now(datetime.UTC))
 
     pages: Mapped[list[Page]] = relationship("Page", back_populates="document", cascade="all, delete-orphan")
@@ -152,7 +152,7 @@ class ParliamentPeriod(Base):
         period_type: str,
         start_date: datetime.date,
         end_date: datetime.date,
-        election_date: Optional[datetime.date] = None,
+        election_date: datetime.date | None = None,
         **kw: Any,
     ) -> None:
         super().__init__(**kw)
@@ -223,8 +223,8 @@ class CreateParliamentRequest(BaseModel):
 
 class DocumentResponse(BaseModel):
     id: uuid.UUID
-    name: Optional[str] = None
-    document_type: Optional[DocumentType] = None
+    name: str | None = None
+    document_type: DocumentType | None = None
 
 
 class PageResponse(BaseModel):
@@ -232,4 +232,4 @@ class PageResponse(BaseModel):
     document_id: uuid.UUID
     page_number: int
     content: str
-    page_metadata: Optional[dict[str, Any]] = None
+    page_metadata: dict[str, Any] | None = None

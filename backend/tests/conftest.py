@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from alembic.config import Config
 from docker.models.networks import Network
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -12,7 +13,6 @@ from testcontainers.core.container import DockerContainer
 from testcontainers.postgres import PostgresContainer
 
 from alembic import command
-from alembic.config import Config
 from askpolis.logging import get_logger
 
 containers_logger = get_logger("containers")
