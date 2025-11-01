@@ -7,7 +7,7 @@ from sqlalchemy import CHAR, CheckConstraint, Column, DateTime, ForeignKey, Stri
 from sqlalchemy import UUID as DB_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from askpolis.core import Base, Document, Parliament, ParliamentPeriod, Party
+from askpolis.core import Base, Document, Parliament, ParliamentPeriod, Party, Tenant
 from askpolis.search import SearchResult
 
 
@@ -167,7 +167,7 @@ question_document = Table(
 class Question(Base):
     __tablename__ = "questions"
 
-    def __init__(self, content: str, **kw: Any) -> None:
+    def __init__(self, tenant: Tenant, content: str, **kw: Any) -> None:
         super().__init__(**kw)
         self.id = uuid.uuid7()
         self.content = content

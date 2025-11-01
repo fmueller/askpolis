@@ -210,6 +210,12 @@ class ElectionProgram(Base):
     __table_args__ = (PrimaryKeyConstraint("parliament_period_id", "party_id", "label"),)
 
 
+class Tenant(BaseModel):
+    id: uuid.UUID
+    name: str
+    supported_parliaments: list[uuid.UUID]
+
+
 class ParliamentResponse(BaseModel):
     id: uuid.UUID
     name: str
