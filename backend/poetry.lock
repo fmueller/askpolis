@@ -4463,18 +4463,23 @@ files = [
 
 [[package]]
 name = "pymupdf4llm"
-version = "0.0.27"
+version = "0.2.5"
 description = "PyMuPDF Utilities for LLM/RAG"
 optional = false
-python-versions = ">=3.9"
+python-versions = ">=3.10"
 groups = ["main"]
 files = [
-    {file = "pymupdf4llm-0.0.27-py3-none-any.whl", hash = "sha256:2eaaf9419c35520efda38f3806a276f2ec6cd29564fbb60a5c9c53a49fedb13c"},
-    {file = "pymupdf4llm-0.0.27.tar.gz", hash = "sha256:35cc8bd6e0968bc1300b1fe4500f52e47da6b570af19af6c193e5fb6ee367008"},
+    {file = "pymupdf4llm-0.2.5-py3-none-any.whl", hash = "sha256:25a11ead00af5eebe7f0ffe160b19b311d3b82260aa9707432fd2f8356b57207"},
+    {file = "pymupdf4llm-0.2.5.tar.gz", hash = "sha256:2afa0b280aa32a4763444e1957bdc7c0818e58a39785f260779c938eef7e0619"},
 ]
 
 [package.dependencies]
-pymupdf = ">=1.26.3"
+pymupdf = ">=1.26.6"
+tabulate = "*"
+
+[package.extras]
+layout = ["pymupdf-layout (>=1.26.6)"]
+ocr = ["opencv-python"]
 
 [[package]]
 name = "pytest"
@@ -5276,6 +5281,21 @@ mpmath = ">=1.1.0,<1.4"
 
 [package.extras]
 dev = ["hypothesis (>=6.70.0)", "pytest (>=7.1.0)"]
+
+[[package]]
+name = "tabulate"
+version = "0.9.0"
+description = "Pretty-print tabular data"
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f"},
+    {file = "tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c"},
+]
+
+[package.extras]
+widechars = ["wcwidth"]
 
 [[package]]
 name = "tenacity"
@@ -6633,4 +6653,4 @@ cffi = ["cffi (>=1.17) ; python_version >= \"3.13\" and platform_python_implemen
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "eb9b8fc696fb75b00fa833c28232d4a19a0b9e344516a775a81235e6f312643a"
+content-hash = "96daa09dce1d364292345e82992be570cbda31eae46b40882ee12b66e4c54b42"
