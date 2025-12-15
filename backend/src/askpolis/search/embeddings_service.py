@@ -1,12 +1,10 @@
 import os
 import uuid
 from functools import lru_cache
-from typing import Any, TypedDict, cast
+from typing import Any, Protocol, TypedDict, cast
 
 import numpy as np
 import numpy.typing as npt
-from FlagEmbedding import BGEM3FlagModel
-from FlagEmbedding.inference.embedder.encoder_only.m3 import M3Embedder
 
 from askpolis.core import Document, DocumentRepository, MarkdownSplitter, Page
 from askpolis.logging import get_logger
@@ -56,6 +54,14 @@ class EncodedCorpus(TypedDict, total=False):
     lexical_weights: list[dict[str, float]]
 
 
+class EmbeddingModel(Protocol):
+    def encode(self, text: str, return_dense: bool = True, return_sparse: bool = True) -> Encoded: ...
+
+    def encode_corpus(
+        self, texts: list[str], return_dense: bool = True, return_sparse: bool = True
+    ) -> EncodedCorpus: ...
+
+
 class FakeModel:
     def __init__(self) -> None:
         pass
@@ -87,11 +93,13 @@ class FakeModel:
 
 
 @lru_cache(maxsize=1)
-def get_embedding_model() -> FakeModel | M3Embedder:
+def get_embedding_model() -> EmbeddingModel:
     if os.getenv("DISABLE_INFERENCE") == "true":
         return FakeModel()
 
-    return BGEM3FlagModel(
+    from FlagEmbedding import BGEM3FlagModel
+
+    model: EmbeddingModel = BGEM3FlagModel(
         "BAAI/bge-m3",
         devices="cpu",
         use_fp16=False,
@@ -101,6 +109,7 @@ def get_embedding_model() -> FakeModel | M3Embedder:
         trust_remote_code=True,
         normalize_embeddings=True,
     )
+    return model
 
 
 class EmbeddingsService:
@@ -108,7 +117,7 @@ class EmbeddingsService:
         self,
         document_repository: DocumentRepository,
         embeddings_repository: EmbeddingsRepository,
-        model: FakeModel | M3Embedder,
+        model: EmbeddingModel,
         splitter: MarkdownSplitter,
     ):
         self._document_repository = document_repository
@@ -126,7 +135,7 @@ class EmbeddingsService:
         query_embedding = self._model.encode(query, return_dense=True, return_sparse=True)
 
         dense_query_embedding = cast(list[float], query_embedding["dense_vecs"].tolist())
-        sparse_query_embedding = cast(dict[str, float], query_embedding["lexical_weights"])
+        sparse_query_embedding: dict[str, float] = query_embedding["lexical_weights"]
 
         dense_results = self._embeddings_repository.get_all_similar_to(collection, dense_query_embedding, limit * 2)
         sparse_results = self._embeddings_repository.get_all_similar_to(collection, sparse_query_embedding, limit * 2)
@@ -156,7 +165,7 @@ class EmbeddingsService:
                 chunk=chunk.page_content,
                 chunk_id=chunk.metadata.get("chunk_id", 0),
                 embedding=cast(list[float], dense_vector.tolist()),
-                sparse_embedding=cast(dict[str, float], lexical_weights),
+                sparse_embedding=lexical_weights,
                 chunk_metadata=chunk.metadata,
             )
             for chunk, dense_vector, lexical_weights in zip(
