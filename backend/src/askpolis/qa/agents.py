@@ -1,7 +1,7 @@
 import os
 
 from pydantic_ai import Agent
-from pydantic_ai.models.openai import OpenAIModel
+from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.settings import ModelSettings
 
@@ -13,7 +13,7 @@ from .models import Answer, AnswerContent, Citation, Question
 logger = get_logger(__name__)
 
 _agent = Agent(
-    OpenAIModel(
+    OpenAIChatModel(
         model_name=os.getenv("OLLAMA_MODEL") or "mistral:7b",
         provider=OpenAIProvider(base_url=os.getenv("OLLAMA_URL") or "http://localhost:11434/v1", api_key="ollama"),
     ),
