@@ -1,4 +1,5 @@
 import datetime
+import datetime
 import uuid
 
 from sqlalchemy import not_
@@ -16,6 +17,13 @@ class QuestionRepository:
 
     def get(self, question_id: uuid.UUID) -> Question | None:
         return self.db.query(Question).filter(Question.id == question_id).first()
+
+    def get_for_tenant(self, tenant_id: uuid.UUID, question_id: uuid.UUID) -> Question | None:
+        return (
+            self.db.query(Question)
+            .filter(Question.id == question_id, Question.tenant_id == tenant_id)
+            .first()
+        )
 
     def save(self, question: Question) -> None:
         self.db.add(question)
