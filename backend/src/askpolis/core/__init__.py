@@ -22,8 +22,8 @@ from .models import (
 )
 from .pdf_reader import PdfDocument, PdfPage, PdfReader
 from .repositories import DocumentRepository, ParliamentRepository
-from .tenant_repository import TenantRepository
 from .routes import router
+from .tenant_repository import TenantRepository
 
 __all__ = [
     "Base",

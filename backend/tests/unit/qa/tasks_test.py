@@ -5,12 +5,10 @@ from collections.abc import Iterator
 from typing import Any
 
 from askpolis.core import Tenant
-
-
-TENANT_ID = uuid.uuid4()
-
 from askpolis.qa import dependencies as qa_dependencies
 from askpolis.qa import tasks as qa_tasks
+
+TENANT_ID = uuid.uuid4()
 
 
 class DummyAnswerContent:
@@ -41,7 +39,7 @@ class DummyQAService:
 
 
 class DummyTenantRepository:
-    def __init__(self, _) -> None:  # pragma: no cover - simple stub
+    def __init__(self, _: Any) -> None:  # pragma: no cover - simple stub
         self._tenant = Tenant(id=TENANT_ID, name="demo", supported_parliaments=[uuid.uuid4()])
 
     def get_by_id(self, tenant_id: uuid.UUID) -> Tenant | None:

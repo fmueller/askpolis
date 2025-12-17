@@ -3,12 +3,11 @@ from typing import Any
 
 from celery import shared_task
 
+from askpolis.core import ParliamentRepository, TenantRepository
 from askpolis.db import get_db
 from askpolis.logging import get_logger
 from askpolis.task_utils import build_task_result
 
-from askpolis.core import ParliamentRepository, TenantRepository
-from .models import Question
 from .repositories import QuestionRepository
 
 logger = get_logger(__name__)

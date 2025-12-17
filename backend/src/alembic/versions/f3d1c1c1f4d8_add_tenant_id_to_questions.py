@@ -9,6 +9,7 @@ Create Date: 2025-05-21 00:00:00.000000
 from collections.abc import Sequence
 
 import sqlalchemy as sa
+
 from alembic import op
 
 # revision identifiers, used by Alembic.
@@ -19,7 +20,15 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    op.add_column("questions", sa.Column("tenant_id", sa.UUID(), nullable=False, server_default="00000000-0000-0000-0000-000000000000"))
+    op.add_column(
+        "questions",
+        sa.Column(
+            "tenant_id",
+            sa.UUID(),
+            nullable=False,
+            server_default="00000000-0000-0000-0000-000000000000",
+        ),
+    )
     op.alter_column("questions", "tenant_id", server_default=None)
     op.create_index("idx_questions_tenant_id", "questions", ["tenant_id"])
 
