@@ -3,6 +3,8 @@ from askpolis.db import get_db
 from .dependencies import (
     get_document_repository,
     get_parliament_repository,
+    get_tenant,
+    get_tenant_repository,
 )
 from .markdown_splitter import MarkdownSplitter
 from .models import (
@@ -20,6 +22,7 @@ from .models import (
 )
 from .pdf_reader import PdfDocument, PdfPage, PdfReader
 from .repositories import DocumentRepository, ParliamentRepository
+from .tenant_repository import TenantRepository
 from .routes import router
 
 __all__ = [
@@ -32,6 +35,8 @@ __all__ = [
     "get_db",
     "get_document_repository",
     "get_parliament_repository",
+    "get_tenant",
+    "get_tenant_repository",
     "MarkdownSplitter",
     "router",
     "Page",
@@ -44,4 +49,5 @@ __all__ = [
     "PdfReader",
     "PdfPage",
     "Tenant",
+    "TenantRepository",
 ]

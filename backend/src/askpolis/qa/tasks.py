@@ -7,6 +7,7 @@ from askpolis.db import get_db
 from askpolis.logging import get_logger
 from askpolis.task_utils import build_task_result
 
+from askpolis.core import ParliamentRepository, TenantRepository
 from .models import Question
 from .repositories import QuestionRepository
 
@@ -20,7 +21,23 @@ def answer_question_task(question_id: str) -> dict[str, Any]:
     session = next(get_db())
     try:
         qid = uuid.UUID(question_id)
-        question: Question | None = get_qa_service(session).answer_question(qid)
+        qa_service = get_qa_service(session)
+        question_repository = QuestionRepository(session)
+        question = question_repository.get(qid)
+
+        if question is None:
+            logger.warning_with_attrs("Question not found", {"question_id": qid})
+            answers: list[str] = []
+            status = "no_answer"
+            entity_id = question_id
+            return build_task_result(status, entity_id, {"answers": answers})
+
+        tenant_repository = TenantRepository(ParliamentRepository(session))
+        tenant = tenant_repository.get_by_id(question.tenant_id)
+        if tenant is None:
+            raise Exception(f"Tenant with ID '{question.tenant_id}' not found")
+
+        question = qa_service.answer_question(tenant, qid)
         answers = [content.content for answer in question.answers for content in answer.contents] if question else []
         status = "answered" if answers else "no_answer"
         entity_id = str(question.id) if question else question_id

@@ -1,6 +1,6 @@
 import uuid
 
-from askpolis.core import Parliament, ParliamentRepository, Tenant
+from askpolis.core import ParliamentRepository, Tenant
 from askpolis.logging import get_logger
 
 from .agents import AnswerAgent
@@ -24,12 +24,17 @@ class QAService:
         self._question_scheduler = question_scheduler
         self._answer_agent = answer_agent
 
-    def get_question(self, question_id: uuid.UUID) -> Question | None:
-        return self._question_repository.get(question_id)
+    def get_question(self, tenant: Tenant, question_id: uuid.UUID) -> Question | None:
+        return self._question_repository.get_for_tenant(tenant.id, question_id)
 
-    def add_question(self, tenant: Tenant, parliament: Parliament, user_question: str) -> Question:
-        if parliament.id not in tenant.supported_parliaments:
-            raise Exception(f"Parliament '{parliament.name}' not supported by tenant '{tenant.name}'")
+    def add_question(self, tenant: Tenant, user_question: str) -> Question:
+        if len(tenant.supported_parliaments) == 0:
+            raise Exception(f"Tenant '{tenant.name}' has no supported parliaments")
+
+        parliament_id = tenant.supported_parliaments[0]
+        parliament = self._parliament_repository.get(parliament_id)
+        if parliament is None:
+            raise Exception(f"Parliament with ID '{parliament_id}' not found")
 
         question = Question(tenant, user_question)
         question.parliaments.append(parliament)
@@ -37,16 +42,22 @@ class QAService:
         self._question_scheduler.schedule_answer_question(question.id)
         return question
 
-    def answer_question(self, question_id: uuid.UUID) -> Question | None:
-        question = self._question_repository.get(question_id)
+    def answer_question(self, tenant: Tenant, question_id: uuid.UUID) -> Question | None:
+        question = self._question_repository.get_for_tenant(tenant.id, question_id)
         if question is None:
-            logger.warning_with_attrs("Question not found", {"question_id": question_id})
+            logger.warning_with_attrs(
+                "Question not found",
+                {"question_id": question_id, "tenant_id": tenant.id},
+            )
             return None
 
-        # for now, this is ok - later this will come from the tenant configuration and the api
-        bundestag = self._parliament_repository.get_by_name("Bundestag")
+        if len(tenant.supported_parliaments) == 0:
+            raise Exception(f"Tenant '{tenant.name}' has no supported parliaments")
+
+        target_parliament_id = tenant.supported_parliaments[0]
+        bundestag = self._parliament_repository.get(target_parliament_id)
         if bundestag is None:
-            raise Exception("Parliament 'Bundestag' not found")
+            raise Exception(f"Parliament with ID '{target_parliament_id}' not found")
 
         # currently, we only support parliament dimension for questions, needs to be extended later
         if any(a.parliament_id == bundestag.id for a in question.answers):
