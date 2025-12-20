@@ -17,5 +17,24 @@ updates:
     directory: "/backend"
     schedule:
       interval: "weekly"
+    groups:
+      python-runtime-minor-patch:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      python-runtime-major:
+        dependency-type: "production"
+        update-types:
+          - "major"
+      python-dev-minor-patch:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+      python-dev-major:
+        dependency-type: "development"
+        update-types:
+          - "major"
     ignore:
       - dependency-name: "opentelemetry-*"
