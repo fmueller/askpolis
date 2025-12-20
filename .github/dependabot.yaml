@@ -36,5 +36,3 @@ updates:
         dependency-type: "development"
         update-types:
           - "major"
-    ignore:
-      - dependency-name: "opentelemetry-*"
