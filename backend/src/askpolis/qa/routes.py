@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
-from askpolis.core import Document, DocumentRepository, get_document_repository
+from askpolis.core import Document, DocumentRepository, Tenant, get_document_repository, get_tenant
 from askpolis.search import Embeddings, EmbeddingsRepository, get_embeddings_repository
 
 from .dependencies import get_qa_service, get_question_repository
@@ -18,9 +18,10 @@ router = APIRouter(prefix="/questions", responses={404: {"description": "Questio
 
 def get_question_from_path(
     question_id: Annotated[uuid.UUID, Path()],
+    tenant: Annotated[Tenant, Depends(get_tenant)],
     question_repository: Annotated[QuestionRepository, Depends(get_question_repository)],
 ) -> Question:
-    question = question_repository.get(question_id)
+    question = question_repository.get_for_tenant(tenant.id, question_id)
     if question is None:
         raise HTTPException(status_code=404, detail="Question not found")
     return question
@@ -28,10 +29,14 @@ def get_question_from_path(
 
 @router.post(path="/", status_code=status.HTTP_201_CREATED, response_model=QuestionResponse)
 def create_question(
-    request: Request, payload: CreateQuestionRequest, qa_service: Annotated[QAService, Depends(get_qa_service)]
+    request: Request,
+    payload: CreateQuestionRequest,
+    tenant: Annotated[Tenant, Depends(get_tenant)],
+    qa_service: Annotated[QAService, Depends(get_qa_service)],
 ) -> JSONResponse:
-    question = qa_service.add_question(payload.question)
+    question = qa_service.add_question(tenant, payload.question)
     return JSONResponse(
+        # TODO can we remove this encoder call?
         content=jsonable_encoder(
             QuestionResponse(
                 id=question.id,
