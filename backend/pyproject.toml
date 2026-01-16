@@ -50,7 +50,7 @@ types-requests = "^2.32.4.20260107"
 pre-commit = "^4.5.1"
 sqlalchemy = { extras = ["mypy"], version = "^2.0.44" }
 faker = "^40.1.2"
-types-docker = "^7.1.0.20251129"
+types-docker = "^7.1.0.20260109"
 types-pyyaml = "^6.0.12.20250915"
 
 [tool.ruff]
