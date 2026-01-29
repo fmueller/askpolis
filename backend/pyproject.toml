@@ -43,7 +43,7 @@ langchain-text-splitters = "^1.1.0"
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.1"
 testcontainers = { extras = ["postgres"], version = "^4.14.0" }
-ruff = "^0.14.13"
+ruff = "^0.14.14"
 mypy = "^1.19.0"
 celery-types = "^0.24.0"
 types-requests = "^2.32.4.20260107"
