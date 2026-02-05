@@ -1,9 +1,9 @@
-FROM ollama/ollama:0.15.2 AS builder
+FROM ollama/ollama:0.15.4 AS builder
 
 RUN ollama serve & sleep 5 && \
     ollama pull mistral:7b && \
     pkill ollama
 
-FROM ollama/ollama:0.15.2 AS runtime
+FROM ollama/ollama:0.15.4 AS runtime
 
 COPY --from=builder /root/.ollama /root/.ollama
