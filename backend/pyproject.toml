@@ -10,17 +10,17 @@ package-mode = false
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
 uvicorn = { extras = ["standard"], version = "~0.40.0" }
-fastapi = "^0.128.1"
-langchain = "^1.2.8"
+fastapi = "^0.128.8"
+langchain = "^1.2.10"
 sentence-transformers = "^5.2.2"
 torch = "~2.10.0"
 einops = "~0.8.2"
 celery = "^5.6.2"
-redis = "^7.0.1"
-pymupdf = "^1.26.6"
+redis = "^7.1.1"
+pymupdf = "^1.27.1"
 pymupdf4llm = "^0.2.9"
 sqlalchemy = "^2.0.46"
-alembic = "^1.18.3"
+alembic = "^1.18.4"
 psycopg-binary = "^3.2.12"
 celery-typed-tasks = "^0.1.25"
 opentelemetry-distro = "^0.56b0"
@@ -37,7 +37,7 @@ psycopg = "^3.2.13"
 psycopg-pool = "^3.2.8"
 flagembedding = "^1.3.5"
 pgvector = "^0.4.1"
-pydantic-ai-slim = {extras = ["openai"], version = "^1.55.0"}
+pydantic-ai-slim = {extras = ["openai"], version = "^1.58.0"}
 langchain-text-splitters = "^1.1.0"
 
 [tool.poetry.group.dev.dependencies]
