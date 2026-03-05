@@ -225,7 +225,7 @@ jobs:
         run: df -h
 
       - name: Log in to registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -301,7 +301,7 @@ jobs:
           python -m pip install --index-url https://download.pytorch.org/whl/cpu torch~=${{ env.TORCH_VERSION }}
 
       - name: Log in to registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -346,7 +346,7 @@ jobs:
 
     steps:
       - name: Log in to registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
