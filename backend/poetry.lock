@@ -6096,14 +6096,14 @@ standard = ["rich (>=10.11.0)", "shellingham (>=1.3.0)"]
 
 [[package]]
 name = "types-docker"
-version = "7.1.0.20260322"
+version = "7.1.0.20260402"
 description = "Typing stubs for docker"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
 files = [
-    {file = "types_docker-7.1.0.20260322-py3-none-any.whl", hash = "sha256:b5eaa760b158dcca067a7370a5fde11d0891ddcdbcb0a6b5e5c23b7a31e5b82e"},
-    {file = "types_docker-7.1.0.20260322.tar.gz", hash = "sha256:31259fa1c5941b24d33b13c403a6d8f08ed51965d22b6b4f7e97eb8a7b56793f"},
+    {file = "types_docker-7.1.0.20260402-py3-none-any.whl", hash = "sha256:88055c13ad43a3d13415db42d180193e812e6a25d0b50710d6559e86cb9345e5"},
+    {file = "types_docker-7.1.0.20260402.tar.gz", hash = "sha256:2df72c6268a815f4ba28fe2556072a99b8acffe46370fa4d27c485355af2e37e"},
 ]
 
 [package.dependencies]
@@ -7183,4 +7183,4 @@ cffi = ["cffi (>=1.17,<2.0) ; platform_python_implementation != \"PyPy\" and pyt
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "497235951b62f169dd6fb056c25910a4d016d78a1964fafab963f83862aced76"
+content-hash = "71281a86754f4773f010eda709fb09c6abb4c88a1ec281a2f22dc6e192d0e25c"
