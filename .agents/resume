@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Dependencies and hook environments are restored from the setup snapshot.
+# No authentication or backing services are needed for unit tests.
+echo "AskPolis ready. Run checks from backend/ with poetry run; Docker integration and end-to-end tests are unavailable."

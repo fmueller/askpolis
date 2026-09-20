@@ -15,12 +15,14 @@
 
 1. Ensure Python **3.12** is used.
 2. Install dependencies with `poetry install`.
-3. Install pre-commit hooks with `poetry run pre-commit install`.
-4. Run pre-commit on changed files:
+3. Install Lefthook hooks from the repository root with `bash scripts/install-hooks.sh`.
+4. Run Lefthook on staged files from the repository root:
    ```bash
-   poetry run pre-commit run --files <paths>
+   poetry -P backend run lefthook run pre-commit
    ```
-   This will apply `ruff` formatting and linting.
+   Ruff checks use the Poetry-locked version and do not auto-fix Python files.
+   To fix Python lint and formatting, run `poetry run ruff check --fix <paths>`
+   and `poetry run ruff format <paths>` from `backend/`, then stage the changes.
 5. Run type checks with:
    ```bash
    poetry run mypy .

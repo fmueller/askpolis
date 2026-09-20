@@ -1,0 +1,46 @@
+name: Git hook checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lefthook.yml"
+      - "scripts/**"
+      - ".agents/**"
+      - "backend/pyproject.toml"
+      - "backend/poetry.lock"
+      - ".github/workflows/hooks.yaml"
+  pull_request:
+    paths:
+      - "lefthook.yml"
+      - "scripts/**"
+      - ".agents/**"
+      - "backend/pyproject.toml"
+      - "backend/poetry.lock"
+      - ".github/workflows/hooks.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  hooks:
+    runs-on: ubuntu-latest
+    env:
+      POETRY_VIRTUALENVS_IN_PROJECT: "true"
+      POETRY_NO_INTERACTION: "1"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12.11"
+      - run: pip install poetry==2.2.1
+      - run: poetry -C "$GITHUB_WORKSPACE/backend" install --only dev
+      - name: Validate shell syntax and hook behavior
+        run: |
+          for script in .agents/setup .agents/resume scripts/*.sh; do
+            bash -n "$script"
+          done
+          bash scripts/check-commit-msg-test.sh
+          bash scripts/check-author-test.sh
+          bash scripts/check-push-messages-test.sh
+          bash scripts/check-hooks-test.sh

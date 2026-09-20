@@ -1,0 +1,43 @@
+# Install with `bash scripts/install-hooks.sh` after `poetry -C backend install`.
+# Lefthook and all checkers are pinned in backend/poetry.lock.
+pre-commit:
+  parallel: true
+  commands:
+    author-identity:
+      run: bash scripts/check-author.sh
+    conflict-markers:
+      run: git diff --cached --check
+    file-hygiene:
+      run: poetry -P backend run bash scripts/check-files.sh {staged_files}
+    ruff:
+      glob: "backend/**/*.py"
+      run: poetry -P backend run ruff check {staged_files}
+    ruff-format:
+      glob: "backend/**/*.py"
+      run: poetry -P backend run ruff format --check {staged_files}
+    mypy:
+      glob: "backend/**/*.py"
+      run: poetry -C backend run mypy .
+    hook-checkers:
+      glob: "{lefthook.yml,scripts/*.sh}"
+      run: |
+        bash scripts/check-commit-msg-test.sh &&
+        bash scripts/check-author-test.sh &&
+        bash scripts/check-push-messages-test.sh &&
+        bash scripts/check-hooks-test.sh
+
+commit-msg:
+  commands:
+    message-policy:
+      run: bash scripts/check-commit-msg.sh {1}
+
+pre-push:
+  piped: true
+  commands:
+    message-policy:
+      priority: 1
+      use_stdin: true
+      run: bash scripts/check-push-messages.sh
+    tests:
+      priority: 2
+      run: poetry -C backend run pytest -v -m unit

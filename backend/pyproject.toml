@@ -47,11 +47,12 @@ ruff = "^0.15.8"
 mypy = "^1.20.0"
 celery-types = "^0.26.0"
 types-requests = "^2.33.0.20260402"
-pre-commit = "^4.5.1"
 sqlalchemy = { extras = ["mypy"], version = "^2.0.48" }
 faker = "^40.12.0"
 types-docker = "^7.1.0.20260402"
 types-pyyaml = "^6.0.12.20250915"
+lefthook = "2.1.10"
+pre-commit-hooks = "5.0.0"
 
 [tool.ruff]
 line-length = 120

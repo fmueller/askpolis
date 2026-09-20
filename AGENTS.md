@@ -18,4 +18,11 @@
   - `feat(website): add info page`
   - `docs(data): improve docs about data from report xyz`
   - `chore: cleanup files in mono repository`
+- Add a blank line and a descriptive body wrapped at 72 characters. Generated
+  merge, revert, fixup, and squash messages are exempt from formatting rules.
+- Never include agent attribution, co-author trailers, or thread/session IDs or
+  links in commit messages. Both author and committer must be human identities.
+- Install Lefthook before committing: `bash scripts/install-hooks.sh` from the
+  repository root after installing backend dependencies. See `lefthook.yml`
+  and `scripts/check-*.sh` for the enforced policy and its regression tests.
 - Summarize important modifications in the PR description.

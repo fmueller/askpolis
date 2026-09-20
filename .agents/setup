@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export PATH="$HOME/.local/bin:$PATH"
+export POETRY_NO_INTERACTION=1
+export POETRY_VIRTUALENVS_IN_PROJECT=true
+export POETRY_KEYRING_ENABLED=false
+
+step() {
+    local label="$1"
+    shift
+    echo "==> $label"
+    time "$@"
+}
+
+# A few locked dependencies build C extensions when wheels are unavailable.
+missing_packages=()
+for package in build-essential zlib1g-dev; do
+    if [[ "$(dpkg-query -W -f='${Status}' "$package" 2>/dev/null || true)" != "install ok installed" ]]; then
+        missing_packages+=("$package")
+    fi
+done
+if ((${#missing_packages[@]})); then
+    step "Refresh system package index" sudo apt-get update
+    step "Install build prerequisites" sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y "${missing_packages[@]}"
+fi
+
+# uv is provided by the orb base image. Match CI's Python and the lockfile's Poetry.
+step "Python 3.12.11" uv python install 3.12.11
+step "Poetry 2.2.1" uv tool install --python 3.12.11 poetry==2.2.1
+step "Select backend Python" poetry -C "$repo_root/backend" env use "$(uv python find 3.12.11)"
+step "Install locked runtime and development dependencies" poetry -C "$repo_root/backend" install
+step "Install Lefthook Git hooks" bash "$repo_root/scripts/install-hooks.sh"
+
+# Amp and supervised services use separate login shells, not this setup shell.
+marker="# AskPolis orb tools"
+if ! grep -Fqx "$marker" "$HOME/.bash_profile" 2>/dev/null; then
+    cat >> "$HOME/.bash_profile" <<'EOF'
+
+# AskPolis orb tools
+export PATH="$HOME/.local/bin:$PATH"
+EOF
+fi
+
+echo "Backend ready: run poetry commands from backend/. Docker services and model downloads are not started."
