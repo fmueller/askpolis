@@ -52,6 +52,9 @@ class ParliamentRepository:
     def __init__(self, db: Session):
         self.db = db
 
+    def get(self, parliament_id: uuid.UUID) -> Parliament | None:
+        return self.db.query(Parliament).filter(Parliament.id == parliament_id).first()
+
     def get_all(self) -> list[Parliament]:
         return self.db.query(Parliament).all()
 

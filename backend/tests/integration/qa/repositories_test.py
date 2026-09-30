@@ -1,14 +1,21 @@
 import datetime
 
+import uuid_utils.compat as uuid
 from sqlalchemy.orm import Session
 
-from askpolis.core import Parliament
+from askpolis.core import Parliament, Tenant
 from askpolis.qa.models import Answer, AnswerContent, Question
 from askpolis.qa.repositories import AnswerRepository, QuestionRepository
 
 
+def _create_tenant(parliament: Parliament | None = None) -> Tenant:
+    supported_parliaments = [parliament.id] if parliament else []
+    return Tenant(id=uuid.uuid7(), name="demo", supported_parliaments=supported_parliaments)
+
+
 def test_question_model(db_session: Session) -> None:
-    question = Question("a test question")
+    tenant = _create_tenant()
+    question = Question(tenant, "a test question")
     question_id = question.id
     QuestionRepository(db_session).save(question)
 
@@ -23,7 +30,8 @@ def test_answer_model(db_session: Session) -> None:
     parliament = Parliament(name="Parliament of Canada", short_name="Canada")
     db_session.add(parliament)
 
-    question = Question("a test question")
+    tenant = _create_tenant(parliament)
+    question = Question(tenant, "a test question")
     question_id = question.id
 
     answer = Answer(contents=[AnswerContent("en-US", "a test answer")], citations=[])
@@ -48,16 +56,17 @@ def test_get_stale_questions(db_session: Session) -> None:
     three_hours_ago = now - datetime.timedelta(hours=3)
     one_hour_ago = now - datetime.timedelta(hours=1)
 
+    tenant = _create_tenant(parliament)
     question_repository = QuestionRepository(db_session)
 
     # Question 1: Old question without answer (should be returned)
-    q1 = Question("old question without answer")
+    q1 = Question(tenant, "old question without answer")
     q1.created_at = three_hours_ago
     q1.updated_at = three_hours_ago
     question_repository.save(q1)
 
     # Question 2: Old question with answer (should not be returned)
-    q2 = Question("old question with answer")
+    q2 = Question(tenant, "old question with answer")
     q2.created_at = three_hours_ago
     q2.updated_at = three_hours_ago
     a2 = Answer(contents=[AnswerContent("en-US", "an answer")], citations=[])
@@ -66,13 +75,13 @@ def test_get_stale_questions(db_session: Session) -> None:
     question_repository.save(q2)
 
     # Question 3: Recent question without answer (should not be returned)
-    q3 = Question("recent question without answer")
+    q3 = Question(tenant, "recent question without answer")
     q3.created_at = one_hour_ago
     q3.updated_at = one_hour_ago
     question_repository.save(q3)
 
     # Question 4: Recent question with answer (should not be returned)
-    q4 = Question("recent question with answer")
+    q4 = Question(tenant, "recent question with answer")
     q4.created_at = one_hour_ago
     q4.updated_at = one_hour_ago
     a4 = Answer(contents=[AnswerContent("en-US", "an answer")], citations=[])
