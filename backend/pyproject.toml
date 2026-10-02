@@ -43,7 +43,7 @@ langchain-text-splitters = "^1.1.1"
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.1"
 testcontainers = { extras = ["postgres"], version = "^4.14.2" }
-ruff = "^0.15.8"
+ruff = ">=0.15.8,<0.17.0"
 mypy = "^1.20.0"
 celery-types = "^0.26.0"
 types-requests = "^2.33.0.20260402"
@@ -51,7 +51,7 @@ sqlalchemy = { extras = ["mypy"], version = "^2.0.48" }
 faker = "^40.12.0"
 types-docker = "^7.1.0.20260402"
 types-pyyaml = "^6.0.12.20250915"
-lefthook = "2.1.10"
+lefthook = "2.1.14"
 pre-commit-hooks = "5.0.0"
 
 [tool.ruff]
