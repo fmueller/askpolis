@@ -28,7 +28,7 @@ jobs:
         working-directory: ${{ env.WORKING_DIRECTORY }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Free up disk space
         uses: jlumbroso/free-disk-space@v1.3.1
@@ -68,7 +68,7 @@ jobs:
         working-directory: ${{ env.WORKING_DIRECTORY }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Free up disk space
         uses: jlumbroso/free-disk-space@v1.3.1
@@ -106,7 +106,7 @@ jobs:
         working-directory: ${{ env.WORKING_DIRECTORY }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Free up disk space
         uses: jlumbroso/free-disk-space@v1.3.1
@@ -209,7 +209,7 @@ jobs:
       prerelease_digest: ${{ steps.build.outputs.digest }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Free up disk space
         uses: jlumbroso/free-disk-space@v1.3.1
@@ -267,7 +267,7 @@ jobs:
         working-directory: ${{ env.WORKING_DIRECTORY }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Free up disk space
         uses: jlumbroso/free-disk-space@v1.3.1
