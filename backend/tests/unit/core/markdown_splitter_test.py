@@ -195,6 +195,23 @@ def test_merging_words_split_by_hyphens_and_newlines() -> None:
     assert result[0].page_content == "abcdef\nand this\nis"
 
 
+@pytest.mark.parametrize("blank_page", ["", "  \n", "\t\r\n "])
+@pytest.mark.parametrize("has_following_page", [False, True])
+def test_preserves_hyphen_before_blank_page(blank_page: str, has_following_page: bool) -> None:
+    pages = [
+        Document(page_content="abc-", metadata={"page": 1}),
+        Document(page_content=blank_page, metadata={"page": 2}),
+    ]
+    if has_following_page:
+        pages.append(Document(page_content="def remains", metadata={"page": 3}))
+
+    result = splitter.split(pages)
+
+    assert len(result) == 1
+    assert result[0].page_content == ("abc-\ndef remains" if has_following_page else "abc-")
+    assert result[0].metadata == {"chunk_id": 0, "headers": {}, "page": 1}
+
+
 def test_merging_words_split_by_hyphens_and_newlines_and_markdown_formatting() -> None:
     pages = [
         Document(page_content="** abc-", metadata={"page": 1}),

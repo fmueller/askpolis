@@ -75,7 +75,7 @@ class MarkdownSplitter:
 
             page.page_content = MarkdownSplitter._replace_horizontal_rule_with_newline(page.page_content)
             ends_with_md = MarkdownSplitter._ends_with_hyphen(page.page_content)
-            if next_page and ends_with_md:
+            if next_page and ends_with_md and next_page.page_content.strip():
                 page.page_content = MarkdownSplitter._merge_hyphenated_texts(page.page_content, next_page.page_content)
                 next_page.page_content = MarkdownSplitter._replace_horizontal_rule_with_newline(next_page.page_content)
                 next_page.page_content = MarkdownSplitter._remove_first_word(next_page.page_content)
