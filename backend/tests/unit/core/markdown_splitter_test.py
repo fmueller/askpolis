@@ -181,6 +181,19 @@ def test_merging_words_split_by_hyphens() -> None:
     assert result[0].page_content == "abcdef\nand this\nis\nand n\n-ot\nGenerationen**\nHouse~~\nYouth__"
 
 
+@pytest.mark.parametrize("separator", [" ", "\n", "\t", "\r\n", "\u00a0"])
+def test_merging_across_pages_preserves_words_after_whitespace(separator: str) -> None:
+    pages = [
+        Document(page_content="inter-", metadata={"page": 1}),
+        Document(page_content=f"national{separator}policy matters", metadata={"page": 2}),
+    ]
+
+    result = splitter.split(pages)
+
+    assert len(result) == 1
+    assert result[0].page_content == "international\npolicy matters"
+
+
 def test_merging_words_split_by_hyphens_and_newlines() -> None:
     pages = [
         Document(page_content="abc-", metadata={"page": 1}),

@@ -191,20 +191,12 @@ class MarkdownSplitter:
 
     @staticmethod
     def _first_word(text: str) -> str:
-        # TODO use same logic as in _remove_first_word
         return text.lstrip().split()[0]
 
     @staticmethod
     def _remove_first_word(text: str) -> str:
-        stripped = text.lstrip()
-        first_whitespace = stripped.find(" ")
-        if first_whitespace == -1:
-            first_whitespace = stripped.find("\t")
-        if first_whitespace == -1:
-            return ""
-        if first_whitespace == len(stripped) - 1:
-            return stripped[:first_whitespace]
-        return stripped[first_whitespace + 1 :]
+        words = text.split(maxsplit=1)
+        return words[1] if len(words) > 1 else ""
 
     @staticmethod
     def _replace_horizontal_rule_with_newline(text: str) -> str:
