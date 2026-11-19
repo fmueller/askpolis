@@ -6,6 +6,7 @@ from askpolis.logging import get_logger
 from askpolis.qa import router as qa_router
 from askpolis.rate_limiting import RateLimitMiddleware
 from askpolis.search import router as search_router
+from askpolis.telemetry import configure_otel
 
 logger = get_logger(__name__)
 logger.info("Starting AskPolis API...")
@@ -14,6 +15,7 @@ api_version = "v0"
 api_base_path = f"/{api_version}"
 
 app = FastAPI(docs_url="/")
+configure_otel(app)
 app.add_middleware(RateLimitMiddleware)
 app.include_router(core_router, prefix=api_base_path)
 app.include_router(qa_router, prefix=api_base_path)
